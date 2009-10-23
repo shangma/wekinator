@@ -3017,6 +3017,8 @@ private void panelRunKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
                 if (((WekaOperator.ClassifierState) state) == WekaOperator.ClassifierState.HAS_DATA) {
                     buttonTrain.setEnabled(true);
                     buttonTrain1.setEnabled(true);
+                    toggleButtonRun.setEnabled(false);
+                    buttonComputeAccuracy.setEnabled(false);
                 } else if (((WekaOperator.ClassifierState) state) == WekaOperator.ClassifierState.TRAINED) {
                     buttonTrain.setEnabled(true);
                     buttonTrain1.setEnabled(true);

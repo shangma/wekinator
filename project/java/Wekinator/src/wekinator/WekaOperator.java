@@ -163,24 +163,32 @@ public class WekaOperator implements Subject, Observer {
         return numParametersToTrain;
     }
 
+    //TODO: Fix this; no longer setting this # from the GUI, but set 1x in chuck synth
     public void setNumParameters(int num) {
-        if (num > 0 && num < 10) {
+      //  if (num > 0 && num < 10) {
             numParametersToTrain = num;
             // realFeatures = new float[num];
             //    System.out.println("setting new inst 1");
-            instances = new Instances[num];
             c = new Classifier[num];
             realVals = new float[num];
             dists = new double[num][0];
             vals = new int[num];
             myFeatureState = FeatureState.WAITING;
             myState = OperatorState.READY;
+
+            if (myClassifierState == ClassifierState.HAS_DATA || myClassifierState == ClassifierState.TRAINED) {
+                myClassifierState = ClassifierState.HAS_DATA;
+
+            } else {
+               instances = new Instances[num];
             myClassifierState = ClassifierState.NO_DATA;
 
+            }
 
 
 
-        }
+
+       // }
 
     }
 
@@ -532,7 +540,12 @@ public class WekaOperator implements Subject, Observer {
     public ProblemType myProblemType = ProblemType.DISCRETE;
 
     public void chooseClassifier(ClassifierType ct) {
-        myClassifierState = ClassifierState.NO_DATA;
+        if (myClassifierState == ClassifierState.NO_CLASSIFIER || myClassifierState == ClassifierState.NO_DATA) {
+            myClassifierState = ClassifierState.NO_DATA;
+        } else { //if has data or is already trained: Don't ignore existing training data.
+            myClassifierState = ClassifierState.HAS_DATA;
+        }
+
         System.out.println("choosing classifier, #=" + numParametersToTrain);
         c = new Classifier[numParametersToTrain];
         if (ct == ClassifierType.KNN) {
