@@ -6,6 +6,7 @@
 //Update.
 package wekinator;
 
+import java.awt.Dimension;
 import java.awt.KeyEventPostProcessor;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
@@ -26,6 +27,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BoxLayout;
 import wekinator.util.Observer;
 import wekinator.util.Subject;
 import javax.swing.JButton;
@@ -418,7 +420,6 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         buttonForget = new javax.swing.JButton();
         buttonTrain = new javax.swing.JButton();
         labelTrainingStatus = new javax.swing.JLabel();
-        panelRealTraining = new javax.swing.JPanel();
         buttonHoldTrain = new javax.swing.JButton();
         checkViewNNGUI = new javax.swing.JCheckBox();
         buttonListen = new javax.swing.JButton();
@@ -427,6 +428,8 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         jButtonShh = new javax.swing.JButton();
         toggleGetSynthParams = new javax.swing.JToggleButton();
         buttonViewData = new javax.swing.JButton();
+        scrollTrainPanel = new javax.swing.JScrollPane();
+        panelRealTraining = new javax.swing.JPanel();
         panelPlayAlong = new javax.swing.JPanel();
         labelRunningStatus1 = new javax.swing.JLabel();
         labelPlayalongUpdate = new javax.swing.JLabel();
@@ -1287,6 +1290,8 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
             }
         });
 
+        scrollTrainPanel.setViewportView(panelRealTraining);
+
         org.jdesktop.layout.GroupLayout panelRunLayout = new org.jdesktop.layout.GroupLayout(panelRun);
         panelRun.setLayout(panelRunLayout);
         panelRunLayout.setHorizontalGroup(
@@ -1328,8 +1333,8 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                         .add(labelParameterValues))
                     .add(panelRunLayout.createSequentialGroup()
                         .addContainerGap()
-                        .add(panelRealTraining, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 167, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .add(12, 12, 12))
+                        .add(scrollTrainPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 316, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(12, Short.MAX_VALUE))
         );
         panelRunLayout.setVerticalGroup(
             panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -1345,7 +1350,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                         .add(jButtonShh)
                         .add(buttonViewData)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(panelRealTraining, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 192, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(scrollTrainPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 158, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(buttonTrain)
@@ -1359,7 +1364,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 .add(panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(panelRunLayout.createSequentialGroup()
                         .add(jPanel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 98, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 132, Short.MAX_VALUE)
                         .add(labelRunningStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(panelRunLayout.createSequentialGroup()
                         .add(buttonEditClassifier)
@@ -1880,21 +1885,36 @@ private void buttonTrainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     javax.swing.JTextField[] paramFields;
 
     private void updateTrainingPanelForParams() {
+        int height = 4;
+        if (myNumParams > 4) height = myNumParams;
+      //  GridLayout experimentLayout = new GridLayout(myNumParams, 1);
+        BoxLayout layout = new BoxLayout(panelRealTraining, BoxLayout.Y_AXIS);
+
+        panelRealTraining.setLayout(layout);
 
         panelRealTraining.removeAll();
         paramLabels = new javax.swing.JLabel[myNumParams];
         paramFields = new javax.swing.JTextField[myNumParams];
         for (int i = 0; i < myNumParams; i++) {
+            javax.swing.JPanel next = new javax.swing.JPanel();
+            BoxLayout layout2 = new BoxLayout(next, BoxLayout.X_AXIS);
+            next.setLayout(layout2);
             paramLabels[i] = new javax.swing.JLabel("Parameter " + i);
             paramFields[i] = new javax.swing.JTextField(5);
             paramFields[i].setText("0");
-            panelRealTraining.add(paramLabels[i]);
-            panelRealTraining.add(paramFields[i]);
-
+            Dimension d = new Dimension(100,20);
+            paramLabels[i].setMaximumSize(d);
+            paramFields[i].setMaximumSize(d);
+           // panelRealTraining.add(paramLabels[i]);
+           // panelRealTraining.add(paramFields[i]);
+            next.add(paramLabels[i]);
+            next.add(paramFields[i]);
+            panelRealTraining.add(next);
 
         }
 
         panelRealTraining.repaint();
+        scrollTrainPanel.repaint();
     }
 
     public void displayFeatureManager() {
@@ -3017,6 +3037,7 @@ private void buttonViewDataActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private javax.swing.JRadioButton radioClearProcessingFeature;
     private javax.swing.JRadioButton radioColorTracking;
     private javax.swing.JRadioButton radioDownsampled;
+    private javax.swing.JScrollPane scrollTrainPanel;
     private javax.swing.JTextField textAudioRate;
     private javax.swing.JTextField textFFTSize;
     private javax.swing.JTextField textMotionRate;

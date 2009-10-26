@@ -1158,10 +1158,10 @@
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="panelRealTraining" min="-2" pref="167" max="-2" attributes="0"/>
+                              <Component id="scrollTrainPanel" min="-2" pref="316" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+                      <EmptySpace pref="12" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1182,7 +1182,7 @@
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="panelRealTraining" min="-2" pref="192" max="-2" attributes="1"/>
+                      <Component id="scrollTrainPanel" min="-2" pref="158" max="-2" attributes="1"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="buttonTrain" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -1197,7 +1197,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <Component id="jPanel3" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="98" max="32767" attributes="0"/>
+                              <EmptySpace pref="132" max="32767" attributes="0"/>
                               <Component id="labelRunningStatus" min="-2" pref="20" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" attributes="0">
@@ -1335,10 +1335,6 @@
                 <Property name="text" type="java.lang.String" value="Classifier status: No instances recorded"/>
               </Properties>
             </Component>
-            <Container class="javax.swing.JPanel" name="panelRealTraining">
-
-              <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
-            </Container>
             <Component class="javax.swing.JButton" name="buttonHoldTrain">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Hold to record examples"/>
@@ -1404,6 +1400,16 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonViewDataActionPerformed"/>
               </Events>
             </Component>
+            <Container class="javax.swing.JScrollPane" name="scrollTrainPanel">
+
+              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+              <SubComponents>
+                <Container class="javax.swing.JPanel" name="panelRealTraining">
+
+                  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+                </Container>
+              </SubComponents>
+            </Container>
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="panelPlayAlong">
