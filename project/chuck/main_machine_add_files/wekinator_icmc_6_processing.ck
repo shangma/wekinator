@@ -37,7 +37,7 @@ Machine.add("score_players/icmc_processing.ck");
 Machine.add("core_chuck/main_chuck.ck");	
 
 //Finally run the Java component
-Std.system("java -jar dist/Wekinator.jar &");
+Std.system("java -jar ../java/Wekinator/dist/Wekinator.jar &");
 
 //And the java synth
 Std.system("open processing_synths/icmc_visual_synth/application.macosx/icmc_visual_synth.app/ &");

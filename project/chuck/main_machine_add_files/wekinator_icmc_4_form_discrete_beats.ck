@@ -40,4 +40,4 @@ Machine.add("core_chuck/main_chuck.ck");
 Std.system("open processing_feature_extractors/downsampled_webcam/application.macosx/downsampled_webcam.app/ &");
 
 //Finally run the Java component
-Std.system("java -jar dist/Wekinator.jar &");
+Std.system("java -jar ../java/Wekinator/dist/Wekinator.jar &");

@@ -37,4 +37,4 @@ Machine.add("score_players/icmc_twinkle_form.ck");
 Machine.add("core_chuck/main_chuck.ck");	
 
 //Finally run the Java component
-Std.system("java -jar dist/Wekinator.jar &");
+Std.system("java -jar ../java/Wekinator/dist/Wekinator.jar &");

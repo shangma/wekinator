@@ -27,7 +27,7 @@ Machine.add("core_chuck/ProcessingFeatureExtractor.ck");
 Machine.add("feature_extractors/keyboard_rowcol.ck");
 
 //***The synthesis class you want to use***//
-Machine.add("synths/adaptive_audio_pan.ck");
+Machine.add("synths/icmc_melody_discrete.ck");
 
 //** The play-along learner you want to use ***//
 Machine.add("score_players/icmc_melody.ck");
@@ -37,4 +37,4 @@ Machine.add("score_players/icmc_melody.ck");
 Machine.add("core_chuck/main_chuck.ck");	
 
 //Finally run the Java component
-Std.system("java -jar dist/Wekinator.jar &");
+Std.system("java -jar ../java/Wekinator/dist/Wekinator.jar &");
