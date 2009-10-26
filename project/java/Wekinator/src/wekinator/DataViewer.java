@@ -239,9 +239,9 @@ class DataTableModel extends AbstractTableModel {
 
     protected void setColNames() {
         columnNames = new String[numFeats + numParams];
-        columnNames[0] = "ID";
-        for (int i = 1; i < numFeats; i++) {
-            columnNames[i] = "feat" + i;
+      //  columnNames[0] = "ID";
+        for (int i = 0; i < numFeats; i++) {
+            columnNames[i] = "feat" + (i+1);
         }
         for (int i = 0; i < numParams; i++) {
             columnNames[numFeats + i] = "param" + (i + 1);
@@ -313,7 +313,7 @@ class DataTableModel extends AbstractTableModel {
     public boolean isCellEditable(int row, int col) {
         //Note that the data/cell address is constant,
         //no matter where the cell appears onscreen.
-        if (col >= 1) {
+        if (col >= 0) { //change later
             return true;
         } else {
             return false;
