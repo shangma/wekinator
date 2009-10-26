@@ -1121,8 +1121,15 @@
                                       <Component id="buttonHoldTrain" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="buttonListen" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Component id="buttonEditClassifier" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="jButtonShh" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                              <Component id="buttonViewData" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Component id="toggleGetSynthParams" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
                                   </Group>
                               </Group>
                           </Group>
@@ -1131,7 +1138,11 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="labelFeatureStatus" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="labelTrainingStatus" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="jPanel3" alignment="0" min="-2" max="-2" attributes="1"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="jPanel3" min="-2" max="-2" attributes="1"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="buttonEditClassifier" min="-2" max="-2" attributes="0"/>
+                                  </Group>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="buttonTrain" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
@@ -1144,15 +1155,13 @@
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="labelParameterValues" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="167" max="32767" attributes="0"/>
-                              <Component id="jButtonShh" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="panelRealTraining" min="-2" pref="167" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1162,12 +1171,15 @@
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="buttonHoldTrain" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="buttonListen" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="buttonEditClassifier" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="toggleGetSynthParams" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="labelParameterValues" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="jButtonShh" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="labelParameterValues" min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="jButtonShh" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="buttonViewData" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="panelRealTraining" min="-2" pref="192" max="-2" attributes="1"/>
@@ -1182,9 +1194,17 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="labelTrainingStatus" min="-2" pref="20" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jPanel3" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="95" max="32767" attributes="0"/>
-                      <Component id="labelRunningStatus" min="-2" pref="20" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <Component id="jPanel3" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace pref="98" max="32767" attributes="0"/>
+                              <Component id="labelRunningStatus" min="-2" pref="20" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Component id="buttonEditClassifier" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1365,6 +1385,23 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButtonShhActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JToggleButton" name="toggleGetSynthParams">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Get params from synth"/>
+              </Properties>
+              <Events>
+                <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="toggleGetSynthParamsItemStateChanged"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="toggleGetSynthParamsActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JButton" name="buttonViewData">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="View Data"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonViewDataActionPerformed"/>
               </Events>
             </Component>
           </SubComponents>

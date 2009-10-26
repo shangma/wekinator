@@ -246,7 +246,13 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         for (int i = 0; i < vals.length; i++) {
             //  System.out.println("for i = " + i);
             //  System.out.println("Class is " + vals[i]);
-            s += dd.format(vals[i]);
+
+            //Update reg training panel:
+
+            String ss  = dd.format(vals[i]);
+            s += ss;
+            paramFields[i].setText(ss);
+
             if (i < vals.length - 1) {
                 s += "; ";
             }
@@ -254,6 +260,9 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         }
         labelClassifiedClass.setText(s);
         labelClassifiedClass1.setText(s);
+
+        //Also update regular training pane values!
+        
 
     }
 
@@ -416,6 +425,8 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         buttonEditClassifier = new javax.swing.JButton();
         labelParameterValues = new javax.swing.JLabel();
         jButtonShh = new javax.swing.JButton();
+        toggleGetSynthParams = new javax.swing.JToggleButton();
+        buttonViewData = new javax.swing.JButton();
         panelPlayAlong = new javax.swing.JPanel();
         labelRunningStatus1 = new javax.swing.JLabel();
         labelPlayalongUpdate = new javax.swing.JLabel();
@@ -1257,6 +1268,25 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
             }
         });
 
+        toggleGetSynthParams.setText("Get params from synth");
+        toggleGetSynthParams.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                toggleGetSynthParamsItemStateChanged(evt);
+            }
+        });
+        toggleGetSynthParams.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                toggleGetSynthParamsActionPerformed(evt);
+            }
+        });
+
+        buttonViewData.setText("View Data");
+        buttonViewData.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonViewDataActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout panelRunLayout = new org.jdesktop.layout.GroupLayout(panelRun);
         panelRun.setLayout(panelRunLayout);
         panelRunLayout.setHorizontalGroup(
@@ -1271,14 +1301,22 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                                 .add(buttonHoldTrain)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(buttonListen)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(buttonEditClassifier))))
+                                .add(6, 6, 6)
+                                .add(panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(panelRunLayout.createSequentialGroup()
+                                        .add(jButtonShh)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                        .add(buttonViewData))
+                                    .add(toggleGetSynthParams)))))
                     .add(panelRunLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(labelFeatureStatus)
                             .add(labelTrainingStatus)
-                            .add(jPanel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(panelRunLayout.createSequentialGroup()
+                                .add(jPanel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(buttonEditClassifier))
                             .add(panelRunLayout.createSequentialGroup()
                                 .add(buttonTrain)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -1287,13 +1325,11 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                                 .add(buttonForget))))
                     .add(panelRunLayout.createSequentialGroup()
                         .addContainerGap()
-                        .add(labelParameterValues)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 167, Short.MAX_VALUE)
-                        .add(jButtonShh))
+                        .add(labelParameterValues))
                     .add(panelRunLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(panelRealTraining, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 167, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                .add(12, 12, 12))
         );
         panelRunLayout.setVerticalGroup(
             panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -1301,11 +1337,13 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 .add(panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(buttonHoldTrain)
                     .add(buttonListen)
-                    .add(buttonEditClassifier))
-                .add(7, 7, 7)
-                .add(panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(toggleGetSynthParams))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(labelParameterValues)
-                    .add(jButtonShh))
+                    .add(panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(jButtonShh)
+                        .add(buttonViewData)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(panelRealTraining, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 192, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -1318,9 +1356,14 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(labelTrainingStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 95, Short.MAX_VALUE)
-                .add(labelRunningStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(panelRunLayout.createSequentialGroup()
+                        .add(jPanel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 98, Short.MAX_VALUE)
+                        .add(labelRunningStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(panelRunLayout.createSequentialGroup()
+                        .add(buttonEditClassifier)
+                        .addContainerGap())))
         );
 
         jPanel3.getAccessibleContext().setAccessibleName("Use trained model");
@@ -2303,10 +2346,15 @@ private void buttonListenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         }
      //   System.out.println("got val " + f[i]);
     }
-    w.startSound();
-    w.setRealVals(f);
-    w.sendCurrentRealVals();
+    listenToValues(f);
 }//GEN-LAST:event_buttonListenActionPerformed
+
+
+public void listenToValues(float[] params) {
+    w.startSound();
+    w.setRealVals(params);
+    w.sendCurrentRealVals();
+}
 
 private void buttonListenStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_buttonListenStateChanged
 // TODO add your handling code here:
@@ -2718,6 +2766,32 @@ private void jCheckFastAccurateActionPerformed(java.awt.event.ActionEvent evt) {
 private void panelRunKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_panelRunKeyPressed
 }//GEN-LAST:event_panelRunKeyPressed
 
+private void toggleGetSynthParamsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toggleGetSynthParamsActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_toggleGetSynthParamsActionPerformed
+
+private void toggleGetSynthParamsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_toggleGetSynthParamsItemStateChanged
+    if (toggleGetSynthParams.getModel().isSelected()) {
+            try {
+                w.Handler().startGettingParams();
+            } catch (IOException ex) {
+                Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
+    } else {
+            try {
+                w.Handler().stopGettingParams();
+            } catch (IOException ex) {
+                Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
+    }
+
+}//GEN-LAST:event_toggleGetSynthParamsItemStateChanged
+
+private void buttonViewDataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonViewDataActionPerformed
+     DataViewer v = new DataViewer(w.instances, this);
+    v.setVisible(true);
+}//GEN-LAST:event_buttonViewDataActionPerformed
+
     private File findHidSetupFileToSave() {
 
         JFileChooser fc = new JFileChooser();
@@ -2861,6 +2935,7 @@ private void panelRunKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
     private javax.swing.JButton buttonTrain;
     private javax.swing.JButton buttonTrain1;
     private javax.swing.JButton buttonUseClassifierSettings;
+    private javax.swing.JButton buttonViewData;
     private javax.swing.JCheckBox checkAudio;
     private javax.swing.JCheckBox checkCentroid;
     private javax.swing.JCheckBox checkCustomChuck;
@@ -2956,6 +3031,7 @@ private void panelRunKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
     private javax.swing.JLabel textSettingsWantDist;
     private javax.swing.JTextField textWindowSize;
     private javax.swing.JToggleButton toggleButtonRun;
+    private javax.swing.JToggleButton toggleGetSynthParams;
     // End of variables declaration//GEN-END:variables
     private ArrayList<javax.swing.JButton> trainingButtons = new ArrayList<javax.swing.JButton>();
 

@@ -1472,6 +1472,7 @@ public class WekaOperator implements Subject, Observer {
         }
     }
 
+
     public void startPlayAlong() {
         try {
             System.out.println("stopping playback");
