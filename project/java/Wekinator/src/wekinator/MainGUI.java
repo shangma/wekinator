@@ -1804,7 +1804,7 @@ private void buttonUseClassifierSettingsActionPerformed(java.awt.event.ActionEve
         panelRealTraining.setVisible(true);
     }
 
-    w.initializeInstances(myNumFeats, myNumParams);
+    w.initializeInstances(myNumFeats, numChuckClasses);
 
 
 
