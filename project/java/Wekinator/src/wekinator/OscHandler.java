@@ -32,7 +32,7 @@ public class OscHandler implements Subject {
     String startHandshakeString = "/hello";
     String returnHandshakeString = "/hiback";
     String featureInfoString = "/featureInfo";
-    String featuresString = "/features";
+    String featuresString = "/features"; //used for chuck features (not osc feats)
     String extractString = "/extract";
     String stopString = "/stop";
     String classLabelString = "/classLabel";

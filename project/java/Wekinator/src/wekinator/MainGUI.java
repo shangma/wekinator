@@ -9,6 +9,7 @@ package wekinator;
 import java.awt.Dimension;
 import java.awt.KeyEventPostProcessor;
 import java.awt.KeyboardFocusManager;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -56,7 +57,9 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
 
         @Override
         protected ArrayList<Double> doInBackground() throws Exception {
-            if (w.instances != null && w.instances[0] != null && w.instances[0].numInstances() > 0) {
+            assert(w.dataset != null);
+            if (w.dataset.getNumDatapoints() > 0) {
+            
                 setProgress(1);
                 
 
@@ -1801,6 +1804,7 @@ private void buttonUseClassifierSettingsActionPerformed(java.awt.event.ActionEve
         panelRealTraining.setVisible(true);
     }
 
+    w.initializeInstances(myNumFeats, myNumParams);
 
 
 
@@ -1883,6 +1887,7 @@ private void buttonTrainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     }
     javax.swing.JLabel[] paramLabels;
     javax.swing.JTextField[] paramFields;
+    javax.swing.JCheckBox[] paramCheckBoxes;
 
     private void updateTrainingPanelForParams() {
         int height = 4;
@@ -1895,6 +1900,7 @@ private void buttonTrainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         panelRealTraining.removeAll();
         paramLabels = new javax.swing.JLabel[myNumParams];
         paramFields = new javax.swing.JTextField[myNumParams];
+        paramCheckBoxes = new javax.swing.JCheckBox[myNumParams];
         for (int i = 0; i < myNumParams; i++) {
             javax.swing.JPanel next = new javax.swing.JPanel();
             BoxLayout layout2 = new BoxLayout(next, BoxLayout.X_AXIS);
@@ -1907,6 +1913,14 @@ private void buttonTrainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
             paramFields[i].setMaximumSize(d);
            // panelRealTraining.add(paramLabels[i]);
            // panelRealTraining.add(paramFields[i]);
+            paramCheckBoxes[i] = new javax.swing.JCheckBox();
+            paramCheckBoxes[i].getModel().setSelected(true);
+         paramCheckBoxes[i].addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                paramCheckBoxesActionPerformed(evt);
+            }
+        });
+            next.add(paramCheckBoxes[i]);
             next.add(paramLabels[i]);
             next.add(paramFields[i]);
             panelRealTraining.add(next);
@@ -1916,6 +1930,17 @@ private void buttonTrainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         panelRealTraining.repaint();
         scrollTrainPanel.repaint();
     }
+
+
+   private void paramCheckBoxesActionPerformed(ActionEvent evt) {
+       System.out.println("check change");
+       boolean useParams[] = new boolean[myNumParams];
+       for (int i = 0; i < myNumParams; i++) {
+            useParams[i] = paramCheckBoxes[i].getModel().isSelected();
+       }
+       w.setUseParams(useParams);
+
+   }
 
     public void displayFeatureManager() {
         checkAudio.setSelected(fm.useAudio);
@@ -2359,7 +2384,7 @@ private void buttonListenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
         try {
             f[i] = Float.parseFloat(paramFields[i].getText());
-
+           
         } catch (NumberFormatException ex) {
             paramFields[i].setText("0");
             f[i] = 0;
@@ -2375,6 +2400,22 @@ public void listenToValues(float[] params) {
     w.setRealVals(params);
     w.sendCurrentRealVals();
 }
+
+public float getCurrentParamValue(int paramNum) {
+    //TODO: error check
+    float f;
+    if (paramNum < 0 || paramNum >= myNumParams) {
+        f = 0;
+    }
+    try {
+            f = Float.parseFloat(paramFields[paramNum].getText());
+
+        } catch (NumberFormatException ex) {
+            f = 0;
+        }
+    return f;
+}
+
 
 private void buttonListenStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_buttonListenStateChanged
 // TODO add your handling code here:
@@ -2808,8 +2849,10 @@ private void toggleGetSynthParamsItemStateChanged(java.awt.event.ItemEvent evt) 
 }//GEN-LAST:event_toggleGetSynthParamsItemStateChanged
 
 private void buttonViewDataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonViewDataActionPerformed
-     DataViewer v = new DataViewer(w.instances, this);
-    v.setVisible(true);
+    if (w.dataset != null) {
+        DataViewer v = new DataViewer(w.dataset, this);
+        v.setVisible(true);
+    }
 }//GEN-LAST:event_buttonViewDataActionPerformed
 
     private File findHidSetupFileToSave() {

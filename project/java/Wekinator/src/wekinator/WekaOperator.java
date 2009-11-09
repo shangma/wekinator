@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.logging.Level;
@@ -37,7 +38,6 @@ public class WekaOperator implements Subject, Observer {
     public boolean enforceFeatureNumAgreement = true;
     public int numFeaturesToExpect = 1;
     int numParametersToTrain = 1;
-    Instances[] instances;
     Classifier[] c;
     IBk cibk;
     int numNeighbors = 1;
@@ -46,12 +46,19 @@ public class WekaOperator implements Subject, Observer {
     double learningRate = .03;
     OscHandler handler;
     int currentClass = 0;
+    private boolean paramMask[];
     //Bigger1 sc;
     //todo: link this dynamically, so it's swappable
     public String classifierNames[] = {"k-nearest neighbor", "AdaBoost", "NN"};
     private float trainingAccuracy = 0;
     //  private float[] realFeatures = null;
     private boolean useNNGui = false;
+    public SimpleDataset dataset = null;
+
+    //TODO: straighten out what these really do; rename
+    private int[] vals = new int[numParametersToTrain];
+    private float[] realVals = new float[numParametersToTrain];
+    private double dists[][] = new double[numParametersToTrain][0];
 
     public int getNumNeighbors() {
         return numNeighbors;
@@ -118,10 +125,10 @@ public class WekaOperator implements Subject, Observer {
     public double[] computeAccuracies() throws Exception {
         double[] results = new double[numParametersToTrain];
         for (int i = 0; i < numParametersToTrain; i++) {
-
-            Evaluation e = new Evaluation(instances[i]);
-            e.evaluateModel(c[i], instances[i]);
-            results[i] = e.correct() / instances[i].numInstances();
+            Instances inst = dataset.getClassifiableInstances(i);
+            Evaluation e = new Evaluation(inst);
+            e.evaluateModel(c[i], inst);
+            results[i] = e.correct() / inst.numInstances();
         }
         return results;
 
@@ -135,9 +142,8 @@ public class WekaOperator implements Subject, Observer {
 
         for (int i = 0; i < c.length; i++) {
             objout.writeObject(c[i]);
-            objout.writeObject(instances[i]);
-
         }
+        dataset.writeOut(objout);
 
 
     }
@@ -149,14 +155,16 @@ public class WekaOperator implements Subject, Observer {
         numFeaturesToExpect = instream.readInt();
         numClasses = instream.readInt();
         c = new Classifier[numParametersToTrain];
-        instances = new Instances[numParametersToTrain];
+
 
         for (int i = 0; i < numParametersToTrain; i++) {
             c[i] = (Classifier) instream.readObject();
-            instances[i] = (Instances) instream.readObject();
         }
 
+        dataset = (SimpleDataset) instream.readObject();
+
         initMyselfFromClassifier();
+
     }
 
     public int getNumParameters() {
@@ -165,30 +173,34 @@ public class WekaOperator implements Subject, Observer {
 
     //TODO: Fix this; no longer setting this # from the GUI, but set 1x in chuck synth
     public void setNumParameters(int num) {
-      //  if (num > 0 && num < 10) {
-            numParametersToTrain = num;
-            // realFeatures = new float[num];
-            //    System.out.println("setting new inst 1");
-            c = new Classifier[num];
-            realVals = new float[num];
-            dists = new double[num][0];
-            vals = new int[num];
-            myFeatureState = FeatureState.WAITING;
-            myState = OperatorState.READY;
+        //  if (num > 0 && num < 10) {
+        numParametersToTrain = num;
+        // realFeatures = new float[num];
+        //    System.out.println("setting new inst 1");
+        c = new Classifier[num];
+        realVals = new float[num];
+        dists = new double[num][0];
+        vals = new int[num];
+        myFeatureState = FeatureState.WAITING;
+        myState = OperatorState.READY;
 
-            if (myClassifierState == ClassifierState.HAS_DATA || myClassifierState == ClassifierState.TRAINED) {
-                myClassifierState = ClassifierState.HAS_DATA;
+        if (myClassifierState == ClassifierState.HAS_DATA || myClassifierState == ClassifierState.TRAINED) {
+            myClassifierState = ClassifierState.HAS_DATA;
 
-            } else {
-               instances = new Instances[num];
+        } else {
+            assert (dataset == null); //TODO: may have to fix here...
+            //dataset.setNumParameters(num);
             myClassifierState = ClassifierState.NO_DATA;
 
-            }
+        }
+
+        paramMask = new boolean[num];
+        for (int i= 0; i < num; i++) {
+            paramMask[i] = true;
+        }
 
 
-
-
-       // }
+    // }
 
     }
 
@@ -208,7 +220,9 @@ public class WekaOperator implements Subject, Observer {
         for (int i = 0; i < numParametersToTrain; i++) {
             //double[] res = new double[numFolds];
             Random r = new Random();
-            Instances randData = new Instances(instances[i]);
+
+            //TODO: is it necessary to copy here? Depends on implementation of SimpleDataset
+            Instances randData = new Instances(dataset.getClassifiableInstances(i));
             randData.randomize(r);
             randData.stratify(numFolds);
             double sum = 0;
@@ -240,7 +254,8 @@ public class WekaOperator implements Subject, Observer {
         //for (int i = 0; i < numParametersToTrain; i++) {
         //double[] res = new double[numFolds];
         Random r = new Random();
-        Instances randData = new Instances(instances[classifierNum]);
+        //TODO: necessary to copy? And is this method redundant??
+        Instances randData = new Instances(dataset.getClassifiableInstances(classifierNum));
         randData.randomize(r);
         randData.stratify(numFolds);
         double sum = 0;
@@ -272,7 +287,7 @@ public class WekaOperator implements Subject, Observer {
         //for (int i = 0; i < numParametersToTrain; i++) {
         //double[] res = new double[numFolds];
         Random r = new Random();
-        Instances randData = new Instances(instances[classifierNum]);
+        Instances randData = new Instances(dataset.getClassifiableInstances(classifierNum));
         randData.randomize(r);
         randData.stratify(numFolds);
         double sum = 0;
@@ -304,7 +319,7 @@ public class WekaOperator implements Subject, Observer {
         for (int i = 0; i < numParametersToTrain; i++) {
 
             //double[] res = new double[numFolds];
-            Instances data = new Instances(instances[i]);
+            Instances data = new Instances(dataset.getClassifiableInstances(i));
 
             Evaluation eval = new Evaluation(data);
 
@@ -359,6 +374,12 @@ public class WekaOperator implements Subject, Observer {
             handler.sendDistMulti(d);
 
         }
+
+    }
+
+    /* Set mask on parameters */
+    void setUseParams(boolean[] useParams) {
+        paramMask = useParams;
 
     }
 
@@ -949,23 +970,28 @@ public class WekaOperator implements Subject, Observer {
          /*   if (instances[0] == null) {
             System.out.println("inst0 is null");
             } */
-            if (instances != null && instances[0] != null && instances.length > 0 && instances[0].numInstances() > 0) {
-                for (int i = 0; i < c.length; i++) {
-                    c[i].buildClassifier(instances[i]);
+            //Ensure that we have data!
+            //TODO: Handle case that 1+ classifiers have no training data
+            //TODO: in genera, check that instances are classifiable (i.e., >= 1 instance, >= 1 attribute)
+            //Use dataExistsForParameter
+            int numTrained = 0;
+            for (int i = 0; i < c.length; i++) {
+                //  if (dataset.dataExistsForParameter(i)) {
+                Instances instances = dataset.getClassifiableInstances(i);
+                if (instances.numInstances() > 0) {
+                    c[i].buildClassifier(instances);
+                    numTrained++;
                 }
-                System.out.println("trained " + c.length);
+            }
 
-                //  cibk.buildClassifier(instances);
-                //  sc.giveUpdate("Trained classifier");
+            //TODO: only set this if all trained, for now.
+            if (numTrained == c.length) {
                 myClassifierState =
                         ClassifierState.TRAINED;
                 notifyClassifierStateObservers();
             } else {
-                myErrorString = "Could not train: no instances recorded!";
-                notifyErrorObservers();
+                System.out.println("error: some classifiers not trained");
             }
-
-
 
         } catch (Exception ex) {
             Logger.getLogger(WekaOperator.class.getName()).log(Level.SEVERE, null, ex);
@@ -974,14 +1000,13 @@ public class WekaOperator implements Subject, Observer {
         }
 
     }
-    int counter = 0;
 
     public void receivedFeatureInfo(int i) {
         //   initializeInstances(currentClass, currentClass);
         //   System.out.println("YO");
         if (myFeatureState != FeatureState.OK) {
             System.out.println("i is " + i);
-            initializeInstances(i, numClasses);
+          //  initializeInstances(i, numClasses);
             myFeatureState =
                     FeatureState.OK;
             notifyFeatureObservers();
@@ -1052,13 +1077,8 @@ public class WekaOperator implements Subject, Observer {
 
             if (myState == OperatorState.RECORD) {
                 if (!isPlayAlong || hasReceivedUpdatedClasses) {
-                    if (myProblemType == ProblemType.DISCRETE) {
-                        //   addInstance(o, currentClass);
-                        addInstanceDiscrete(o);
-                    } else {
-                        addInstance(o);
-                    }
-                    if (myClassifierState != ClassifierState.TRAINED) { //If we've added more data since last train, still want to be able to run!  
+                    addInstance(o);
+                    if (myClassifierState != ClassifierState.TRAINED) { //If we've added more data since last train, still want to be able to run!
                         myClassifierState = ClassifierState.HAS_DATA;
                     }
                     notifyClassifierStateObservers();
@@ -1079,7 +1099,7 @@ public class WekaOperator implements Subject, Observer {
                     handler.sendRealValueMulti(realVals);
                 }
             }
-// 
+//
 
         }
     }
@@ -1147,6 +1167,10 @@ public class WekaOperator implements Subject, Observer {
         }
     }
 
+    /**
+     * Forgets everything learned: incl. all training instances so far
+     * Doesn't reset data like # feats, # params, etc.
+     */
     public void clear() {
         try {
             System.out.println("Clearing");
@@ -1159,15 +1183,8 @@ public class WekaOperator implements Subject, Observer {
                     ClassifierState.NO_DATA;
             myState =
                     OperatorState.READY;
-            if (instances != null) {
-                for (int i = 0; i < instances.length; i++) {
+            dataset.deleteAll();
 
-                    //This causes null pointer...
-                    if (instances[i] != null) {
-                        instances[i].delete();
-                    }
-                }
-            }
             notifyFeatureObservers();
             notifyClassifierStateObservers();
             notifyOperatorObservers();
@@ -1194,140 +1211,69 @@ public class WekaOperator implements Subject, Observer {
     } else {
     throw new Error("Unexpected initialization");
     }
-    
+
     }*/
     /* Problem: Does this happen every time I get a feature info? */
+
+    //
     public void initializeInstances(int numFeatures, int numClasses) {
-        System.out.println("In initialize instances");
         if (numFeatures != numFeaturesToExpect && enforceFeatureNumAgreement) {
             System.out.println("Error: Expecting " + numFeaturesToExpect + "features, seeing " + numFeatures);
         }
 
-        System.out.println(numFeatures + " features initializing");
+        boolean isParamDiscrete[] = new boolean[numParametersToTrain];
+        int numClassesPerParam[] = new int[numParametersToTrain];
 
-        if (myProblemType == ProblemType.DISCRETE) {
-            FastVector classes = new FastVector(numClasses);
-            for (int i = 0; i <
-                    numClasses; i++) {
-                classes.addElement((new Integer(i)).toString());
-            }
-
-            FastVector ff = new FastVector(numFeatures + 1);
-            for (int i = 0; i <
-                    numFeatures; i++) {
-                ff.addElement(new Attribute(Integer.toString(i)));
-            }
-
-            ff.addElement(new Attribute("class", classes));
-
-            //initialize
-            System.out.println("setting new inst 2");
-            instances = new Instances[numParametersToTrain];
-            for (int i = 0; i < numParametersToTrain; i++) {
-
-                instances[i] =
-                        new Instances("myname", (FastVector) ff.copy(), 10);
-                instances[i].setClassIndex(numFeatures);
-            }
-        } else {
-            FastVector ff = new FastVector(numFeatures + 1);
-            for (int i = 0; i <
-                    numFeatures; i++) {
-                ff.addElement(new Attribute(Integer.toString(i)));
-            }
-
-            ff.addElement(new Attribute("class", numFeatures));
-            System.out.println("setting new inst ");
-            instances = new Instances[numParametersToTrain];
-            for (int i = 0; i < numParametersToTrain; i++) {
-                System.out.println("creating i=" + i);
-
-                System.out.println("init new instances");
-                instances[i] = new Instances("myname", (FastVector) ff.copy(), 10);
-                instances[i].setClassIndex(numFeatures);
-                //System.out.println("ii null?" + (ii==null));
-                System.out.println("inst[0] null?" + instances[0] == null);
-
-            }
-
+        for (int i = 0; i < numParametersToTrain; i++) {
+            isParamDiscrete[i] = (myProblemType == ProblemType.DISCRETE);
+            numClassesPerParam[i] = numClasses;
         }
-    }
 
-    public void addInstance(Object[] o, int classval) {
-        if (instances.length > 0 && o.length == instances[0].numAttributes() - 1) {
-            double[] d = new double[o.length + 1];
-            for (int i = 0; i <
-                    o.length; i++) {
-                d[i] = (double) ((Float) o[i]).floatValue();
-            //   System.out.println("next is " + d[i]);
-            }
 
-            d[o.length] = classval;
-            Instance instance = new Instance(1.0, d);
+        dataset = new SimpleDataset(numFeatures, numParametersToTrain, isParamDiscrete, numClassesPerParam, null, null);
 
-            for (int i = 0; i < instances.length; i++) {
-                instances[i].add((Instance) instance.copy());
-            }
-        }
 
     }
 
-    // Add an instance with current *real* value (for continuous problems)
+    //Add an instance to the dataset, using current feature & param values
     private void addInstance(Object[] o) {
-        //HACK!
-        if (instances.length > 0 && instances[0] != null && o.length == instances[0].numAttributes() - 1) {
-            double[] d = new double[o.length + 1];
-            for (int i = 0; i < o.length; i++) {
-                d[i] = (double) ((Float) o[i]).floatValue();
-            // System.out.println("next is " + d[i]);
-            }
-            for (int i = 0; i < instances.length; i++) {
-                Instances ii = instances[i];
-                d[o.length] = realVals[i]; //use current value of real param
+        assert (dataset != null);
+        double[] fvals = new double[o.length];
+        for (int i = 0; i < o.length; i++) {
+           // fvals[i] = (Double) (o[i]);
+            fvals[i] = ((Float)o[i]).floatValue();
 
-                Instance instance = new Instance(1.0, (double[]) d.clone());
-                ii.add(instance);
-                gui.displayNumInstances(ii.numInstances());
-            }
+        // System.out.println("next is " + d[i]);
         }
+        //TODO low priority: change real vals to be a double array
+
+        double tmp[] = new double[realVals.length];
+        for (int i = 0; i < realVals.length; i++) {
+            tmp[i] = realVals[i];
+        }
+
+       // dataset.addInstance(fvals, tmp);
+        dataset.addInstance(fvals, tmp, paramMask, new Date());
+        //TODO low priority: add as observable proerty change
+        gui.displayNumInstances(dataset.getNumDatapoints());
     }
 
-    private void addInstanceDiscrete(Object[] o) {
-        //HACK!
-        if (instances.length > 0 && instances[0] != null && o.length == instances[0].numAttributes() - 1) {
-            double[] d = new double[o.length + 1];
-            for (int i = 0; i < o.length; i++) {
-                d[i] = (double) ((Float) o[i]).floatValue();
-            // System.out.println("next is " + d[i]);
-            }
-            for (int i = 0; i < instances.length; i++) {
-                Instances ii = instances[i];
-                d[o.length] = (int) realVals[i]; //use current value of real param
-                //  System.out.println("real val is " + realVals[i]);
-                Instance instance = new Instance(1.0, (double[]) d.clone());
-                ii.add(instance);
-                gui.displayNumInstances(ii.numInstances());
-            }
-        }
-    }
-    private int[] vals = new int[numParametersToTrain];
-    private float[] realVals = new float[numParametersToTrain];
-    private double dists[][] = new double[numParametersToTrain][0];
 
+    //TODO: should classify vector of reals, not objects!
     public void classify(Object[] o) {
 
-        if (myClassifierState == ClassifierState.TRAINED && (instances.length > 0 &&
-                o.length == instances[0].numAttributes() - 1)) {
-            double[] d = new double[o.length + 1];
+        assert (dataset != null);
+
+        if (myClassifierState == ClassifierState.TRAINED && o.length == dataset.getNumFeatures()) {
+            double[] d = new double[o.length];
             for (int i = 0; i < o.length; i++) {
                 d[i] = (double) ((Float) o[i]).floatValue();
             }
 
-            d[o.length] = 0.0;
-            Instance instance = new Instance(1.0, d);
+            //  Instance instance = new Instance(1.0, d);
+            Instance instances[] = dataset.convertToClassifiableInstances(d);
             for (int i = 0; i < numParametersToTrain; i++) {
-                Instance in = (Instance) instance.copy();
-                in.setDataset(instances[i]);
+                Instance in = instances[i];
                 try {
 
                     //  System.out.println("clength is " + c.length+ "c0 null? " + (c[0]==null) + "c1 null?" + (c[1]==null) + realVals.length);
@@ -1471,7 +1417,6 @@ public class WekaOperator implements Subject, Observer {
             notifyOperatorObservers();
         }
     }
-
 
     public void startPlayAlong() {
         try {
