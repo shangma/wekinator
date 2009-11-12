@@ -4,7 +4,9 @@
  */
 package wekinator;
 
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -23,7 +25,7 @@ import weka.filters.unsupervised.attribute.Remove;
  *
  * @author Rebecca Fiebrink
  */
-public class SimpleDataset {
+public class SimpleDataset implements Serializable {
 
     private int numParams = 0;
     private int numFeatures = 0; //Total # features being stored, doesn't include my metadata
@@ -44,8 +46,11 @@ public class SimpleDataset {
     private int idIndex = 0;
     private int timestampIndex = 1;
     private int trainingIndex = 2;
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("HHmmss");
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HHmmss");
     public static final SimpleDateFormat prettyDateFormat = new SimpleDateFormat("HH:mm:ss");
+
+    //For serialization
+    private static final long serialVersionUID = -6463977379713550249L;
 
     public SimpleDataset(int numFeatures, int numParams, boolean[] isParamDiscrete, int[] numParamValues, String[] featureNames, String[] paramNames) {
         if (isParamDiscrete == null || isParamDiscrete.length != numParams) {
@@ -347,9 +352,6 @@ public class SimpleDataset {
         return is;
     }
 
-    public void writeOut(ObjectOutputStream objout) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
 
     /**
      *

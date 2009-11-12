@@ -1766,6 +1766,7 @@ private void buttonUseClassifierSettingsActionPerformed(java.awt.event.ActionEve
 
         //TODO: Change combo box!
         myNumParams = w.getNumParameters();
+        myNumFeats = w.numFeaturesToExpect;
         updateTrainingPanelForParams();
         disableAllSettingsPanel();
         enablePlayalongPanel();
@@ -1802,9 +1803,11 @@ private void buttonUseClassifierSettingsActionPerformed(java.awt.event.ActionEve
         disableAllSettingsPanel();
         enablePlayalongPanel();
         panelRealTraining.setVisible(true);
+            w.initializeInstances(myNumFeats, numChuckClasses);
+
+            
     }
 
-    w.initializeInstances(myNumFeats, numChuckClasses);
 
 
 
@@ -2105,6 +2108,7 @@ private void saveTrainedModel() {
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IOException ex) {
+                System.out.println("error writing to file");
                 Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
             } finally {
 
@@ -2852,7 +2856,7 @@ private void buttonViewDataActionPerformed(java.awt.event.ActionEvent evt) {//GE
     if (w.dataset != null) {
         DataViewer v = new DataViewer(w.dataset, this);
         v.setVisible(true);
-    }
+    } 
 }//GEN-LAST:event_buttonViewDataActionPerformed
 
     private File findHidSetupFileToSave() {

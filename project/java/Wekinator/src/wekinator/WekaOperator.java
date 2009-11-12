@@ -143,7 +143,9 @@ public class WekaOperator implements Subject, Observer {
         for (int i = 0; i < c.length; i++) {
             objout.writeObject(c[i]);
         }
-        dataset.writeOut(objout);
+
+        objout.writeObject(dataset);
+
 
 
     }
@@ -195,7 +197,7 @@ public class WekaOperator implements Subject, Observer {
         }
 
         paramMask = new boolean[num];
-        for (int i= 0; i < num; i++) {
+        for (int i = 0; i < num; i++) {
             paramMask[i] = true;
         }
 
@@ -1006,7 +1008,7 @@ public class WekaOperator implements Subject, Observer {
         //   System.out.println("YO");
         if (myFeatureState != FeatureState.OK) {
             System.out.println("i is " + i);
-          //  initializeInstances(i, numClasses);
+            //  initializeInstances(i, numClasses);
             myFeatureState =
                     FeatureState.OK;
             notifyFeatureObservers();
@@ -1216,6 +1218,7 @@ public class WekaOperator implements Subject, Observer {
     /* Problem: Does this happen every time I get a feature info? */
 
     //
+    //TODO: TODO TODO: This is called when loading from saved file; in that case, dataset should not be reset!!
     public void initializeInstances(int numFeatures, int numClasses) {
         if (numFeatures != numFeaturesToExpect && enforceFeatureNumAgreement) {
             System.out.println("Error: Expecting " + numFeaturesToExpect + "features, seeing " + numFeatures);
@@ -1240,8 +1243,8 @@ public class WekaOperator implements Subject, Observer {
         assert (dataset != null);
         double[] fvals = new double[o.length];
         for (int i = 0; i < o.length; i++) {
-           // fvals[i] = (Double) (o[i]);
-            fvals[i] = ((Float)o[i]).floatValue();
+            // fvals[i] = (Double) (o[i]);
+            fvals[i] = ((Float) o[i]).floatValue();
 
         // System.out.println("next is " + d[i]);
         }
@@ -1252,7 +1255,7 @@ public class WekaOperator implements Subject, Observer {
             tmp[i] = realVals[i];
         }
 
-       // dataset.addInstance(fvals, tmp);
+        // dataset.addInstance(fvals, tmp);
         dataset.addInstance(fvals, tmp, paramMask, new Date());
         //TODO low priority: add as observable proerty change
         gui.displayNumInstances(dataset.getNumDatapoints());

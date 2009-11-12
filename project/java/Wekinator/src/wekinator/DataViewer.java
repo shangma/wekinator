@@ -275,7 +275,7 @@ class DataTableModel extends AbstractTableModel {
     }
 
     public int getRowCount() {
-        return dataset.getNumDatapoints();
+        return dataset.getNumDatapoints(); //TODO TODO TODO this is 0 for some reason!
     }
 
     public void addRow() {
