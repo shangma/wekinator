@@ -184,6 +184,8 @@ public class OscHandler implements Subject {
         }
     }
 
+ 
+
     private void sendHandshakeMessage() throws IOException {
         Object[] o = new Object[2];
         o[0] = helloMessageString;
@@ -409,6 +411,11 @@ public class OscHandler implements Subject {
 
         sender.close();
         state = OscState.NOT_CONNECTED;
+        notifyObservers();
+    }
+
+    public void disconnect() {
+                state = OscState.NOT_CONNECTED;
         notifyObservers();
     }
 

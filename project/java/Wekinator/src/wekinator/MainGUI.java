@@ -48,6 +48,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
     double autoTrainStopThreshold = .95;
     boolean isAutoTrainStopThreshold = false;
     int fastAccurateValue = 50;
+    WekinatorInstance wek = WekinatorInstance.getWekinatorInstance();
 
     void displayPlayalongUpdate(String string) {
         labelPlayalongUpdate.setText(string);
@@ -157,6 +158,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
     /** Creates new form Bigger1 */
     public MainGUI() {
         initComponents();
+        
         w = new WekaOperator();
         w.addObserver(this);
         w.setGui(this);
@@ -218,11 +220,53 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
             }
         };
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventPostProcessor(processor);
+
+        wek.runner.addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                runnerPropertyChange(evt);
+            }
+        });
+
+
     }
+
+
+         private void runnerPropertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName() == ChuckRunner.PROP_ISRUNNING) {
+                updateRunnerIsRunning(wek.runner.isRunning());
+            }
+
+        }
+
+         private void updateRunnerIsRunning(boolean isRunning) {
+            if (isRunning) {
+                //This configuration works: Save it.
+                wek.useConfigurationNextSession();
+                updateFeaturesForConfiguration();
+                
+            } else {
+                //Show chuck disconnected
+                w.disconnectOSC();
+            }
+
+         }
 
     public void displayClassNumbers(int classnum, int number) {
 
         throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    private void updateFeaturesForConfiguration() {
+        checkCustomChuck.setSelected(wek.configuration.isCustomChuckFeatureExtractorEnabled());
+        if (wek.configuration.isCustomChuckFeatureExtractorEnabled()) {
+            textNumCustomChuck.setText(Integer.toString(wek.configuration.getNumCustomChuckFeaturesExtracted()));
+        }
+
+                checkCustomOsc.setSelected(wek.configuration.isOscFeatureExtractorEnabled());
+        if (wek.configuration.isOscFeatureExtractorEnabled()) {
+            textNumOsc.setText(Integer.toString(wek.configuration.getNumOSCFeaturesExtracted()));
+        }
     }
 
     public void displayClassValue(int val, double[] dist) {
@@ -345,16 +389,19 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         buttonQuit = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         panelOSC = new javax.swing.JPanel();
-        textOscReceive = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
-        textOscSend = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
-        labelOscStatus = new javax.swing.JLabel();
-        buttonOscConnect = new javax.swing.JButton();
+        jPanel5 = new javax.swing.JPanel();
         labelOscStatus1 = new javax.swing.JLabel();
-        jLabel8 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        textOscReceive = new javax.swing.JTextField();
         jLabel9 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+        textOscSend = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
+        buttonOscConnect = new javax.swing.JButton();
         buttonOscDisconnect = new javax.swing.JButton();
+        labelOscStatus = new javax.swing.JLabel();
+        jPanel8 = new javax.swing.JPanel();
+        chuckRunnerPanel1 = new wekinator.ChuckRunnerPanel();
         panelFeatures = new javax.swing.JPanel();
         buttonSaveFeatureSettings = new javax.swing.JButton();
         labelOscStatus3 = new javax.swing.JLabel();
@@ -486,15 +533,21 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
             }
         });
 
-        textOscReceive.setText("6448");
+        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder("OSC"));
 
-        jLabel1.setText("Send Port");
-
-        textOscSend.setText("6453");
+        labelOscStatus1.setText("Set the ports to begin.");
 
         jLabel2.setText("Recv Port");
 
-        labelOscStatus.setText("OSC Status: Not connected yet.");
+        textOscReceive.setText("6448");
+
+        jLabel9.setText("(Send port used in ChucK)");
+
+        jLabel8.setText("(Receive port used in ChucK)");
+
+        textOscSend.setText("6453");
+
+        jLabel1.setText("Send Port");
 
         buttonOscConnect.setText("Connect");
         buttonOscConnect.addActionListener(new java.awt.event.ActionListener() {
@@ -502,12 +555,6 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 buttonOscConnectActionPerformed(evt);
             }
         });
-
-        labelOscStatus1.setText("Set the ports to begin.");
-
-        jLabel8.setText("(Receive port used in ChucK)");
-
-        jLabel9.setText("(Send port used in ChucK)");
 
         buttonOscDisconnect.setText("Disconnect");
         buttonOscDisconnect.setEnabled(false);
@@ -517,60 +564,94 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
             }
         });
 
-        org.jdesktop.layout.GroupLayout panelOSCLayout = new org.jdesktop.layout.GroupLayout(panelOSC);
-        panelOSC.setLayout(panelOSCLayout);
-        panelOSCLayout.setHorizontalGroup(
-            panelOSCLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(panelOSCLayout.createSequentialGroup()
-                .add(12, 12, 12)
-                .add(panelOSCLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(panelOSCLayout.createSequentialGroup()
+        labelOscStatus.setText("OSC Status: Not connected yet.");
+
+        org.jdesktop.layout.GroupLayout jPanel5Layout = new org.jdesktop.layout.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel5Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jPanel5Layout.createSequentialGroup()
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(labelOscStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 273, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(panelOSCLayout.createSequentialGroup()
+                    .add(jPanel5Layout.createSequentialGroup()
                         .add(buttonOscConnect)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(buttonOscDisconnect))
                     .add(jLabel2)
-                    .add(panelOSCLayout.createSequentialGroup()
+                    .add(jPanel5Layout.createSequentialGroup()
                         .add(jLabel1)
                         .add(10, 10, 10)
-                        .add(panelOSCLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(panelOSCLayout.createSequentialGroup()
+                        .add(jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jPanel5Layout.createSequentialGroup()
                                 .add(textOscReceive, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 71, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(jLabel9))
-                            .add(panelOSCLayout.createSequentialGroup()
+                            .add(jPanel5Layout.createSequentialGroup()
                                 .add(textOscSend, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 71, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(jLabel8))))
                     .add(labelOscStatus1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 151, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(255, Short.MAX_VALUE))
+                .addContainerGap(215, Short.MAX_VALUE))
         );
-        panelOSCLayout.setVerticalGroup(
-            panelOSCLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(panelOSCLayout.createSequentialGroup()
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel5Layout.createSequentialGroup()
+                .addContainerGap(20, Short.MAX_VALUE)
                 .add(labelOscStatus1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(panelOSCLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(textOscReceive, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel9))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(panelOSCLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
                     .add(textOscSend, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(panelOSCLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(buttonOscConnect)
                     .add(buttonOscDisconnect))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(labelOscStatus)
-                .addContainerGap(473, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
-        jTabbedPane1.addTab("OSC", panelOSC);
+        jPanel8.setBorder(javax.swing.BorderFactory.createTitledBorder("ChucK (experimental & optional!)"));
+
+        org.jdesktop.layout.GroupLayout jPanel8Layout = new org.jdesktop.layout.GroupLayout(jPanel8);
+        jPanel8.setLayout(jPanel8Layout);
+        jPanel8Layout.setHorizontalGroup(
+            jPanel8Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(chuckRunnerPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 584, Short.MAX_VALUE)
+        );
+        jPanel8Layout.setVerticalGroup(
+            jPanel8Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(chuckRunnerPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+        );
+
+        org.jdesktop.layout.GroupLayout panelOSCLayout = new org.jdesktop.layout.GroupLayout(panelOSC);
+        panelOSC.setLayout(panelOSCLayout);
+        panelOSCLayout.setHorizontalGroup(
+            panelOSCLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(panelOSCLayout.createSequentialGroup()
+                .add(jPanel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        panelOSCLayout.setVerticalGroup(
+            panelOSCLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(panelOSCLayout.createSequentialGroup()
+                .add(jPanel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(159, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("Setup", panelOSC);
 
         buttonSaveFeatureSettings.setFont(new java.awt.Font("Lucida Grande", 0, 12));
         buttonSaveFeatureSettings.setText("Save settings to file...");
@@ -1337,7 +1418,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                     .add(panelRunLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(scrollTrainPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 316, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(12, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         panelRunLayout.setVerticalGroup(
             panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -3016,6 +3097,7 @@ private void buttonViewDataActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private javax.swing.JCheckBox checkRolloff;
     private javax.swing.JCheckBox checkTrackpad;
     private javax.swing.JCheckBox checkViewNNGUI;
+    private wekinator.ChuckRunnerPanel chuckRunnerPanel1;
     private javax.swing.JComboBox comboClassifierType;
     private javax.swing.JComboBox comboWindowType;
     private javax.swing.JButton jButton1;
@@ -3044,8 +3126,10 @@ private void buttonViewDataActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
     private javax.swing.JLabel jPlayAlongCVLabel;
     private javax.swing.JProgressBar jProgressBarTrain;
     private javax.swing.JSlider jSliderFastAccurate;
