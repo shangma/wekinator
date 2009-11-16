@@ -643,6 +643,9 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
 
 
     private void setConfigurationFromForm() {
+        //Want chuck dir:
+        configuration.setChuckExecutable(labelChuckExecutable.getText());
+
         configuration.setOscFeatureExtractorEnabled(checkEnableOSCFeature.getModel().isSelected());
         configuration.setCustomChuckFeatureExtractorEnabled(checkEnableCustomChuckFeature.getModel().isSelected());
         configuration.setCustomChuckFeatureExtractorFilename(labelCustomFeatureExtractor.getText());
