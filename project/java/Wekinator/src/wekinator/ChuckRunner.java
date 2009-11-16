@@ -179,7 +179,7 @@ public class ChuckRunner {
                     input.close();
                 } else {
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(2000);
                     } catch (InterruptedException ex) {
                         Logger.getLogger(ChuckRunner.class.getName()).log(Level.SEVERE, null, ex);
                     }
