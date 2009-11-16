@@ -174,10 +174,10 @@ public class ChuckConfiguration implements Serializable {
 
         }
 
-      if (numOscSynthParams <=0) {
+      if (useOscSynth && numOscSynthParams <=0) {
                 errorString += "Number of params must be > 0";
         }
-
+/*
            if (useChuckSynthClass && !isChuckFile(chuckSynthFilename)) {
             errorString += "Invalid chuck synth class file.";
         }
@@ -188,7 +188,7 @@ public class ChuckConfiguration implements Serializable {
 
                    if (isPlayalongLearningEnabled && !isChuckFile(playalongLearningFile)) {
             errorString += "Invalid chuck score player class file.";
-        }
+        } */
 
         //TODO: complete.
         if (errorString.length() != 0) {
