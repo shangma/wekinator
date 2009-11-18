@@ -148,7 +148,9 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
     }
     int trainingFrequency = 50; //TODO: bind to slider
     boolean isConnected = false;
-    private FeatureManager fm = new FeatureManager();
+    private FeatureManager fm;
+
+    
     private HidSetup hs;
     LinkedList<MyWorker> trainQueue = new LinkedList<MyWorker>();
     MyWorker currentWorker = null;
@@ -158,7 +160,8 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
     /** Creates new form Bigger1 */
     public MainGUI() {
         initComponents();
-        
+                fm = wek.getFeatureManager();
+
         w = new WekaOperator();
         w.addObserver(this);
         w.setGui(this);
@@ -227,7 +230,6 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 runnerPropertyChange(evt);
             }
         });
-
 
     }
 
@@ -458,6 +460,8 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         textSettingsWantDist = new javax.swing.JLabel();
         textSettingsNumClasses = new javax.swing.JLabel();
         comboClassifierType = new javax.swing.JComboBox();
+        featureParameterMaskEditor = new wekinator.FeatureParameterMaskEditor();
+        jLabel16 = new javax.swing.JLabel();
         panelRun = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         toggleButtonRun = new javax.swing.JToggleButton();
@@ -511,6 +515,20 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         jLabel10 = new javax.swing.JLabel();
         jlabelNumInstances = new javax.swing.JLabel();
         labelGlobalStatus = new javax.swing.JLabel();
+        menuBar = new javax.swing.JMenuBar();
+        fileMenu = new javax.swing.JMenu();
+        openMenuItem = new javax.swing.JMenuItem();
+        saveMenuItem = new javax.swing.JMenuItem();
+        saveAsMenuItem = new javax.swing.JMenuItem();
+        exitMenuItem = new javax.swing.JMenuItem();
+        editMenu = new javax.swing.JMenu();
+        cutMenuItem = new javax.swing.JMenuItem();
+        copyMenuItem = new javax.swing.JMenuItem();
+        pasteMenuItem = new javax.swing.JMenuItem();
+        deleteMenuItem = new javax.swing.JMenuItem();
+        helpMenu = new javax.swing.JMenu();
+        contentsMenuItem = new javax.swing.JMenuItem();
+        aboutMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("The Wekinator");
@@ -648,7 +666,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 .add(jPanel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(159, Short.MAX_VALUE))
+                .addContainerGap(97, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Setup", panelOSC);
@@ -1123,49 +1141,60 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
             }
         });
 
+        jLabel16.setText("Select features to use for parameter models (optional):");
+
         org.jdesktop.layout.GroupLayout panelClassifierLayout = new org.jdesktop.layout.GroupLayout(panelClassifier);
         panelClassifier.setLayout(panelClassifierLayout);
         panelClassifierLayout.setHorizontalGroup(
             panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(panelClassifierLayout.createSequentialGroup()
+                .addContainerGap()
                 .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(panelClassifierLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(panelClassifierLayout.createSequentialGroup()
-                                .add(buttonLoadSavedClassifier)
-                                .add(18, 18, 18)
-                                .add(buttonClearClassifierChoice))
-                            .add(panelClassifierLayout.createSequentialGroup()
-                                .add(buttonCreateNewClassifier)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(comboClassifierType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 239, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                        .add(buttonLoadSavedClassifier)
+                        .add(18, 18, 18)
+                        .add(buttonClearClassifierChoice))
                     .add(panelClassifierLayout.createSequentialGroup()
-                        .add(71, 71, 71)
-                        .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(labelNumFeatures)
-                            .add(labelNumParams))
+                        .add(buttonCreateNewClassifier)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(textNumFeatures, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 65, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(textNumParams, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 65, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(panelClassifierLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(buttonUseClassifierSettings))
-                    .add(panelClassifierLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(labelChuckSettings, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 304, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(panelClassifierLayout.createSequentialGroup()
-                                .add(24, 24, 24)
-                                .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(textSettingsNumClasses, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 304, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(textSettingsDiscrete, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 304, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(textSettingsWantDist, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 304, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
-                    .add(panelClassifierLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(labelClassifierStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 304, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(comboClassifierType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 239, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(196, Short.MAX_VALUE))
+            .add(panelClassifierLayout.createSequentialGroup()
+                .add(71, 71, 71)
+                .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(labelNumFeatures)
+                    .add(labelNumParams))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(textNumFeatures, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 65, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(textNumParams, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 65, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(250, Short.MAX_VALUE))
+            .add(panelClassifierLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(labelChuckSettings, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 304, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(panelClassifierLayout.createSequentialGroup()
+                        .add(24, 24, 24)
+                        .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(textSettingsNumClasses, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 304, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(textSettingsDiscrete, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 304, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(textSettingsWantDist, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 304, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(248, Short.MAX_VALUE))
+            .add(panelClassifierLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(labelClassifierStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 304, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(272, Short.MAX_VALUE))
+            .add(panelClassifierLayout.createSequentialGroup()
+                .add(8, 8, 8)
+                .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(featureParameterMaskEditor, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 588, Short.MAX_VALUE)
+                    .add(panelClassifierLayout.createSequentialGroup()
+                        .add(buttonUseClassifierSettings)
+                        .addContainerGap(513, Short.MAX_VALUE))))
+            .add(panelClassifierLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(jLabel16)
+                .addContainerGap(234, Short.MAX_VALUE))
         );
         panelClassifierLayout.setVerticalGroup(
             panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -1196,9 +1225,13 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 .add(textSettingsWantDist, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(labelClassifierStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(14, 14, 14)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 16, Short.MAX_VALUE)
+                .add(jLabel16)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(featureParameterMaskEditor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 268, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(buttonUseClassifierSettings)
-                .addContainerGap(318, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         jTabbedPane1.addTab("Settings", panelClassifier);
@@ -1789,6 +1822,55 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
 
         jTabbedPane1.addTab("Playalong", panelPlayAlong);
 
+        fileMenu.setText("File");
+
+        openMenuItem.setText("Open");
+        fileMenu.add(openMenuItem);
+
+        saveMenuItem.setText("Save");
+        fileMenu.add(saveMenuItem);
+
+        saveAsMenuItem.setText("Save As ...");
+        fileMenu.add(saveAsMenuItem);
+
+        exitMenuItem.setText("Exit");
+        exitMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exitMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(exitMenuItem);
+
+        menuBar.add(fileMenu);
+
+        editMenu.setText("Edit");
+
+        cutMenuItem.setText("Cut");
+        editMenu.add(cutMenuItem);
+
+        copyMenuItem.setText("Copy");
+        editMenu.add(copyMenuItem);
+
+        pasteMenuItem.setText("Paste");
+        editMenu.add(pasteMenuItem);
+
+        deleteMenuItem.setText("Delete");
+        editMenu.add(deleteMenuItem);
+
+        menuBar.add(editMenu);
+
+        helpMenu.setText("Help");
+
+        contentsMenuItem.setText("Contents");
+        helpMenu.add(contentsMenuItem);
+
+        aboutMenuItem.setText("About");
+        helpMenu.add(aboutMenuItem);
+
+        menuBar.add(helpMenu);
+
+        setJMenuBar(menuBar);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -1885,7 +1967,14 @@ private void buttonUseClassifierSettingsActionPerformed(java.awt.event.ActionEve
         enablePlayalongPanel();
         panelRealTraining.setVisible(true);
             w.initializeInstances(myNumFeats, numChuckClasses);
-
+            //TODO: inefficient:
+            FeatureToParameterMapping mapping = featureParameterMaskEditor.getFeatureToParameterMapping();
+            for (int f = 0; f < fm.getNumFeatures(); f++) {
+                for (int p = 0; p < myNumParams; p++) {
+                    boolean b = mapping.getIsFeatureUsingParam(f, p);
+                    w.dataset.setIsFeatureActiveForParameter(b, f, p);
+                }
+            }
             
     }
 
@@ -2940,6 +3029,10 @@ private void buttonViewDataActionPerformed(java.awt.event.ActionEvent evt) {//GE
     } 
 }//GEN-LAST:event_buttonViewDataActionPerformed
 
+private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
+    System.exit(0);
+}//GEN-LAST:event_exitMenuItemActionPerformed
+
     private File findHidSetupFileToSave() {
 
         JFileChooser fc = new JFileChooser();
@@ -3056,6 +3149,7 @@ private void buttonViewDataActionPerformed(java.awt.event.ActionEvent evt) {//GE
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JRadioButton buttonClearClassifierChoice;
     private javax.swing.JButton buttonComputeAccuracy;
     private javax.swing.JRadioButton buttonCreateNewClassifier;
@@ -3100,6 +3194,15 @@ private void buttonViewDataActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private wekinator.ChuckRunnerPanel chuckRunnerPanel1;
     private javax.swing.JComboBox comboClassifierType;
     private javax.swing.JComboBox comboWindowType;
+    private javax.swing.JMenuItem contentsMenuItem;
+    private javax.swing.JMenuItem copyMenuItem;
+    private javax.swing.JMenuItem cutMenuItem;
+    private javax.swing.JMenuItem deleteMenuItem;
+    private javax.swing.JMenu editMenu;
+    private javax.swing.JMenuItem exitMenuItem;
+    private wekinator.FeatureParameterMaskEditor featureParameterMaskEditor;
+    private javax.swing.JMenu fileMenu;
+    private javax.swing.JMenu helpMenu;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButtonShh;
     private javax.swing.JCheckBox jCheckBoxAutoStopThreshold;
@@ -3113,6 +3216,7 @@ private void buttonViewDataActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -3159,15 +3263,20 @@ private void buttonViewDataActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private javax.swing.JLabel labelRunningStatus;
     private javax.swing.JLabel labelRunningStatus1;
     private javax.swing.JLabel labelTrainingStatus;
+    private javax.swing.JMenuBar menuBar;
+    private javax.swing.JMenuItem openMenuItem;
     private javax.swing.JPanel panelClassifier;
     private javax.swing.JPanel panelFeatures;
     private javax.swing.JPanel panelOSC;
     private javax.swing.JPanel panelPlayAlong;
     private javax.swing.JPanel panelRealTraining;
     private javax.swing.JPanel panelRun;
+    private javax.swing.JMenuItem pasteMenuItem;
     private javax.swing.JRadioButton radioClearProcessingFeature;
     private javax.swing.JRadioButton radioColorTracking;
     private javax.swing.JRadioButton radioDownsampled;
+    private javax.swing.JMenuItem saveAsMenuItem;
+    private javax.swing.JMenuItem saveMenuItem;
     private javax.swing.JScrollPane scrollTrainPanel;
     private javax.swing.JTextField textAudioRate;
     private javax.swing.JTextField textFFTSize;
@@ -3428,6 +3537,10 @@ private void buttonViewDataActionPerformed(java.awt.event.ActionEvent evt) {//GE
 
         }
 
+        
+        FeatureToParameterMapping newMapping = new FeatureToParameterMapping(fm, nParam);
+
+        featureParameterMaskEditor.setMapping(newMapping);
         areChuckSettingsReceived = true;
         enableClassifierPanel();
         buttonFeaturesGo.setEnabled(true);

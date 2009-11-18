@@ -2,6 +2,15 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
+
+/* TODO this class:
+ *
+ *  Fix problem waiting for chuck --loop to initialize VM -- can I use waitFor there?
+ *  Send chuck output to stdout at least for now, to help with debugging
+ *  Grab chuck error output also and send somewhere
+ *  Ultimately display in console.
+ *
+ * */
 package wekinator;
 
 import java.beans.PropertyChangeListener;
@@ -22,7 +31,7 @@ import java.util.logging.Logger;
  * @author rebecca
  */
 public class ChuckRunner {
-
+    private static ChuckRunner ref = null;
     private ChuckConfiguration configuration;
     protected boolean running = false;
     public static final String PROP_ISRUNNING = "isRunning";
@@ -66,9 +75,17 @@ public class ChuckRunner {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
-    public ChuckRunner(ChuckConfiguration c) {
-        configuration = c;
+    private ChuckRunner() {
+        running = false;
     }
+
+    public static ChuckRunner getChuckRunner() {
+        if (ref == null) {
+            ref = new ChuckRunner();
+        }
+        return ref;
+    }
+
 
     public static void main(String[] args) {
         //Test
@@ -160,6 +177,7 @@ public class ChuckRunner {
                 String line, output;
                 output = "";
                 Process child = Runtime.getRuntime().exec(cmds.get(i));
+
                 if (i != 0) {
                     try {
 
@@ -219,5 +237,9 @@ public class ChuckRunner {
     public void restart() throws IOException {
         stop();
         run();
+    }
+   @Override
+    public Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException();
     }
 }

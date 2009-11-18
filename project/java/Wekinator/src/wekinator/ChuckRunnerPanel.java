@@ -238,7 +238,7 @@ public class ChuckRunnerPanel extends javax.swing.JPanel {
             runner.run();
         } catch (IOException ex) {
             labelStatus.setText("Chuck encountered an error while running.");
-            Logger.getLogger(ChuckRunnerPanel2.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ChuckRunnerPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
 }//GEN-LAST:event_buttonRunActionPerformed
 
@@ -246,7 +246,7 @@ public class ChuckRunnerPanel extends javax.swing.JPanel {
         try {
             runner.stop();
         } catch (IOException ex) {
-            Logger.getLogger(ChuckRunnerPanel2.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ChuckRunnerPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
 }//GEN-LAST:event_buttonStopActionPerformed
 

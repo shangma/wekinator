@@ -33,6 +33,16 @@ public class FeatureManager {
     public boolean useCustomOsc = false;
     public int numCustomOsc = 0;
 
+    public boolean useTrackpad;
+    public boolean useMotionSensor;
+    private int motionExtractionRate = 100;
+
+        public boolean useOtherHid = false;
+    public HidSetup hidSetup = null;
+
+    public boolean useProcessing = false;
+    private int numProcessingFeatures = 0;
+
     public int getFFTSize() {
         return fftSize;
     }
@@ -70,9 +80,7 @@ public class FeatureManager {
         }
         return false;
     }
-    public boolean useTrackpad;
-    public boolean useMotionSensor;
-    private int motionExtractionRate = 100;
+
 
     public int getMotionExtractionRate() {
         return motionExtractionRate;
@@ -85,11 +93,7 @@ public class FeatureManager {
         }
         return false;
     }
-    public boolean useOtherHid = false;
-    public HidSetup hidSetup = null;
-    
-    public boolean useProcessing = false;
-    private int numProcessingFeatures = 0;
+
 //    private File processingFile = null;
     public enum ProcessingOptions { DOWNSAMPLED_100, COLOR_6, OTHER};
     private ProcessingOptions myProcessingOption = ProcessingOptions.DOWNSAMPLED_100;

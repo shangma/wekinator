@@ -4,6 +4,8 @@
  */
 package wekinator;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -27,6 +29,48 @@ public class WekinatorInstance {
     private WekinatorSettings settings = null;
     private static final String settingsSaveFile = "wekinator.usersettings";
 
+    protected FeatureManager featureManager;
+    public static final String PROP_FEATUREMANAGER = "featureManager";
+
+    /**
+     * Get the value of featureManager
+     *
+     * @return the value of featureManager
+     */
+    public FeatureManager getFeatureManager() {
+        return featureManager;
+    }
+
+    /**
+     * Set the value of featureManager
+     *
+     * @param featureManager new value of featureManager
+     */
+    public void setFeatureManager(FeatureManager featureManager) {
+        FeatureManager oldFeatureManager = this.featureManager;
+        this.featureManager = featureManager;
+        propertyChangeSupport.firePropertyChange(PROP_FEATUREMANAGER, oldFeatureManager, featureManager);
+    }
+    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+    /**
+     * Add PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Remove PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+
     /**
      * Get the value of runner
      *
@@ -34,15 +78,6 @@ public class WekinatorInstance {
      */
     public ChuckRunner getRunner() {
         return runner;
-    }
-
-    /**
-     * Set the value of runner
-     *
-     * @param runner new value of runner
-     */
-    private void setRunner(ChuckRunner runner) {
-        this.runner = runner;
     }
 
     /**
@@ -114,8 +149,10 @@ public class WekinatorInstance {
             }
         }
 
-        runner = new ChuckRunner(configuration);
+        runner = ChuckRunner.getChuckRunner();
+        runner.setConfiguration(configuration);
 
+        featureManager = new FeatureManager();
     }
 
     public static WekinatorInstance getWekinatorInstance() {
