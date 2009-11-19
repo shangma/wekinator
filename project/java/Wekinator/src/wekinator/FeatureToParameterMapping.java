@@ -56,39 +56,23 @@ public class FeatureToParameterMapping {
                     features.add(new Feature(chuckAudioFeatures, "FFT_" + i, numParams));
                 }
             }
+            if (fm.useRMS) {
+                features.add(new Feature(chuckAudioFeatures, "RMS", numParams));
+            }
             if (fm.useCentroid) {
                 features.add(new Feature(chuckAudioFeatures, "Centroid", numParams));
             }
-            if (fm.useFlux) {
-                features.add(new Feature(chuckAudioFeatures, "Flux", numParams));
-
-            }
-            if (fm.useRMS) {
-                features.add(new Feature(chuckAudioFeatures, "RMS", numParams));
-
-            }
             if (fm.useRolloff) {
                 features.add(new Feature(chuckAudioFeatures, "Rolloff", numParams));
-
             }
-        }
-
-        if (fm.useCustomChuck) {
-            for (int i = 0; i < fm.numCustomChuck; i++) {
-                features.add(new Feature(customChuckFeatures, "Chuck_" + i, numParams));
+            if (fm.useFlux) {
+                features.add(new Feature(chuckAudioFeatures, "Flux", numParams));
             }
-        }
-        if (fm.useCustomOsc) {
-            for (int i = 0; i < fm.numCustomOsc; i++) {
-                features.add(new Feature(customOSCFeatures, "OSC_" + i, numParams));
-            }
-
         }
 
         if (fm.useTrackpad) {
             features.add(new Feature(trackpadFeatures, "Trackpad1", numParams));
             features.add(new Feature(trackpadFeatures, "Trackpad2", numParams));
-
         }
 
         if (fm.useMotionSensor) {
@@ -109,6 +93,19 @@ public class FeatureToParameterMapping {
             }
         }
 
+        if (fm.useCustomChuck) {
+            for (int i = 0; i < fm.numCustomChuck; i++) {
+                features.add(new Feature(customChuckFeatures, "Chuck_" + i, numParams));
+            }
+        }
+
+        if (fm.useCustomOsc) {
+            for (int i = 0; i < fm.numCustomOsc; i++) {
+                features.add(new Feature(customOSCFeatures, "OSC_" + i, numParams));
+            }
+
+        }
+        
         //Sanity check
         if (features.size() != fm.getNumFeatures()) {
             System.out.println("ERROR MISMATCH IN FEATURE SIZES: " + features.size() + "here, " + fm.getNumFeatures() + "there");
@@ -228,11 +225,7 @@ public class FeatureToParameterMapping {
         }
 
     }
-
-
 }
-
-
 
 class Feature {
 
