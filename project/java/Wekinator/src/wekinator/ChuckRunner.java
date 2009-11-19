@@ -20,7 +20,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.CharBuffer;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.logging.Level;
@@ -79,7 +82,7 @@ public class ChuckRunner {
         running = false;
     }
 
-    public static ChuckRunner getChuckRunner() {
+    public static synchronized ChuckRunner getChuckRunner() {
         if (ref == null) {
             ref = new ChuckRunner();
         }
@@ -178,6 +181,13 @@ public class ChuckRunner {
                 output = "";
                 Process child = Runtime.getRuntime().exec(cmds.get(i));
 
+                if (i == 0) {
+                    //Special! Fork a thread that listens to the output of this process,
+                    //and log lines using logger
+                   // Runtime.getRuntime().
+                    new LoggerThread(child.getErrorStream());
+                    new LoggerThread(child.getInputStream());
+                }
                 if (i != 0) {
                     try {
 
@@ -188,6 +198,7 @@ public class ChuckRunner {
                     }
 
                     BufferedReader input = new BufferedReader(new InputStreamReader(child.getErrorStream()));
+                   
                     while ((line = input.readLine()) != null) {
                         numErrLines++;
                         output += "In executing command " + cmds.get(i) + " received error:\n";
@@ -242,4 +253,41 @@ public class ChuckRunner {
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
     }
+}
+
+class LoggerThread implements Runnable {
+    Thread t;
+    BufferedReader input;
+
+    LoggerThread(InputStream is) {
+        input = new BufferedReader(new InputStreamReader(is));
+        t = new Thread(this, "my thread");
+        t.start();
+    }
+    public void run() {
+        boolean stop = false;
+         while (!stop) {
+            try {
+                ///byte[] byteArray = new byte[2];
+               int b = input.read();
+               // input.read
+
+                if (b == -1) {
+                    stop = true;
+                    System.out.println("made it to end of stream");
+                }
+                else {
+                    //TODO: send to console in reasonable way
+                    System.out.print((char)b);
+                    //String s = String.
+                    Console.getInstance().log(String.valueOf((char)b));
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(LoggerThread.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+         }
+         
+    }
+
 }

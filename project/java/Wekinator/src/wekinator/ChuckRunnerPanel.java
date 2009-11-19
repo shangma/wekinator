@@ -231,6 +231,7 @@ public class ChuckRunnerPanel extends javax.swing.JPanel {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         ChuckConfigurationForm p = new ChuckConfigurationForm(runner.getConfiguration());
         p.setVisible(true);
+        Logger.getLogger(ChuckRunnerPanel.class.getName()).warning("TEST");
 }//GEN-LAST:event_jButton1ActionPerformed
 
     private void buttonRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRunActionPerformed
@@ -379,6 +380,10 @@ public class ChuckRunnerPanel extends javax.swing.JPanel {
 
                frame.add(panel);
                frame.setVisible(true);
+
+               Console c = Console.getInstance();
+               
+               c.setVisible(true);
             }
         });
     }

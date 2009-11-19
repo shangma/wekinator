@@ -4,17 +4,20 @@
  */
 package wekinator;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.LinkedList;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 /**
  *
@@ -27,10 +30,14 @@ public class WekinatorInstance {
     protected ChuckConfiguration configuration = null;
     protected ChuckRunner runner = null;
     private WekinatorSettings settings = null;
-    private static final String settingsSaveFile = "wekinator.usersettings";
+    private OscHandler oscHandler = null;
 
+
+
+    private static final String settingsSaveFile = "wekinator.usersettings";
     protected FeatureManager featureManager;
     public static final String PROP_FEATUREMANAGER = "featureManager";
+    private LinkedList<Handler> handlers;
 
     /**
      * Get the value of featureManager
@@ -89,6 +96,8 @@ public class WekinatorInstance {
         return configuration;
     }
 
+
+
     /**
      * Set the value of configuration
      *
@@ -105,6 +114,13 @@ public class WekinatorInstance {
             fin = new FileInputStream(settingsSaveFile);
             ObjectInputStream sin = new ObjectInputStream(fin);
             settings = (WekinatorSettings) sin.readObject();
+            settings.addPropertyChangeListener(new PropertyChangeListener() {
+
+                public void propertyChange(PropertyChangeEvent evt) {
+                    settingsPropertyChange(evt);
+                }
+            });
+
             configuration = settings.loadLastConfiguration();
             sin.close();
             fin.close();
@@ -153,9 +169,20 @@ public class WekinatorInstance {
         runner.setConfiguration(configuration);
 
         featureManager = new FeatureManager();
+
+        handlers = new LinkedList<Handler>();
+        try {
+            //Give this a try...
+            FileHandler h = new FileHandler(settings.getLogFile());
+            h.setFormatter(new SimpleFormatter());
+            handlers.add(h);
+            Logger.getLogger(WekinatorInstance.class.getPackage().getName()).addHandler(h);
+        } catch (Exception ex) {
+            System.out.println("Couldn't create log file");
+        }
     }
 
-    public static WekinatorInstance getWekinatorInstance() {
+    public static synchronized WekinatorInstance getWekinatorInstance() {
         if (ref == null) {
             ref = new WekinatorInstance();
         }
@@ -174,5 +201,32 @@ public class WekinatorInstance {
     @Override
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
+    }
+
+    private void settingsPropertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(WekinatorSettings.PROP_LOGLEVEL)) {
+            for (Handler h : handlers) {
+                h.setLevel(settings.getLogLevel());
+            }
+        }
+    }
+
+    public void addLoggingHandler(Handler h) {
+        if (! handlers.contains(h)) {
+            Logger.getLogger(WekinatorInstance.class.getPackage().getName()).addHandler(h);
+            handlers.add(h);
+        }
+    }
+
+   void removeLoggingHandler(WekinatorConsoleHandler h) {
+        handlers.remove(h);
+    }
+
+       public OscHandler getOscHandler() {
+        return oscHandler;
+    }
+
+    public WekinatorSettings getSettings() {
+        return settings;
     }
 }

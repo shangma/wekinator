@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BoxLayout;
@@ -35,7 +36,6 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import org.jdesktop.swingworker.*;
 import javax.swing.event.ChangeEvent;
-
 
 /**
  *
@@ -58,14 +58,14 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
 
         @Override
         protected ArrayList<Double> doInBackground() throws Exception {
-            assert(w.dataset != null);
+            assert (w.dataset != null);
             if (w.dataset.getNumDatapoints() > 0) {
-            
+
                 setProgress(1);
-                
+
 
                 w.train();
-              //  Thread.sleep(2000);
+                //  Thread.sleep(2000);
                 // double d[] = w.computeCVAccuracy(10); //TODO: change # folds here
                 ArrayList<Double> list = new ArrayList<Double>(w.numParametersToTrain);
                 for (int i = 0; i < w.numParametersToTrain; i++) {
@@ -79,7 +79,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                         setProgress(2 + i);
                         double d = w.computeCVAccuracyNN(numFolds, i);
                         list.add(new Double(d));
-                    } 
+                    }
                 }
                 setProgress(w.numParametersToTrain + 2);
                 numRounds++;
@@ -117,9 +117,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 if (isAutoTrainStopThreshold) {
                     //compute average
                     double avg = sum / list.size();
-                    if ((w.myClassifierType != WekaOperator.ClassifierType.NN && avg >= autoTrainStopThreshold)
-                        || (w.myClassifierType == WekaOperator.ClassifierType.NN && avg <= autoTrainStopThreshold))
-                    {
+                    if ((w.myClassifierType != WekaOperator.ClassifierType.NN && avg >= autoTrainStopThreshold) || (w.myClassifierType == WekaOperator.ClassifierType.NN && avg <= autoTrainStopThreshold)) {
                         s += " AUTO-STOPPED";
                         //trainQueue.clear(); //clear training queue
                         jCheckBoxAutomaticTraining.getModel().setSelected(false);
@@ -149,8 +147,6 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
     int trainingFrequency = 50; //TODO: bind to slider
     boolean isConnected = false;
     private FeatureManager fm;
-
-    
     private HidSetup hs;
     LinkedList<MyWorker> trainQueue = new LinkedList<MyWorker>();
     MyWorker currentWorker = null;
@@ -160,9 +156,26 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
     /** Creates new form Bigger1 */
     public MainGUI() {
         initComponents();
-                fm = wek.getFeatureManager();
+        fm = wek.getFeatureManager();
+
+        Logger.getLogger(MainGUI.class.getName()).log(Level.INFO, "Here's some info");
 
         w = new WekaOperator();
+        w.addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                wekaOperatorPropertyChange(evt);
+            }
+        });
+
+        OscHandler.getOscHandler().addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                oscHandlerPropertyChange(evt);
+            }
+        });
+
+
         w.addObserver(this);
         w.setGui(this);
         hs = new HidSetup();
@@ -178,9 +191,9 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         jTabbedPane1.setEnabledAt(jTabbedPane1.indexOfComponent(panelClassifier), false);
         jTabbedPane1.setEnabledAt(jTabbedPane1.indexOfComponent(panelPlayAlong), false);
 
-    // buttonPanic.setVisible(false);
-    // buttonLoadFeatureSettings.setVisible(false);
-    // buttonSaveFeatureSettings.setVisible(false);
+        // buttonPanic.setVisible(false);
+        // buttonLoadFeatureSettings.setVisible(false);
+        // buttonSaveFeatureSettings.setVisible(false);
 
 
         KeyEventPostProcessor processor = new KeyEventPostProcessor() {
@@ -192,17 +205,15 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                         if (jTabbedPane1.getSelectedComponent() == panelRun) {
                             buttonHoldTrain.getModel().setSelected(true);
                             buttonHoldTrain.getModel().setPressed(true);
-                        } else if (jTabbedPane1.getSelectedComponent() == panelPlayAlong)
-                        {
+                        } else if (jTabbedPane1.getSelectedComponent() == panelPlayAlong) {
                             jToggleButtonPlayAlong.getModel().setSelected(true);
                             jToggleButtonPlayAlong.getModel().setPressed(true);
                         }
-                        
+
                     } else if (e.getKeyCode() == KeyEvent.VK_PAGE_UP) {
                         System.out.println("Page up presed");
-                        if (jTabbedPane1.getSelectedComponent() == panelPlayAlong)
-                        {
-                           jToggleButtonPlayScore.getModel().setSelected(! jToggleButtonPlayScore.getModel().isSelected());
+                        if (jTabbedPane1.getSelectedComponent() == panelPlayAlong) {
+                            jToggleButtonPlayScore.getModel().setSelected(!jToggleButtonPlayScore.getModel().isSelected());
                         }
 
                     }
@@ -212,8 +223,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                         if (jTabbedPane1.getSelectedComponent() == panelRun) {
                             buttonHoldTrain.getModel().setPressed(false);
                             buttonHoldTrain.getModel().setSelected(false);
-                        } else if (jTabbedPane1.getSelectedComponent() == panelPlayAlong)
-                        {
+                        } else if (jTabbedPane1.getSelectedComponent() == panelPlayAlong) {
                             jToggleButtonPlayAlong.getModel().setSelected(false);
                             jToggleButtonPlayAlong.getModel().setPressed(false);
                         }
@@ -233,26 +243,25 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
 
     }
 
-
-         private void runnerPropertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName() == ChuckRunner.PROP_ISRUNNING) {
-                updateRunnerIsRunning(wek.runner.isRunning());
-            }
-
+    private void runnerPropertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(ChuckRunner.PROP_ISRUNNING)) {
+            updateRunnerIsRunning(wek.runner.isRunning());
         }
 
-         private void updateRunnerIsRunning(boolean isRunning) {
-            if (isRunning) {
-                //This configuration works: Save it.
-                wek.useConfigurationNextSession();
-                updateFeaturesForConfiguration();
-                
-            } else {
-                //Show chuck disconnected
-                w.disconnectOSC();
-            }
+    }
 
-         }
+    private void updateRunnerIsRunning(boolean isRunning) {
+        if (isRunning) {
+            //This configuration works: Save it.
+            wek.useConfigurationNextSession();
+            updateFeaturesForConfiguration();
+
+        } else {
+            //Show chuck disconnected
+            w.disconnectOSC();
+        }
+
+    }
 
     public void displayClassNumbers(int classnum, int number) {
 
@@ -265,7 +274,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
             textNumCustomChuck.setText(Integer.toString(wek.configuration.getNumCustomChuckFeaturesExtracted()));
         }
 
-                checkCustomOsc.setSelected(wek.configuration.isOscFeatureExtractorEnabled());
+        checkCustomOsc.setSelected(wek.configuration.isOscFeatureExtractorEnabled());
         if (wek.configuration.isOscFeatureExtractorEnabled()) {
             textNumOsc.setText(Integer.toString(wek.configuration.getNumOSCFeaturesExtracted()));
         }
@@ -300,7 +309,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
 
             //Update reg training panel:
 
-            String ss  = dd.format(vals[i]);
+            String ss = dd.format(vals[i]);
             s += ss;
             paramFields[i].setText(ss);
 
@@ -312,8 +321,8 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         labelClassifiedClass.setText(s);
         labelClassifiedClass1.setText(s);
 
-        //Also update regular training pane values!
-        
+    //Also update regular training pane values!
+
 
     }
 
@@ -357,7 +366,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
     }
 
     private void enableRun() {
-        toggleButtonRun.setEnabled(true);
+        //  toggleButtonRun.setEnabled(true);
         if (isChuckDiscrete) {
             buttonComputeAccuracy.setEnabled(false);
         }
@@ -527,8 +536,10 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         pasteMenuItem = new javax.swing.JMenuItem();
         deleteMenuItem = new javax.swing.JMenuItem();
         helpMenu = new javax.swing.JMenu();
-        contentsMenuItem = new javax.swing.JMenuItem();
-        aboutMenuItem = new javax.swing.JMenuItem();
+        menuItemViewConsole = new javax.swing.JMenuItem();
+        helpMenu1 = new javax.swing.JMenu();
+        contentsMenuItem1 = new javax.swing.JMenuItem();
+        aboutMenuItem1 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("The Wekinator");
@@ -589,30 +600,32 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         jPanel5Layout.setHorizontalGroup(
             jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel5Layout.createSequentialGroup()
-                .addContainerGap()
                 .add(jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel5Layout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(labelOscStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 273, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(jPanel5Layout.createSequentialGroup()
-                        .add(buttonOscConnect)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(buttonOscDisconnect))
-                    .add(jLabel2)
-                    .add(jPanel5Layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .add(10, 10, 10)
+                        .addContainerGap()
                         .add(jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jPanel5Layout.createSequentialGroup()
-                                .add(textOscReceive, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 71, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(buttonOscConnect)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(jLabel9))
+                                .add(buttonOscDisconnect))
+                            .add(jLabel2)
                             .add(jPanel5Layout.createSequentialGroup()
-                                .add(textOscSend, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 71, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(jLabel8))))
-                    .add(labelOscStatus1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 151, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(215, Short.MAX_VALUE))
+                                .add(jLabel1)
+                                .add(10, 10, 10)
+                                .add(jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(jPanel5Layout.createSequentialGroup()
+                                        .add(textOscReceive, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 71, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(jLabel9))
+                                    .add(jPanel5Layout.createSequentialGroup()
+                                        .add(textOscSend, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 71, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(jLabel8))))
+                            .add(labelOscStatus1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 151, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(jPanel5Layout.createSequentialGroup()
+                        .add(23, 23, 23)
+                        .add(labelOscStatus, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 521, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -644,11 +657,15 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         jPanel8.setLayout(jPanel8Layout);
         jPanel8Layout.setHorizontalGroup(
             jPanel8Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(chuckRunnerPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 584, Short.MAX_VALUE)
+            .add(jPanel8Layout.createSequentialGroup()
+                .add(chuckRunnerPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 564, Short.MAX_VALUE)
+                .addContainerGap())
         );
         jPanel8Layout.setVerticalGroup(
             jPanel8Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(chuckRunnerPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(jPanel8Layout.createSequentialGroup()
+                .add(chuckRunnerPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         org.jdesktop.layout.GroupLayout panelOSCLayout = new org.jdesktop.layout.GroupLayout(panelOSC);
@@ -666,7 +683,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 .add(jPanel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(97, Short.MAX_VALUE))
+                .addContainerGap(77, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Setup", panelOSC);
@@ -1825,6 +1842,11 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         fileMenu.setText("File");
 
         openMenuItem.setText("Open");
+        openMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openMenuItemActionPerformed(evt);
+            }
+        });
         fileMenu.add(openMenuItem);
 
         saveMenuItem.setText("Save");
@@ -1859,15 +1881,27 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
 
         menuBar.add(editMenu);
 
-        helpMenu.setText("Help");
+        helpMenu.setText("View");
 
-        contentsMenuItem.setText("Contents");
-        helpMenu.add(contentsMenuItem);
-
-        aboutMenuItem.setText("About");
-        helpMenu.add(aboutMenuItem);
+        menuItemViewConsole.setText("Console");
+        menuItemViewConsole.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuItemViewConsoleActionPerformed(evt);
+            }
+        });
+        helpMenu.add(menuItemViewConsole);
 
         menuBar.add(helpMenu);
+
+        helpMenu1.setText("Help");
+
+        contentsMenuItem1.setText("Contents");
+        helpMenu1.add(contentsMenuItem1);
+
+        aboutMenuItem1.setText("About");
+        helpMenu1.add(aboutMenuItem1);
+
+        menuBar.add(helpMenu1);
 
         setJMenuBar(menuBar);
 
@@ -1878,14 +1912,14 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 617, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 617, Short.MAX_VALUE)
                     .add(buttonQuit)
                     .add(labelGlobalStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 493, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(10, Short.MAX_VALUE)
                 .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 668, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -1903,6 +1937,13 @@ private void buttonForgetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
 private void buttonQuitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonQuitActionPerformed
     w.quit();
+    if (wek.runner.running) {
+        try {
+            wek.runner.stop();
+        } catch (IOException ex) {
+        }
+    }
+
     System.exit(0);
 }//GEN-LAST:event_buttonQuitActionPerformed
 
@@ -1966,16 +2007,16 @@ private void buttonUseClassifierSettingsActionPerformed(java.awt.event.ActionEve
         disableAllSettingsPanel();
         enablePlayalongPanel();
         panelRealTraining.setVisible(true);
-            w.initializeInstances(myNumFeats, numChuckClasses);
-            //TODO: inefficient:
-            FeatureToParameterMapping mapping = featureParameterMaskEditor.getFeatureToParameterMapping();
-            for (int f = 0; f < fm.getNumFeatures(); f++) {
-                for (int p = 0; p < myNumParams; p++) {
-                    boolean b = mapping.getIsFeatureUsingParam(f, p);
-                    w.dataset.setIsFeatureActiveForParameter(b, f, p);
-                }
+        w.initializeInstances(myNumFeats, numChuckClasses);
+        //TODO: inefficient:
+        FeatureToParameterMapping mapping = featureParameterMaskEditor.getFeatureToParameterMapping();
+        for (int f = 0; f < fm.getNumFeatures(); f++) {
+            for (int p = 0; p < myNumParams; p++) {
+                boolean b = mapping.getIsFeatureUsingParam(f, p);
+                w.dataset.setIsFeatureActiveForParameter(b, f, p);
             }
-            
+        }
+
     }
 
 
@@ -2064,8 +2105,10 @@ private void buttonTrainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 
     private void updateTrainingPanelForParams() {
         int height = 4;
-        if (myNumParams > 4) height = myNumParams;
-      //  GridLayout experimentLayout = new GridLayout(myNumParams, 1);
+        if (myNumParams > 4) {
+            height = myNumParams;
+        }
+        //  GridLayout experimentLayout = new GridLayout(myNumParams, 1);
         BoxLayout layout = new BoxLayout(panelRealTraining, BoxLayout.Y_AXIS);
 
         panelRealTraining.setLayout(layout);
@@ -2081,18 +2124,19 @@ private void buttonTrainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
             paramLabels[i] = new javax.swing.JLabel("Parameter " + i);
             paramFields[i] = new javax.swing.JTextField(5);
             paramFields[i].setText("0");
-            Dimension d = new Dimension(100,20);
+            Dimension d = new Dimension(100, 20);
             paramLabels[i].setMaximumSize(d);
             paramFields[i].setMaximumSize(d);
-           // panelRealTraining.add(paramLabels[i]);
-           // panelRealTraining.add(paramFields[i]);
+            // panelRealTraining.add(paramLabels[i]);
+            // panelRealTraining.add(paramFields[i]);
             paramCheckBoxes[i] = new javax.swing.JCheckBox();
             paramCheckBoxes[i].getModel().setSelected(true);
-         paramCheckBoxes[i].addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                paramCheckBoxesActionPerformed(evt);
-            }
-        });
+            paramCheckBoxes[i].addActionListener(new java.awt.event.ActionListener() {
+
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    paramCheckBoxesActionPerformed(evt);
+                }
+            });
             next.add(paramCheckBoxes[i]);
             next.add(paramLabels[i]);
             next.add(paramFields[i]);
@@ -2104,16 +2148,15 @@ private void buttonTrainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         scrollTrainPanel.repaint();
     }
 
-
-   private void paramCheckBoxesActionPerformed(ActionEvent evt) {
-       System.out.println("check change");
-       boolean useParams[] = new boolean[myNumParams];
-       for (int i = 0; i < myNumParams; i++) {
+    private void paramCheckBoxesActionPerformed(ActionEvent evt) {
+        System.out.println("check change");
+        boolean useParams[] = new boolean[myNumParams];
+        for (int i = 0; i < myNumParams; i++) {
             useParams[i] = paramCheckBoxes[i].getModel().isSelected();
-       }
-       w.setUseParams(useParams);
+        }
+        w.setUseParams(useParams);
 
-   }
+    }
 
     public void displayFeatureManager() {
         checkAudio.setSelected(fm.useAudio);
@@ -2253,54 +2296,54 @@ private void toggleButtonRunItemStateChanged(java.awt.event.ItemEvent evt) {//GE
 
 private void buttonSaveClassifierActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSaveClassifierActionPerformed
 
-saveTrainedModel();
+    saveTrainedModel();
 
 
 }//GEN-LAST:event_buttonSaveClassifierActionPerformed
 
-private void saveTrainedModel() {
-    JFileChooser fc = new JFileChooser();
-    fc.setDialogType(JFileChooser.SAVE_DIALOG);
-    fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+    private void saveTrainedModel() {
+        JFileChooser fc = new JFileChooser();
+        fc.setDialogType(JFileChooser.SAVE_DIALOG);
+        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
 
-    int returnVal = fc.showSaveDialog(this);
-    if (returnVal == JFileChooser.APPROVE_OPTION) {
-        FileOutputStream outstream = null;
-        {
-            ObjectOutputStream objout = null;
-            try {
-                File file = fc.getSelectedFile();
-                outstream = new FileOutputStream(file);
-                objout = new ObjectOutputStream(outstream);
-                w.writeOut(objout);
-
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IOException ex) {
-                System.out.println("error writing to file");
-                Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-            } finally {
-
+        int returnVal = fc.showSaveDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            FileOutputStream outstream = null;
+            {
+                ObjectOutputStream objout = null;
                 try {
-                    objout.close();
-                } catch (IOException ex) {
+                    File file = fc.getSelectedFile();
+                    outstream = new FileOutputStream(file);
+                    objout = new ObjectOutputStream(outstream);
+                    w.writeOut(objout);
+
+                } catch (FileNotFoundException ex) {
                     Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                try {
-                    outstream.close();
                 } catch (IOException ex) {
+                    System.out.println("error writing to file");
                     Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                } finally {
+
+                    try {
+                        objout.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    try {
+                        outstream.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
+
+
+
+        } else if (returnVal == JFileChooser.ERROR_OPTION) {
+            throw new Error("huh?");
         }
-
-
-
-    } else if (returnVal == JFileChooser.ERROR_OPTION) {
-        throw new Error("huh?");
     }
-}
 
 private void buttonHoldTrainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonHoldTrainActionPerformed
     //should work more or less like other buttons
@@ -2558,38 +2601,36 @@ private void buttonListenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
         try {
             f[i] = Float.parseFloat(paramFields[i].getText());
-           
+
         } catch (NumberFormatException ex) {
             paramFields[i].setText("0");
             f[i] = 0;
         }
-     //   System.out.println("got val " + f[i]);
+    //   System.out.println("got val " + f[i]);
     }
     listenToValues(f);
 }//GEN-LAST:event_buttonListenActionPerformed
 
-
-public void listenToValues(float[] params) {
-    w.startSound();
-    w.setRealVals(params);
-    w.sendCurrentRealVals();
-}
-
-public float getCurrentParamValue(int paramNum) {
-    //TODO: error check
-    float f;
-    if (paramNum < 0 || paramNum >= myNumParams) {
-        f = 0;
+    public void listenToValues(float[] params) {
+        w.startSound();
+        w.setRealVals(params);
+        w.sendCurrentRealVals();
     }
-    try {
+
+    public float getCurrentParamValue(int paramNum) {
+        //TODO: error check
+        float f;
+        if (paramNum < 0 || paramNum >= myNumParams) {
+            f = 0;
+        }
+        try {
             f = Float.parseFloat(paramFields[paramNum].getText());
 
         } catch (NumberFormatException ex) {
             f = 0;
         }
-    return f;
-}
-
+        return f;
+    }
 
 private void buttonListenStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_buttonListenStateChanged
 // TODO add your handling code here:
@@ -2972,7 +3013,7 @@ private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
 }//GEN-LAST:event_jButton1ActionPerformed
 
 private void jToggleButtonRunPlayalongActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButtonRunPlayalongActionPerformed
-  if (jToggleButtonRunPlayalong.getModel().isSelected()) {
+    if (jToggleButtonRunPlayalong.getModel().isSelected()) {
         w.startRun(); //TODO: make sure that other run buttons' state is synched to this one
     } else {
         w.stopRecording();
@@ -3007,17 +3048,17 @@ private void toggleGetSynthParamsActionPerformed(java.awt.event.ActionEvent evt)
 
 private void toggleGetSynthParamsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_toggleGetSynthParamsItemStateChanged
     if (toggleGetSynthParams.getModel().isSelected()) {
-            try {
-                w.Handler().startGettingParams();
-            } catch (IOException ex) {
-                Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        try {
+            w.Handler().startGettingParams();
+        } catch (IOException ex) {
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
     } else {
-            try {
-                w.Handler().stopGettingParams();
-            } catch (IOException ex) {
-                Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        try {
+            w.Handler().stopGettingParams();
+        } catch (IOException ex) {
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
 }//GEN-LAST:event_toggleGetSynthParamsItemStateChanged
@@ -3026,12 +3067,25 @@ private void buttonViewDataActionPerformed(java.awt.event.ActionEvent evt) {//GE
     if (w.dataset != null) {
         DataViewer v = new DataViewer(w.dataset, this);
         v.setVisible(true);
-    } 
+    }
 }//GEN-LAST:event_buttonViewDataActionPerformed
 
 private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
     System.exit(0);
 }//GEN-LAST:event_exitMenuItemActionPerformed
+
+private void menuItemViewConsoleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemViewConsoleActionPerformed
+    Console c = Console.getInstance();
+    if (c.isVisible()) {
+        c.toFront();
+    } else {
+        c.setVisible(true);
+    }
+}//GEN-LAST:event_menuItemViewConsoleActionPerformed
+
+private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMenuItemActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_openMenuItemActionPerformed
 
     private File findHidSetupFileToSave() {
 
@@ -3138,6 +3192,7 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
      * @param args the command line arguments
      */
     public static void main(String args[]) {
+        System.setProperty("apple.laf.useScreenMenuBar", "true");
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
@@ -3149,7 +3204,7 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JMenuItem aboutMenuItem;
+    private javax.swing.JMenuItem aboutMenuItem1;
     private javax.swing.JRadioButton buttonClearClassifierChoice;
     private javax.swing.JButton buttonComputeAccuracy;
     private javax.swing.JRadioButton buttonCreateNewClassifier;
@@ -3194,7 +3249,7 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private wekinator.ChuckRunnerPanel chuckRunnerPanel1;
     private javax.swing.JComboBox comboClassifierType;
     private javax.swing.JComboBox comboWindowType;
-    private javax.swing.JMenuItem contentsMenuItem;
+    private javax.swing.JMenuItem contentsMenuItem1;
     private javax.swing.JMenuItem copyMenuItem;
     private javax.swing.JMenuItem cutMenuItem;
     private javax.swing.JMenuItem deleteMenuItem;
@@ -3203,6 +3258,7 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private wekinator.FeatureParameterMaskEditor featureParameterMaskEditor;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenu helpMenu;
+    private javax.swing.JMenu helpMenu1;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButtonShh;
     private javax.swing.JCheckBox jCheckBoxAutoStopThreshold;
@@ -3264,6 +3320,7 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JLabel labelRunningStatus1;
     private javax.swing.JLabel labelTrainingStatus;
     private javax.swing.JMenuBar menuBar;
+    private javax.swing.JMenuItem menuItemViewConsole;
     private javax.swing.JMenuItem openMenuItem;
     private javax.swing.JPanel panelClassifier;
     private javax.swing.JPanel panelFeatures;
@@ -3320,7 +3377,7 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     }
 
     public void enablePlayalongPanel() {
-                jTabbedPane1.setEnabledAt(jTabbedPane1.indexOfComponent(panelPlayAlong), true);
+        jTabbedPane1.setEnabledAt(jTabbedPane1.indexOfComponent(panelPlayAlong), true);
 
     }
 
@@ -3329,11 +3386,10 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     }
 
     private void setFastAccurate(int value) {
-       double d = value * .01; //Now have value between 0 and 1
-       fastAccurateValue = value;
-       w.setClassifierFastAccurate(d);
+        double d = value * .01; //Now have value between 0 and 1
+        fastAccurateValue = value;
+        w.setClassifierFastAccurate(d);
     }
-
 
     public void setNumParams(int n) {
         textNumParams.setText(Integer.toString(n));
@@ -3354,13 +3410,13 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                 if (((WekaOperator.ClassifierState) state) == WekaOperator.ClassifierState.HAS_DATA) {
                     buttonTrain.setEnabled(true);
                     buttonTrain1.setEnabled(true);
-                    toggleButtonRun.setEnabled(false);
+                    //  toggleButtonRun.setEnabled(false);
                     buttonComputeAccuracy.setEnabled(false);
                 } else if (((WekaOperator.ClassifierState) state) == WekaOperator.ClassifierState.TRAINED) {
                     buttonTrain.setEnabled(true);
                     buttonTrain1.setEnabled(true);
 
-                    toggleButtonRun.setEnabled(true);
+                    //  toggleButtonRun.setEnabled(true);
                     if (isChuckDiscrete) {
                         buttonComputeAccuracy.setEnabled(true);
                     }
@@ -3369,7 +3425,7 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                     buttonTrain1.setEnabled(false);
 
 
-                    toggleButtonRun.setEnabled(false);
+                    //  toggleButtonRun.setEnabled(false);
                     buttonComputeAccuracy.setEnabled(false);
                 }
 
@@ -3392,31 +3448,30 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
             }
 
 
-        } else if (o instanceof OscHandler) {
-            labelOscStatus.setText("OSC status: " + updateString);
+        } else if (o instanceof OscHandler) { //TODO TODO TODO: Move somewhere else.
+      /*      labelOscStatus.setText("OSC status: " + updateString);
 
-            if ((OscHandler.OscState) state == OscHandler.OscState.CONNECTED ||
-                    (OscHandler.OscState) state == OscHandler.OscState.CONNECTING) {
-                buttonOscDisconnect.setEnabled(true);
-                buttonOscConnect.setEnabled(false);
+            if ((OscHandler.ConnectionState) state == OscHandler.ConnectionState.CONNECTED ||
+            (OscHandler.ConnectionState) state == OscHandler.ConnectionState.CONNECTING) {
+            buttonOscDisconnect.setEnabled(true);
+            buttonOscConnect.setEnabled(false);
 
 
-                if ((OscHandler.OscState) state == OscHandler.OscState.CONNECTED) {
-                    isConnected = true;
-                    enableTrainButtons();
-                    enableFeaturePanel();
-                    jTabbedPane1.setSelectedComponent(panelFeatures);
-                } else {
-                    isConnected = false;
-                }
-
+            if ((OscHandler.ConnectionState) state == OscHandler.ConnectionState.CONNECTED) {
+            isConnected = true;
+            enableTrainButtons();
+            enableFeaturePanel();
+            jTabbedPane1.setSelectedComponent(panelFeatures);
             } else {
-                isConnected = false;
-                disableTrainButtons();
-                buttonOscDisconnect.setEnabled(false);
-                buttonOscConnect.setEnabled(true);
+            isConnected = false;
             }
 
+            } else {
+            isConnected = false;
+            disableTrainButtons();
+            buttonOscDisconnect.setEnabled(false);
+            buttonOscConnect.setEnabled(true);
+            } */
         } else if (o == hs) {
             buttonSetupDone.setEnabled((HidSetup.HidState) state == HidSetup.HidState.SETUP_BEGUN);
             if (((HidSetup.HidState) state == HidSetup.HidState.INIT_DONE) || ((HidSetup.HidState) state == HidSetup.HidState.SETUP_STOPPED)) {
@@ -3478,7 +3533,7 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         }
         labelClassifiedClass.setText(s);
         labelClassifiedClass1.setText(s);
-       // System.out.println("set label to" + s);
+    // System.out.println("set label to" + s);
     }
 
     public void displayClassValueMulti(int[] vals, double[][] dists) {
@@ -3537,7 +3592,7 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
         }
 
-        
+
         FeatureToParameterMapping newMapping = new FeatureToParameterMapping(fm, nParam);
 
         featureParameterMaskEditor.setMapping(newMapping);
@@ -3546,6 +3601,52 @@ private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         buttonFeaturesGo.setEnabled(true);
         //  disableFeaturePanel();
         jTabbedPane1.setSelectedComponent(panelClassifier);
+    }
+
+    private void wekaOperatorPropertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(WekaOperator.PROP_TRAININGSTATE)) {
+            if (w.getTrainingState() == WekaOperator.TrainingState.TRAINED) {
+                toggleButtonRun.setEnabled(true);
+
+            } else if (w.getTrainingState() == WekaOperator.TrainingState.TRAINING) {
+                toggleButtonRun.setEnabled(false);
+
+            } else { //Not trained
+                toggleButtonRun.setEnabled(false);
+            }
+
+
+        }
+
+
+    }
+
+    private void oscHandlerPropertyChange(PropertyChangeEvent evt) {
+
+        OscHandler h = OscHandler.getOscHandler();
+        labelOscStatus.setText("OSC status: " + h.getStatusMessage());
+
+        if (h.getConnectionState() == OscHandler.ConnectionState.CONNECTED ||
+                h.getConnectionState() == OscHandler.ConnectionState.CONNECTING) {
+            buttonOscDisconnect.setEnabled(true);
+            buttonOscConnect.setEnabled(false);
+
+
+            if (h.getConnectionState() == OscHandler.ConnectionState.CONNECTED) {
+                isConnected = true;
+                enableTrainButtons();
+                enableFeaturePanel();
+                jTabbedPane1.setSelectedComponent(panelFeatures);
+            } else {
+                isConnected = false;
+            }
+
+        } else {
+            isConnected = false;
+            disableTrainButtons();
+            buttonOscDisconnect.setEnabled(false);
+            buttonOscConnect.setEnabled(true);
+        }
     }
 }
 

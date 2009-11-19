@@ -4,6 +4,9 @@
  */
 package wekinator;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -31,7 +34,7 @@ import weka.classifiers.functions.supportVector.RBFKernel;
  *
  * @author rebecca
  */
-public class WekaOperator implements Subject, Observer {
+public class WekaOperator implements Subject {
 
     public boolean isPlayAlong = false;
     private boolean hasReceivedUpdatedClasses = false;
@@ -193,6 +196,7 @@ public class WekaOperator implements Subject, Observer {
             assert (dataset == null); //TODO: may have to fix here...
             //dataset.setNumParameters(num);
             myClassifierState = ClassifierState.NO_DATA;
+            setTrainingState(TrainingState.NOT_TRAINED);
 
         }
 
@@ -793,6 +797,52 @@ public class WekaOperator implements Subject, Observer {
         WAITING, OK
     };
 
+    public enum TrainingState {
+        NOT_TRAINED, TRAINING, TRAINED
+    };
+
+    protected TrainingState trainingState = TrainingState.NOT_TRAINED;
+    public static final String PROP_TRAININGSTATE = "trainingState";
+
+    /**
+     * Get the value of trainingState
+     *
+     * @return the value of trainingState
+     */
+    public TrainingState getTrainingState() {
+        return trainingState;
+    }
+
+    /**
+     * Set the value of trainingState
+     *
+     * @param trainingState new value of trainingState
+     */
+    private void setTrainingState(TrainingState trainingState) {
+        TrainingState oldTrainingState = this.trainingState;
+        this.trainingState = trainingState;
+        propertyChangeSupport.firePropertyChange(PROP_TRAININGSTATE, oldTrainingState, trainingState);
+    }
+    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+    /**
+     * Add PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Remove PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+
     enum OperatorState {
 
         BEGIN, WAITING_FOR_HANDSHAKE, READY, RECORD, RUN, END, FAIL
@@ -868,8 +918,23 @@ public class WekaOperator implements Subject, Observer {
         if (myState == OperatorState.BEGIN) {
             myState = OperatorState.WAITING_FOR_HANDSHAKE;
             try {
-                handler = new OscHandler(this, portReceive, portSend);
-                handler.addObserver(this);
+             //   handler = new OscHandler(this, portReceive, portSend);
+
+                handler = OscHandler.getOscHandler();
+                handler.setReceivePort(portReceive);
+                handler.setSendPort(portSend);
+                handler.setW(this);
+
+                handler.addPropertyChangeListener(new PropertyChangeListener() {
+
+                    public void propertyChange(PropertyChangeEvent evt) {
+                         handlerPropertyChange(evt);
+                    }
+
+
+                });
+
+               // handler.addObserver(this);
                 //    sc.giveUpdate("Initialized OSC send and receive.");
                 handler.startHandshake();
             } catch (IOException ex) {
@@ -879,7 +944,7 @@ public class WekaOperator implements Subject, Observer {
             }
 
         } else {
-            // sc.giveUpdate("Could not initialize: state is " + myState);
+            // sc.giveUpdate("Could not initialize: oldState is " + myState);
         }
     }
 
@@ -940,7 +1005,7 @@ public class WekaOperator implements Subject, Observer {
     }
 
     public void startRecordFeatures(int i) {
-        //todo: check state
+        //todo: check oldState
         try {
             if (myState == OperatorState.READY) {
                 handler.initiateRecord();
@@ -968,6 +1033,7 @@ public class WekaOperator implements Subject, Observer {
 
     public void train() {
         try {
+            setTrainingState(TrainingState.TRAINING);
             //train using recorded features
          /*   if (instances[0] == null) {
             System.out.println("inst0 is null");
@@ -991,10 +1057,14 @@ public class WekaOperator implements Subject, Observer {
                 myClassifierState =
                         ClassifierState.TRAINED;
                 notifyClassifierStateObservers();
+                setTrainingState(TrainingState.TRAINED);
+
             } else {
+                setTrainingState(TrainingState.NOT_TRAINED);
                 System.out.println("error: some classifiers not trained");
             }
 
+            dataset.startNewTrainingRound();
         } catch (Exception ex) {
             Logger.getLogger(WekaOperator.class.getName()).log(Level.SEVERE, null, ex);
             myErrorString = "Could not train:" + ex.getMessage();
@@ -1186,6 +1256,7 @@ public class WekaOperator implements Subject, Observer {
             myState =
                     OperatorState.READY;
             dataset.deleteAll();
+            setTrainingState(TrainingState.TRAINED.NOT_TRAINED);
 
             notifyFeatureObservers();
             notifyClassifierStateObservers();
@@ -1380,13 +1451,6 @@ public class WekaOperator implements Subject, Observer {
         observers.remove(o);
     }
 
-    public void update(Subject o, Object state, String updateString) {
-        if (o == handler) {
-            notifyObservers(handler, handler.state, handler.statusString());
-        }
-
-    }
-
     public void playScore() {
         try {
             System.out.println("starting playback");
@@ -1460,4 +1524,9 @@ public class WekaOperator implements Subject, Observer {
             notifyOperatorObservers();
         }
     }
+
+        private void handlerPropertyChange(PropertyChangeEvent evt) {
+            //TODO TODO TODO
+
+        }
 }

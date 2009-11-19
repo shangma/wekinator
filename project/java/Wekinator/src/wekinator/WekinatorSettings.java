@@ -5,6 +5,8 @@
 
 package wekinator;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -23,6 +25,68 @@ public class WekinatorSettings implements Serializable {
     //This should persist between sessions
 
     protected String lastConfigurationFileLocation = null;
+    protected String logFile = "wekinator.log";
+    protected Level logLevel = Level.WARNING;
+    public static final String PROP_LOGLEVEL = "logLevel";
+
+    /**
+     * Get the value of logLevel
+     *
+     * @return the value of logLevel
+     */
+    public Level getLogLevel() {
+        return logLevel;
+    }
+
+    /**
+     * Set the value of logLevel
+     *
+     * @param logLevel new value of logLevel
+     */
+    public void setLogLevel(Level logLevel) {
+        Level oldLogLevel = this.logLevel;
+        this.logLevel = logLevel;
+        propertyChangeSupport.firePropertyChange(PROP_LOGLEVEL, oldLogLevel, logLevel);
+    }
+    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+    /**
+     * Add PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Remove PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+
+    /**
+     * Get the value of logFile
+     *
+     * @return the value of logFile
+     */
+    public String getLogFile() {
+        return logFile;
+    }
+
+    /**
+     * Set the value of logFile
+     *
+     * @param logFile new value of logFile
+     */
+    public void setLogFile(String logFile) {
+        this.logFile = logFile;
+    }
+
+
 
     /**
      * Get the value of lastConfigurationFileLocation

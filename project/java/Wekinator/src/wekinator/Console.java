@@ -8,21 +8,16 @@
  *
  * Created on Nov 18, 2009, 8:23:56 PM
  */
-
 package wekinator;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.logging.ErrorManager;
 import java.util.logging.Formatter;
-import java.util.logging.Filter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-import java.util.logging.StreamHandler;
+import javax.swing.JTextArea;
 
 /**
  *
@@ -30,10 +25,29 @@ import java.util.logging.StreamHandler;
  */
 public class Console extends javax.swing.JFrame {
 
+    private static Console ref = null;
+    WekinatorConsoleHandler h;
+
     /** Creates new form Console */
-    public Console() {
+    private Console() {
         initComponents();
-        wek = WekinatorInstance.getWekinatorInstance();
+        WekinatorInstance wek = WekinatorInstance.getWekinatorInstance();
+       h = WekinatorConsoleHandler.getInstance();
+        h.setTextArea(text1);
+        wek.addLoggingHandler(h);
+    }
+
+    public static synchronized Console getInstance() {
+        if (ref == null) {
+           ref = new Console();
+        }
+        return ref;
+    }
+
+    public void log(String s) {
+        if (isVisible()) {
+           text1.append(s);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -48,9 +62,14 @@ public class Console extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         text1 = new javax.swing.JTextArea();
-        jButton2 = new javax.swing.JButton();
+        buttonClear = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         jButton1.setText("Log something");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -60,13 +79,14 @@ public class Console extends javax.swing.JFrame {
         });
 
         text1.setColumns(20);
+        text1.setEditable(false);
         text1.setRows(5);
         jScrollPane1.setViewportView(text1);
 
-        jButton2.setText("Setup handler");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        buttonClear.setText("Clear");
+        buttonClear.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                buttonClearActionPerformed(evt);
             }
         });
 
@@ -76,207 +96,126 @@ public class Console extends javax.swing.JFrame {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(jButton1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jButton2)))
+                .add(jButton1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 417, Short.MAX_VALUE)
+                .add(buttonClear)
                 .addContainerGap())
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 665, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jButton1)
-                    .add(jButton2))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
-                .addContainerGap())
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(buttonClear)
+                    .add(jButton1)))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-            Logger.getLogger(Console.class.getPackage().getName()).severe("MEMORY HANDLER ADDED");
+        Logger.getLogger(Console.class.getPackage().getName()).severe("MEMORY HANDLER ADDED");
 
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        WindowHandler h = WindowHandler.getInstance();
-        h.setTmp(this);
-                    Logger.getLogger(Console.class.getPackage().getName()).addHandler(h);
+    private void buttonClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonClearActionPerformed
+        text1.setText("");
+    }//GEN-LAST:event_buttonClearActionPerformed
 
-        
-    }//GEN-LAST:event_jButton2ActionPerformed
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        //Remove the handler
+        WekinatorInstance.getWekinatorInstance().removeLoggingHandler(h);
+    }//GEN-LAST:event_formWindowClosing
 
     /**
-    * @param args the command line arguments
-    */
-       WekinatorInstance wek;
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
-                 Console b = new Console();
-                    b.setVisible(true);
-              //  
+                Console b = new Console();
+                b.setVisible(true);
+            //
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton buttonClear;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea text1;
     // End of variables declaration//GEN-END:variables
 
     public void showInfo(String data) {
-    text1.append(data);
-    this.getContentPane().validate();
-  }
- 
+        text1.append(data);
+        this.getContentPane().validate();
+    }
 
+        @Override
+    public Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException();
+    }
 }
-class WindowHandler extends Handler {
-  //the window to which the logging is done
-  private Console tmp = null;
 
-  private Formatter formatter = null;
+class WekinatorConsoleHandler extends Handler {
+//  private Console tmp = null;
 
-  private Level level = null;
+    private JTextArea textArea = null;
+    private Formatter formatter = null;
+    private Level level = null;
+    WekinatorInstance wek = null;
 
-  //the singleton instance
-  private static WindowHandler handler = null;
+    //the singleton instance
+    private static WekinatorConsoleHandler handler = null;
 
-  /**
-   * private constructor, preventing initialization
-   */
-  private WindowHandler() {
-    configure();
-  }
-
-  /**
-   * The getInstance method returns the singleton instance of the
-   * WindowHandler object It is synchronized to prevent two threads trying to
-   * create an instance simultaneously. @ return WindowHandler object
-   */
-
-  public static synchronized WindowHandler getInstance() {
-
-    if (handler == null) {
-      handler = new WindowHandler();
-    }
-    return handler;
-  }
-
-  public void setTmp(Console tmp) {
-    this.tmp = tmp;
-  }
-
-  /**
-   * This method loads the configuration properties from the JDK level
-   * configuration file with the help of the LogManager class. It then sets
-   * its level, filter and formatter properties.
-   */
-  private void configure() {
-    LogManager manager = LogManager.getLogManager();
-    String className = this.getClass().getName();
-    //String level = manager.getProperty(className + ".level");
-    //String filter = manager.getProperty(className + ".filter");
-    //String formatter = manager.getProperty(className + ".formatter");
-
-    //accessing super class methods to set the parameters
-    //setLevel(level != null ? Level.parse(level) : Level.INFO);
-    Filter f = new Filter() {
-
-            public boolean isLoggable(LogRecord record) {
-                return true;
-            }
-        }; //TODO total hack
-    //setFormatter(makeFormatter(formatter));
-    setLevel(Level.INFO);
-    setFilter(null);
-    setFormatter(new SimpleFormatter());
-
-
-  }
-
-  /**
-   * private method constructing a Filter object with the filter name.
-   *
-   * @param filterName
-   *            the name of the filter
-   * @return the Filter object
-   */
-  private Filter makeFilter(String filterName) {
-    Class c = null;
-    Filter f = null;
-    try {
-      c = Class.forName(filterName);
-      f = (Filter) c.newInstance();
-    } catch (Exception e) {
-      System.out.println("There was a problem to load the filter class: "
-          + filterName);
-    }
-    return f;
-  }
-
-  /**
-   * private method creating a Formatter object with the formatter name. If no
-   * name is specified, it returns a SimpleFormatter object
-   *
-   * @param formatterName
-   *            the name of the formatter
-   * @return Formatter object
-   */
-  private Formatter makeFormatter(String formatterName) {
-    Class c = null;
-    Formatter f = null;
-
-    try {
-      c = Class.forName(formatterName);
-      f = (Formatter) c.newInstance();
-    } catch (Exception e) {
-      f = new SimpleFormatter();
-    }
-    return f;
-  }
-
-  /**
-   * This is the overridden publish method of the abstract super class
-   * Handler. This method writes the logging information to the associated
-   * Java window. This method is synchronized to make it thread-safe. In case
-   * there is a problem, it reports the problem with the ErrorManager, only
-   * once and silently ignores the others.
-   *
-   * @record the LogRecord object
-   *
-   */
-  public void publish(LogRecord record) {
-    String message = null;
-    //check if the record is loggable
-    if (!isLoggable(record))
-      return;
-    try {
-      message = getFormatter().format(record);
-    } catch (Exception e) {
-      reportError(null, e, ErrorManager.FORMAT_FAILURE);
+    private WekinatorConsoleHandler() {
+        setup();
     }
 
-    try {
-      tmp.showInfo(message);
-    } catch (Exception ex) {
-      reportError(null, ex, ErrorManager.WRITE_FAILURE);
+    public static synchronized WekinatorConsoleHandler getInstance() {
+        if (handler == null) {
+            handler = new WekinatorConsoleHandler();
+        }
+        return handler;
     }
 
-  }
+    public void setTextArea(JTextArea textArea) {
+        this.textArea = textArea;
+    }
 
-  public void close() {
-  }
+    private void setup() {
+        wek = WekinatorInstance.getWekinatorInstance();
+        setLevel(wek.getSettings().getLogLevel());
+        setFilter(null);
+        setFormatter(new SimpleFormatter());
+    }
 
-  public void flush() {
-  }
+    public void publish(LogRecord record) {
+        String message = null;
+        if (!isLoggable(record)) {
+            return;
+        }
+        try {
+            message = getFormatter().format(record);
+        } catch (Exception e) {
+            reportError(null, e, ErrorManager.FORMAT_FAILURE);
+        }
+
+        try {
+            textArea.append(message);
+        } catch (Exception ex) {
+            reportError(null, ex, ErrorManager.WRITE_FAILURE);
+        }
+
+    }
+
+    public void close() {
+    }
+
+    public void flush() {
+    }
 }
