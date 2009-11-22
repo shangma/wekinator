@@ -45,7 +45,13 @@ public class WekinatorSettings implements Serializable {
         }
         //projectDir will be "" if invalid:
         File projectDir = (new File(currentDir)).getParentFile().getParentFile();
+        String projectDirString[] = projectDir.getAbsolutePath().split(File.separator);
+        if (projectDirString.length > 0 && projectDirString[projectDirString.length - 1].equals("java")) {
+            projectDir = projectDir.getParentFile();
+        }
+
         defaultFeatureFileLocation = projectDir + File.separator + "mySavedSettings";
+        System.out.println("Set default feature location to " + defaultFeatureFileLocation);
         defaultClassifierFileLocation = projectDir + File.separator + "mySavedSettings";
         defaultHidFileLocation = projectDir + File.separator + "mySavedSettings";
         
