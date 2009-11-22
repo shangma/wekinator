@@ -20,7 +20,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jButton2" min="-2" max="-2" attributes="0"/>
           </Group>
-          <Component id="scrollPane" alignment="0" pref="489" max="32767" attributes="0"/>
+          <Component id="scrollPane" alignment="0" pref="372" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">

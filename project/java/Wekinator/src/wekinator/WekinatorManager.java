@@ -6,6 +6,7 @@
 package wekinator;
 
 /**
+ * Controls wekinator instance (state)
  *
  * @author rebecca
  */

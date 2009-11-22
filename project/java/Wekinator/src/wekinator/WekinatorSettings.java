@@ -2,11 +2,11 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package wekinator;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -25,9 +25,55 @@ public class WekinatorSettings implements Serializable {
     //This should persist between sessions
 
     protected String lastConfigurationFileLocation = null;
+    protected String lastFeatureFileLocation = null;
+    protected String lastClassifierFileLocation = null;
+    protected String defaultFeatureFileLocation = null;
+    protected String defaultClassifierFileLocation = null;
+    protected String lastHidFileLocation = null;
+    protected String defaultHidFileLocation =null;
+    
     protected String logFile = "wekinator.log";
     protected Level logLevel = Level.WARNING;
     public static final String PROP_LOGLEVEL = "logLevel";
+
+    public WekinatorSettings() {
+        String currentDir;
+        try {
+            currentDir =  new File("").getCanonicalPath();
+        } catch (IOException ex) {
+            currentDir = new File("").getAbsolutePath(); //TODO: util for this check
+        }
+        //projectDir will be "" if invalid:
+        File projectDir = (new File(currentDir)).getParentFile().getParentFile();
+        defaultFeatureFileLocation = projectDir + File.separator + "mySavedSettings";
+        defaultClassifierFileLocation = projectDir + File.separator + "mySavedSettings";
+        defaultHidFileLocation = projectDir + File.separator + "mySavedSettings";
+        
+    }
+
+    public String getDefaultClassifierFileLocation() {
+        return defaultClassifierFileLocation;
+    }
+
+    public String getDefaultFeatureFileLocation() {
+        return defaultFeatureFileLocation;
+    }
+
+    public String getLastClassifierFileLocation() {
+        return lastClassifierFileLocation;
+    }
+
+    public void setLastClassifierFileLocation(String lastClassifierFileLocation) {
+        this.lastClassifierFileLocation = lastClassifierFileLocation;
+    }
+
+    public String getLastFeatureFileLocation() {
+        return lastFeatureFileLocation;
+    }
+
+    public void setLastFeatureFileLocation(String lastFeatureFileLocation) {
+        this.lastFeatureFileLocation = lastFeatureFileLocation;
+    }
 
     /**
      * Get the value of logLevel
@@ -86,8 +132,6 @@ public class WekinatorSettings implements Serializable {
         this.logFile = logFile;
     }
 
-
-
     /**
      * Get the value of lastConfigurationFileLocation
      *
@@ -111,7 +155,7 @@ public class WekinatorSettings implements Serializable {
         if (lastConfigurationFileLocation == null) {
             throw new IOException("No previous configuration found");
         }
-        
+
         FileInputStream fin = null;
         try {
             fin = new FileInputStream(lastConfigurationFileLocation);
@@ -130,7 +174,7 @@ public class WekinatorSettings implements Serializable {
                 Logger.getLogger(WekinatorInstance.class.getName()).log(Level.INFO, null, ex);
             }
         }
-        return c;    
+        return c;
     }
 
     public void saveConfiguration(ChuckConfiguration c) throws IOException {
@@ -156,6 +200,18 @@ public class WekinatorSettings implements Serializable {
         if (fail) {
             throw new IOException("Could not write to file");
         }
+    }
+
+    public String getLastHidFileLocation() {
+        return lastHidFileLocation;
+    }
+
+    public void setLastHidFileLocation(String lastHidFileLocation) {
+        this.lastHidFileLocation = lastHidFileLocation;
+    }
+
+    public String getDefaultHidFileLocation() {
+        return defaultHidFileLocation;
     }
 
 }

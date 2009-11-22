@@ -164,6 +164,7 @@ public class WekaOperator implements Subject {
 
         for (int i = 0; i < numParametersToTrain; i++) {
             c[i] = (Classifier) instream.readObject();
+           // if (c[i].
         }
 
         dataset = (SimpleDataset) instream.readObject();
@@ -482,6 +483,7 @@ public class WekaOperator implements Subject {
             throw new UnsupportedOperationException("Classifier array not yet initialized");
         }
         myState = OperatorState.READY;
+        setTrainingState(TrainingState.TRAINED);
         myClassifierState = ClassifierState.TRAINED;
         myFeatureState = FeatureState.OK;
         notifyClassifierStateObservers();
@@ -1176,26 +1178,24 @@ public class WekaOperator implements Subject {
         }
     }
 
-    public void receivedRealValue(Object[] o) {
-        if (o.length > 0 && o[0] instanceof Float && realVals.length > 0) {
-            //   realVals[0] = Float.valueOf((Float) o[0]);
-            //   gui.displayReceivedRealValue(realVals[0]);
-            // System.out.println("in received real value");
+    public void receivedRealValue(Object[] o) throws Exception {
+        if (o.length > 0 && realVals.length > 0) {
             float[] f = new float[o.length];
             for (int i = 0; i < o.length; i++) {
-                f[i] = ((Float) o[i]).floatValue();
+                if (o[i] instanceof Float) {
+                    f[i] = ((Float) o[i]).floatValue();
+                } else if (o[i] instanceof Integer) {
+                   f[i] = (int)((Float) o[i]).floatValue();
+                } else {
+                    throw new Exception("Unexpected value: Not float or int coming from receivedRealValue");
+                }
             }
-            //  System.out.println("real val is " + f[0]);
-
             this.setRealVals(f);
             hasReceivedUpdatedClasses = true;
 
             gui.displayClassValueMulti(f);
 
-        } else {
-            throw new Error("Not a float or feats not initialized");
         }
-
     }
 
     public void startRun() {
@@ -1237,6 +1237,16 @@ public class WekaOperator implements Subject {
             myState = OperatorState.FAIL;
             notifyOperatorObservers();
         }
+    }
+
+    public void resetClassifiers() {
+      /*  for (int i = 0; i < c.length; i++) {
+        RAF
+        } */
+       // setNumParameters(numParametersToTrain);
+        
+        myClassifierState = ClassifierState.HAS_DATA;
+        setTrainingState(TrainingState.NOT_TRAINED);
     }
 
     /**

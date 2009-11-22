@@ -24,10 +24,12 @@ import wekinator.FeatureManager;
 public class FeatureParameterMaskEditor extends javax.swing.JPanel {
 
     FeatureParamModel model = null;
+    boolean[][] original = null;
 
     /** Creates new form FeatureParameterMaskEditor */
     public FeatureParameterMaskEditor(FeatureToParameterMapping mapping) {
         initComponents();
+        original = mapping.getFeatureToParameterMatrix();
         populateTable(mapping);
     }
 
@@ -37,6 +39,7 @@ public class FeatureParameterMaskEditor extends javax.swing.JPanel {
 
     public void setMapping(FeatureToParameterMapping mapping) {
         populateTable(mapping);
+        original = mapping.getFeatureToParameterMatrix();
     }
 
     public FeatureToParameterMapping getFeatureToParameterMapping() {
@@ -94,7 +97,7 @@ public class FeatureParameterMaskEditor extends javax.swing.JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jButton2))
-            .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
+            .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 372, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -106,7 +109,7 @@ public class FeatureParameterMaskEditor extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        setAllFeaturesTrue();
+        setFeaturesFromBackup();
     }//GEN-LAST:event_jButton2ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -144,6 +147,23 @@ public class FeatureParameterMaskEditor extends javax.swing.JPanel {
 
     private void setAllFeaturesTrue() {
         model.setAllFeaturesTrue();
+    }
+
+    private void setFeaturesFromBackup() {
+       model.mapping.setFromFeatureToParameterMatrix(original);
+       model.fireTableDataChanged();
+
+    }
+
+    public boolean hasMappingChanged() {
+        boolean mine[][] = model.mapping.getFeatureToParameterMatrix();
+        for (int i = 0; i < original.length; i++) {
+            for (int j = 0; j < original[0].length; j++) {
+                if (mine[i][j] != original[i][j])
+                    return true;
+            }
+        }
+        return false;
     }
 }
 class FeatureParamModel extends AbstractTableModel {

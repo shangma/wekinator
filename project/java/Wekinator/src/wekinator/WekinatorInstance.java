@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 /**
+ * Ideally, captures current state of the system, including all active component objects
  *
  * @author rebecca
  */
@@ -125,7 +126,7 @@ public class WekinatorInstance {
             sin.close();
             fin.close();
             System.out.println("Loaded user settings");
-        } catch (Exception ex) {
+        } catch (Exception ex) { 
             System.out.println("No user settings found");
             settings = new WekinatorSettings();
             settings.setLastConfigurationFileLocation("chuckconfiguration.usersettings");
@@ -149,7 +150,7 @@ public class WekinatorInstance {
                         fout.close();
                     }
                 } catch (IOException ex2) {
-                    Logger.getLogger(WekinatorSettings.class.getName()).log(Level.INFO, null, ex);
+                    Logger.getLogger(WekinatorSettings.class.getName()).log(Level.INFO, null, ex2);
                 }
             }
 
@@ -163,7 +164,7 @@ public class WekinatorInstance {
             } catch (IOException ex) {
                 Logger.getLogger(WekinatorInstance.class.getName()).log(Level.INFO, null, ex);
             }
-        }
+        } 
 
         runner = ChuckRunner.getChuckRunner();
         runner.setConfiguration(configuration);
@@ -180,6 +181,31 @@ public class WekinatorInstance {
         } catch (Exception ex) {
             System.out.println("Couldn't create log file");
         }
+    }
+
+    public void saveCurrentSettings() {
+        FileOutputStream fout = null;
+            boolean fail = false;
+            try {
+                fout = new FileOutputStream(settingsSaveFile);
+                ObjectOutputStream out = new ObjectOutputStream(fout);
+                out.writeObject(settings);
+                out.close();
+                fout.close();
+                System.out.println("Wrote to settings file");
+            } catch (IOException ex1) {
+                fail = true;
+                System.out.println("Failed to write to settings file: " + ex1.getMessage());
+                ex1.printStackTrace();
+            } finally {
+                try {
+                    if (fout != null) {
+                        fout.close();
+                    }
+                } catch (IOException ex2) {
+                    Logger.getLogger(WekinatorSettings.class.getName()).log(Level.INFO, null, ex2);
+                }
+            }
     }
 
     public static synchronized WekinatorInstance getWekinatorInstance() {

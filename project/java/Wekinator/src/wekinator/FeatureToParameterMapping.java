@@ -20,14 +20,14 @@ import wekinator.FeatureManager;
 public class FeatureToParameterMapping {
 
     // protected int numFeatures = 0;
-    public static final String PROP_NUMFEATURES = "numFeatures";
+    //  public static final String PROP_NUMFEATURES = "numFeatures";
     protected int numParams = 0;
     public static final String PROP_NUMPARAMS = "numParams";
 
     //List<Boolean> lists whether a feature is used for a parameter; length numParams;
     private List<Feature> features = new LinkedList<Feature>();
     private List<Set> featureFamilies = new LinkedList<Set>();
-    //Set<Feature> unassignedFeatures = new HashSet<Feature>();
+    Set<Feature> unassignedFeatures = new HashSet<Feature>();
     Set<Feature> chuckAudioFeatures = new HashSet<Feature>();
     Set<Feature> trackpadFeatures = new HashSet<Feature>();
     Set<Feature> motionSensorFeatures = new HashSet<Feature>();
@@ -36,7 +36,24 @@ public class FeatureToParameterMapping {
     Set<Feature> customOSCFeatures = new HashSet<Feature>();
     Set<Feature> processingFeatures = new HashSet<Feature>();
 
-    public FeatureToParameterMapping(FeatureManager fm, int numParams) {
+    public FeatureToParameterMapping(SimpleDataset dataset) {
+        //Get all our info from an existing dataset
+        featureFamilies.add(unassignedFeatures);
+        setNumParams(dataset.getNumParameters());
+        for (int i = 0; i < dataset.getNumFeatures(); i++) {
+            Feature f = new Feature(unassignedFeatures, dataset.getFeatureName(i), numParams);
+            features.add(f);
+            for (int j = 0; j < numParams; j++) {
+                f.featureMask.set(j, dataset.isFeatureActiveForParameter(i, j));
+            }
+        }
+    }
+
+    FeatureToParameterMapping Copy() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    private void initializeFamilies() {
         //featureFamilies.add(unassignedFeatures);
         //TODO: This really belongs in FeatureManager, not here
         featureFamilies.add(chuckAudioFeatures);
@@ -46,9 +63,11 @@ public class FeatureToParameterMapping {
         featureFamilies.add(customChuckFeatures);
         featureFamilies.add(customOSCFeatures);
         featureFamilies.add(processingFeatures);
+    }
 
+    public FeatureToParameterMapping(FeatureManager fm, int numParams) {
+        initializeFamilies();
         setNumParams(numParams);
-
         //Populate families from feature manager
         if (fm.useAudio) {
             if (fm.useFFT) {
@@ -105,11 +124,12 @@ public class FeatureToParameterMapping {
             }
 
         }
-        
+
         //Sanity check
         if (features.size() != fm.getNumFeatures()) {
             System.out.println("ERROR MISMATCH IN FEATURE SIZES: " + features.size() + "here, " + fm.getNumFeatures() + "there");
         }
+
     }
 
     public boolean getIsFeatureUsingParam(int f, int p) {
@@ -224,6 +244,27 @@ public class FeatureToParameterMapping {
             }
         }
 
+    }
+
+    public boolean[][] getFeatureToParameterMatrix() {
+        boolean m[][] = new boolean[features.size()][numParams];
+        for (int i = 0; i < features.size(); i++) {
+            for (int j = 0; j < numParams; j++) {
+                m[i][j] = features.get(i).featureMask.get(j);
+            }
+        }
+        return m;
+    }
+
+    public void setFromFeatureToParameterMatrix(boolean[][] m) {
+        if (m.length != features.size() || (m.length > 0 && m[0].length != numParams)) {
+            return;
+        }
+        for (int i = 0; i < features.size(); i++) {
+            for (int j = 0; j < numParams; j++) {
+                features.get(i).featureMask.set(j, m[i][j]);
+            }
+        }
     }
 }
 

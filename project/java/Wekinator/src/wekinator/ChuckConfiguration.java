@@ -34,8 +34,7 @@ public class ChuckConfiguration implements Serializable {
     private boolean useOscSynth = false;
     private int numOscSynthParams = 0;
     private boolean isOscSynthParamDiscrete[] = new boolean[0];
-        private boolean oscUseDistribution[] = new boolean[0];
-
+    private boolean oscUseDistribution[] = new boolean[0];
     protected boolean usable = false;
     public static final String PROP_USABLE = "usable";
 
@@ -78,7 +77,6 @@ public class ChuckConfiguration implements Serializable {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
-
     public boolean[] getOscUseDistribution() {
         return oscUseDistribution;
     }
@@ -89,15 +87,13 @@ public class ChuckConfiguration implements Serializable {
             this.oscUseDistribution[i] = oscUseDistribution[i];
         }
     }
-
     private int oscSynthReceivePort = 12000; //Matches defaults in chuck code
     private int oscSynthSendPort = 6448; //Matches defaults in chuck code
     private boolean isPlayalongLearningEnabled = false;
     private String playalongLearningFile = "No file selected";
     private String locationToSaveMyself = "myConfiguration.chuckconfiguration";
     private int numOscSynthMaxParamVals = 2;
-   // private boolean oscSynthUseDistribution = false;
-
+    // private boolean oscSynthUseDistribution = false;
 
     public ChuckConfiguration() {
         isOscSynthParamDiscrete = new boolean[0];
@@ -124,7 +120,7 @@ public class ChuckConfiguration implements Serializable {
     public void writeToFile(File settingsFile) throws FileNotFoundException, IOException {
         FileOutputStream fout = new FileOutputStream(settingsFile);
         ObjectOutputStream out = new ObjectOutputStream(fout);
-        locationToSaveMyself = settingsFile.getAbsolutePath();
+        locationToSaveMyself = settingsFile.getCanonicalPath();
         out.writeObject(this);
         out.close();
         fout.close();
@@ -137,16 +133,11 @@ public class ChuckConfiguration implements Serializable {
     public void validate() throws Exception {
         String errorString = "";
 
+        //Check for legal chuck directory
         String s;
-        if (chuckDirectory.contains("/")) {
-            String ss[] = chuckDirectory.split("/");
-            if (ss.length > 0) {
-                s = ss[ss.length - 1];
-            } else {
-                s = "";
-            }
-        } else if (chuckDirectory.contains("\\")) {
-            String ss[] = chuckDirectory.split("\\");
+        String[] ss;
+        if (chuckDirectory.contains(File.separator)) {
+            ss = chuckDirectory.split(File.separator);
             if (ss.length > 0) {
                 s = ss[ss.length - 1];
             } else {
@@ -155,57 +146,77 @@ public class ChuckConfiguration implements Serializable {
         } else {
             s = chuckDirectory;
         }
-        if (!s.equals("chuck")) {
-            errorString += "Core chuck directory must refer to location of \"chuck\" within wekinator project/\n";
-        }
-
-        
 
         File f = new File(chuckDirectory);
-        if (!f.exists() || !f.isDirectory()) {
-            errorString += "Chuck directory does not exist\n";
-        }
+        String coreString = chuckDirectory + File.separator + "core_chuck" + File.separator; //TODO: make work for windows
+        File f2 = new File(coreString);
 
-        String coreString = chuckDirectory + "/core_chuck/"; //TODO: make work for windows
-        File coreF = new File(coreString);
-        if (! coreF.exists() || !coreF.isDirectory())
-        {
+        if (!s.equals("chuck")) {
+            errorString += "Chuck directory must refer to location of \"chuck/\" within wekinator project directory\n";
+        } else if (!f.exists() || !f.isDirectory()) {
+            errorString += "Chuck directory does not exist or is not a directory\n";
+        } else if (!f2.exists() || !f2.isDirectory()) {
             errorString += "Chuck directory must be the chuck wekinator directory, containing sub directory core_chuck.\n";
-
         }
 
-      if (useOscSynth && numOscSynthParams <=0) {
-                errorString += "Number of params must be > 0";
-        }
-/*
-           if (useChuckSynthClass && !isChuckFile(chuckSynthFilename)) {
-            errorString += "Invalid chuck synth class file.";
+        //Check for legal chuck executable
+        f = new File(chuckExecutable);
+        s = f.getCanonicalPath();
+        ss = s.split(File.separator);
+
+        if (!(f.exists() && f.isFile())) {
+            errorString += "Chuck executable must be the chuck binary file called \"chuck\".\n";
+        } else if (!(ss.length > 0 && ss[ss.length - 1].equalsIgnoreCase("chuck"))) {
+            errorString += "Chuck executable must be the chuck binary file called \"chuck\".\n";
         }
 
-                   if (customChuckFeatureExtractorEnabled && !isChuckFile(customChuckFeatureExtractorFilename)) {
-            errorString += "Invalid chuck feature extractor class file.";
+        //Check chuck feature extractor
+        if (customChuckFeatureExtractorEnabled) {
+            if (!isChuckFile(customChuckFeatureExtractorFilename)) {
+                errorString += "Invalid chuck feature extractor class file: Must be .ck file.\n";
+            }
+            if (numCustomChuckFeaturesExtracted <= 0) {
+                errorString += "Number of chuck features must be > 0.\n";
+            }
         }
 
-                   if (isPlayalongLearningEnabled && !isChuckFile(playalongLearningFile)) {
-            errorString += "Invalid chuck score player class file.";
-        } */
+        //Check OSC feature extractor
+        if (oscFeatureExtractorEnabled && numOSCFeaturesExtracted <= 0) {
+            errorString += "Number of custom OSC features must be > 0 if using OSC feature extractor.\n";
+        }
 
-        //TODO: complete.
+        //Check ChucK synth class
+        if (useChuckSynthClass && !isChuckFile(chuckSynthFilename)) {
+            errorString += "Invalid chuck synth class file: Must be .ck file.\n";
+        }
+
+        if (useOscSynth) {
+            if (numOscSynthParams <= 0) {
+                errorString += "Number of OSC synth params must be > 0.\n";
+            }
+            if (isOscSynthParamDiscrete.length > 0 && isOscSynthParamDiscrete[0]) {
+                if (numOscSynthMaxParamVals <= 0) {
+                    errorString += "Max number of discrete parameter values must be > 0 for OSC synth.\n";
+                }
+                if (oscSynthSendPort <= 0) {
+                    errorString += "OSC synth send port must be > 0.\n";
+                }
+                if (oscSynthReceivePort <= 0) {
+                    errorString += "OSC synth receive port must be > 0 (try 12000).\n";
+                }
+            }
+        }
+
+        //Check playalong learning
+        if (isPlayalongLearningEnabled && !isChuckFile(playalongLearningFile)) {
+            errorString += "Invalid chuck score player class file: Must be .ck file.\n";
+        }
+
         if (errorString.length() != 0) {
             throw new Exception(errorString);
         }
-
-
-
-    //Make sure fields valid
-
-    //Make sure chuck executable is present & executable
-
-
-
-
+        
         setUsable(true);
-
     }
 
     private boolean isChuckFile(String filename) {
@@ -216,8 +227,8 @@ public class ChuckConfiguration implements Serializable {
 
         String lastPart = f.getName();
 
-        String parts[] = lastPart.split(".");
-        if (parts.length <2 || ! parts[1].equals("ck")) {
+        String parts[] = lastPart.split("\\.");
+        if (parts.length < 2 || !parts[parts.length - 1].equals("ck")) {
             return false;
         }
 
@@ -241,9 +252,9 @@ public class ChuckConfiguration implements Serializable {
         for (int i = 0; i < isOscSynthParamDiscrete.length; i++) {
             isOscSynthParamDiscrete[i] = c.isOscSynthParamDiscrete[i];
         }
-                oscUseDistribution = new boolean[c.oscUseDistribution.length];
+        oscUseDistribution = new boolean[c.oscUseDistribution.length];
 
-                for (int i = 0; i < oscUseDistribution.length; i++) {
+        for (int i = 0; i < oscUseDistribution.length; i++) {
             oscUseDistribution[i] = c.oscUseDistribution[i];
         }
 
@@ -252,15 +263,15 @@ public class ChuckConfiguration implements Serializable {
         isPlayalongLearningEnabled = c.isPlayalongLearningEnabled;
         playalongLearningFile = c.playalongLearningFile;
         locationToSaveMyself = c.locationToSaveMyself;
-           numOscSynthMaxParamVals = c.numOscSynthMaxParamVals;
+        numOscSynthMaxParamVals = c.numOscSynthMaxParamVals;
 
-           setUsable(false);
-     //       setUsable(c.usable);
-           try {
-               validate();
-           } catch (Exception ex) {
-                //Do nothing
-           }
+        setUsable(false);
+        //       setUsable(c.usable);
+        try {
+            validate();
+        } catch (Exception ex) {
+            //Do nothing
+        }
     }
 
     public String getChuckSynthFilename() {
@@ -269,7 +280,7 @@ public class ChuckConfiguration implements Serializable {
 
     public void setChuckSynthFilename(String chuckSynthFilename) {
         this.chuckSynthFilename = chuckSynthFilename;
-                setUsable(false);
+        setUsable(false);
 
     }
 
@@ -279,7 +290,7 @@ public class ChuckConfiguration implements Serializable {
 
     public void setChuckDir(String chuckDir) {
         this.chuckDirectory = chuckDir;
-                        setUsable(false);
+        setUsable(false);
 
     }
 
@@ -289,7 +300,7 @@ public class ChuckConfiguration implements Serializable {
 
     public void setCustomChuckFeatureExtractorEnabled(boolean customChuckFeatureExtractorEnabled) {
         this.customChuckFeatureExtractorEnabled = customChuckFeatureExtractorEnabled;
-                        setUsable(false);
+        setUsable(false);
 
     }
 
@@ -299,7 +310,7 @@ public class ChuckConfiguration implements Serializable {
 
     public void setCustomChuckFeatureExtractorFilename(String customChuckFeatureExtractorFilename) {
         this.customChuckFeatureExtractorFilename = customChuckFeatureExtractorFilename;
-                        setUsable(false);
+        setUsable(false);
 
     }
 
@@ -308,12 +319,12 @@ public class ChuckConfiguration implements Serializable {
     }
 
     public void setIsOscSynthParamDiscrete(boolean[] isOscSynthParamDiscrete) {
-    //    this.isOscSynthParamDiscrete = isOscSynthParamDiscrete;
+        //    this.isOscSynthParamDiscrete = isOscSynthParamDiscrete;
         this.isOscSynthParamDiscrete = new boolean[isOscSynthParamDiscrete.length];
         for (int i = 0; i < isOscSynthParamDiscrete.length; i++) {
             this.isOscSynthParamDiscrete[i] = isOscSynthParamDiscrete[i];
         }
-                setUsable(false);
+        setUsable(false);
 
     }
 
@@ -323,7 +334,7 @@ public class ChuckConfiguration implements Serializable {
 
     public void setIsPlayalongLearningEnabled(boolean isPlayalongLearningEnabled) {
         this.isPlayalongLearningEnabled = isPlayalongLearningEnabled;
-                        setUsable(false);
+        setUsable(false);
 
     }
 
@@ -333,7 +344,7 @@ public class ChuckConfiguration implements Serializable {
 
     public void setNumCustomChuckFeaturesExtracted(int numCustomChuckFeaturesExtracted) {
         this.numCustomChuckFeaturesExtracted = numCustomChuckFeaturesExtracted;
-                        setUsable(false);
+        setUsable(false);
 
     }
 
@@ -343,7 +354,7 @@ public class ChuckConfiguration implements Serializable {
 
     public void setNumOSCFeaturesExtracted(int numOSCFeaturesExtracted) {
         this.numOSCFeaturesExtracted = numOSCFeaturesExtracted;
-                        setUsable(false);
+        setUsable(false);
 
     }
 
@@ -353,7 +364,7 @@ public class ChuckConfiguration implements Serializable {
 
     public void setNumOscSynthParams(int numOscSynthParams) {
         this.numOscSynthParams = numOscSynthParams;
-                        setUsable(false);
+        setUsable(false);
 
     }
 
@@ -363,7 +374,7 @@ public class ChuckConfiguration implements Serializable {
 
     public void setOscFeatureExtractorEnabled(boolean oscFeatureExtractorEnabled) {
         this.oscFeatureExtractorEnabled = oscFeatureExtractorEnabled;
-                        setUsable(false);
+        setUsable(false);
 
     }
 
@@ -373,7 +384,7 @@ public class ChuckConfiguration implements Serializable {
 
     public void setOscFeatureExtractorSendPort(int oscFeatureExtractorSendPort) {
         this.oscFeatureExtractorSendPort = oscFeatureExtractorSendPort;
-                        setUsable(false);
+        setUsable(false);
 
     }
 
@@ -383,7 +394,7 @@ public class ChuckConfiguration implements Serializable {
 
     public void setOscSynthReceivePort(int oscSynthReceivePort) {
         this.oscSynthReceivePort = oscSynthReceivePort;
-                        setUsable(false);
+        setUsable(false);
 
     }
 
@@ -393,7 +404,7 @@ public class ChuckConfiguration implements Serializable {
 
     public void setOscSynthSendPort(int oscSynthSendPort) {
         this.oscSynthSendPort = oscSynthSendPort;
-                        setUsable(false);
+        setUsable(false);
 
     }
 
@@ -403,7 +414,7 @@ public class ChuckConfiguration implements Serializable {
 
     public void setPlayalongLearningFile(String playalongLearningFile) {
         this.playalongLearningFile = playalongLearningFile;
-                        setUsable(false);
+        setUsable(false);
 
     }
 
@@ -413,7 +424,7 @@ public class ChuckConfiguration implements Serializable {
 
     public void setUseChuckSynthClass(boolean useChuckSynthClass) {
         this.useChuckSynthClass = useChuckSynthClass;
-                        setUsable(false);
+        setUsable(false);
 
     }
 
@@ -423,7 +434,7 @@ public class ChuckConfiguration implements Serializable {
 
     public void setUseOscSynth(boolean useOscSynth) {
         this.useOscSynth = useOscSynth;
-                        setUsable(false);
+        setUsable(false);
 
     }
 
@@ -433,7 +444,7 @@ public class ChuckConfiguration implements Serializable {
 
     public void setSaveLocation(String locationToSaveMyself) {
         this.locationToSaveMyself = locationToSaveMyself;
-                        setUsable(false);
+        setUsable(false);
 
     }
 
@@ -443,7 +454,7 @@ public class ChuckConfiguration implements Serializable {
 
     public void setChuckExecutable(String chuckExecutable) {
         this.chuckExecutable = chuckExecutable;
-                        setUsable(false);
+        setUsable(false);
 
     }
 
@@ -453,7 +464,7 @@ public class ChuckConfiguration implements Serializable {
 
     public void setLocationToSaveMyself(String locationToSaveMyself) {
         this.locationToSaveMyself = locationToSaveMyself;
-                        setUsable(false);
+        setUsable(false);
 
     }
 
@@ -463,11 +474,7 @@ public class ChuckConfiguration implements Serializable {
 
     public void setNumOscSynthMaxParamVals(int numOscSynthMaxParamVals) {
         this.numOscSynthMaxParamVals = numOscSynthMaxParamVals;
-                        setUsable(false);
+        setUsable(false);
 
     }
-
-
-
-
 }

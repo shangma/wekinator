@@ -22,7 +22,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.nio.CharBuffer;
 import java.util.Date;
 import java.util.LinkedList;
@@ -34,6 +33,7 @@ import java.util.logging.Logger;
  * @author rebecca
  */
 public class ChuckRunner {
+
     private static ChuckRunner ref = null;
     private ChuckConfiguration configuration;
     protected boolean running = false;
@@ -46,6 +46,57 @@ public class ChuckRunner {
      */
     public boolean isRunning() {
         return running;
+    }
+
+    static void exportConfigurationToChuckFile(ChuckConfiguration configuration, File file) throws IOException {
+        //Open output stream
+        BufferedWriter w = null;
+        w = new BufferedWriter(new FileWriter(file));
+
+        w.write("//Automatically generated machine.add file\n");
+        w.write("//Created " + (new Date()).toString() + "\n\n");
+        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "TrackpadFeatureExtractor.ck" + "\");\n");
+        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "MotionFeatureExtractor.ck" + "\");\n");
+        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "AudioFeatureExtractor.ck" + "\");\n");
+        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "HidDiscoverer.ck" + "\");\n");
+        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "CustomOSCFeatureExtractor.ck" + "\");\n");
+
+        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "ProcessingFeatureExtractor.ck" + "\");\n");
+
+
+
+        if (configuration.isCustomChuckFeatureExtractorEnabled()) {
+            w.write("Machine.add(\"" + configuration.getCustomChuckFeatureExtractorFilename() + "\");\n");
+
+        } else {
+                        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "feature_extractors" + File.separator + "keyboard_rowcol.ck" + "\");\n");
+        }
+
+        if (configuration.isUseOscSynth()) {
+            w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "synths" + File.separator + "OSC_synth_proxy.ck" + "\");\n");
+        } else {
+            w.write("Machine.add(\"" + configuration.getChuckSynthFilename() + "\");\n");
+        }
+
+        if (configuration.isIsPlayalongLearningEnabled()) {
+           w.write("Machine.add(\"" + configuration.getPlayalongLearningFile() + "\");\n");
+        } else {
+           w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "score_players"+ File.separator + "icmc_melody.ck" + "\");\n");
+        }
+
+        if (configuration.isUseOscSynth()) {
+            String args = ":synthNumParams:" + configuration.getNumOscSynthParams();
+
+            args += ":synthIsDiscrete:" + (configuration.getIsOscSynthParamDiscrete()[0] ? "1" : "0");
+            args += ":synthUsingDistribution:" + (configuration.getOscUseDistribution()[0] ? "1" : "0");
+            args += ":synthNumClasses:" + configuration.getNumOscSynthMaxParamVals();
+            args += ":synthPort:" + configuration.getOscSynthReceivePort();
+            w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "main_chuck_new.ck" + args + "\");\n");
+        } else {
+           w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "main_chuck.ck" + "\");\n");
+        }
+
+        w.close();
     }
 
     /**
@@ -89,7 +140,6 @@ public class ChuckRunner {
         return ref;
     }
 
-
     public static void main(String[] args) {
         //Test
     }
@@ -131,23 +181,23 @@ public class ChuckRunner {
         // cmds.add("ovisodiu oheroh");
         cmds.add(configuration.getChuckExecutable() + " --loop");
 
-        cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + "/core_chuck/TrackpadFeatureExtractor.ck");
-        cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + "/core_chuck/MotionFeatureExtractor.ck");
-        cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + "/core_chuck/AudioFeatureExtractor.ck");
+        cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "TrackpadFeatureExtractor.ck");
+        cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "MotionFeatureExtractor.ck");
+        cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "AudioFeatureExtractor.ck");
 
-        cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + "/core_chuck/HidDiscoverer.ck");
-        cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + "/core_chuck/CustomOSCFeatureExtractor.ck");
+        cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "HidDiscoverer.ck");
+        cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "CustomOSCFeatureExtractor.ck");
 
-        cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + "/core_chuck/ProcessingFeatureExtractor.ck");
+        cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "ProcessingFeatureExtractor.ck");
 
         if (configuration.isCustomChuckFeatureExtractorEnabled()) {
             cmds.add(configuration.getChuckExecutable() + " + " + configuration.getCustomChuckFeatureExtractorFilename());
         } else {
-            cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + "/feature_extractors/keyboard_rowcol.ck");
+            cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + File.separator + "feature_extractors" + File.separator + "keyboard_rowcol.ck");
         }
 
         if (configuration.isUseOscSynth()) {
-            cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + "/synths/OSC_synth_proxy.ck");
+            cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + File.separator + "synths" + File.separator + "OSC_synth_proxy.ck");
         } else {
             cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckSynthFilename());
         }
@@ -155,19 +205,19 @@ public class ChuckRunner {
         if (configuration.isIsPlayalongLearningEnabled()) {
             cmds.add(configuration.getChuckExecutable() + " + " + configuration.getPlayalongLearningFile());
         } else {
-            cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + "/score_players/icmc_melody.ck");
+            cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + File.separator + "score_players" + File.separator + "icmc_melody.ck");
         }
 
         if (configuration.isUseOscSynth()) {
             String args = ":synthNumParams:" + configuration.getNumOscSynthParams();
-            
-            args += ":synthIsDiscrete:" + (configuration.getIsOscSynthParamDiscrete()[0] ? "1" : "0" );
+
+            args += ":synthIsDiscrete:" + (configuration.getIsOscSynthParamDiscrete()[0] ? "1" : "0");
             args += ":synthUsingDistribution:" + (configuration.getOscUseDistribution()[0] ? "1" : "0");
             args += ":synthNumClasses:" + configuration.getNumOscSynthMaxParamVals();
             args += ":synthPort:" + configuration.getOscSynthReceivePort();
-            cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + "/core_chuck/main_chuck_new.ck" + args);
+            cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "main_chuck_new.ck" + args);
         } else {
-            cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + "/core_chuck/main_chuck.ck");
+            cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "main_chuck.ck");
         }
 
         //Now we want to execute these commands.
@@ -184,7 +234,7 @@ public class ChuckRunner {
                 if (i == 0) {
                     //Special! Fork a thread that listens to the output of this process,
                     //and log lines using logger
-                   // Runtime.getRuntime().
+                    // Runtime.getRuntime().
                     new LoggerThread(child.getErrorStream());
                     new LoggerThread(child.getInputStream());
                 }
@@ -198,7 +248,7 @@ public class ChuckRunner {
                     }
 
                     BufferedReader input = new BufferedReader(new InputStreamReader(child.getErrorStream()));
-                   
+
                     while ((line = input.readLine()) != null) {
                         numErrLines++;
                         output += "In executing command " + cmds.get(i) + " received error:\n";
@@ -249,13 +299,15 @@ public class ChuckRunner {
         stop();
         run();
     }
-   @Override
+
+    @Override
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
     }
 }
 
 class LoggerThread implements Runnable {
+
     Thread t;
     BufferedReader input;
 
@@ -264,30 +316,29 @@ class LoggerThread implements Runnable {
         t = new Thread(this, "my thread");
         t.start();
     }
+
     public void run() {
         boolean stop = false;
-         while (!stop) {
+        while (!stop) {
             try {
                 ///byte[] byteArray = new byte[2];
-               int b = input.read();
-               // input.read
+                int b = input.read();
+                // input.read
 
                 if (b == -1) {
                     stop = true;
                     System.out.println("made it to end of stream");
-                }
-                else {
+                } else {
                     //TODO: send to console in reasonable way
-                    System.out.print((char)b);
+                    System.out.print((char) b);
                     //String s = String.
-                    Console.getInstance().log(String.valueOf((char)b));
+                    Console.getInstance().log(String.valueOf((char) b));
                 }
             } catch (IOException ex) {
                 Logger.getLogger(LoggerThread.class.getName()).log(Level.SEVERE, null, ex);
             }
 
-         }
-         
-    }
+        }
 
+    }
 }

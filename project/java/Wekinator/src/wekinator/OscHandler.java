@@ -726,15 +726,19 @@ public class OscHandler {
         OSCListener listener = new OSCListener() {
 
             public void acceptMessage(java.util.Date time, OSCMessage message) {
-                //    System.out.println("Real value received!");
-                Object[] o = message.getArguments();
-                //  try {
-                //Introduce delay here?
-                // Thread.sleep(500);
-                // } catch (InterruptedException ex) {
-                //    Logger.getLogger(OscHandler.class.getName()).log(Level.SEVERE, null, ex);
-                // }
-                w.receivedRealValue(o);
+                try {
+                    //    System.out.println("Real value received!");
+                    Object[] o = message.getArguments();
+                    //  try {
+                    //Introduce delay here?
+                    // Thread.sleep(500);
+                    // } catch (InterruptedException ex) {
+                    //    Logger.getLogger(OscHandler.class.getName()).log(Level.SEVERE, null, ex);
+                    // }
+                    w.receivedRealValue(o);
+                } catch (Exception ex) {
+                    Logger.getLogger(OscHandler.class.getName()).log(Level.WARNING, null, ex);
+                }
 
             }
         };

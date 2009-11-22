@@ -34,8 +34,11 @@ import wekinator.util.Observer;
 import wekinator.util.Subject;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import org.jdesktop.swingworker.*;
 import javax.swing.event.ChangeEvent;
+import wekinator.util.OverwritePromptingFileChooser;
+import wekinator.util.Util;
 
 /**
  *
@@ -181,7 +184,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         hs = new HidSetup();
         fm.hidSetup = hs;
         hs.addObserver(this);
-        buttonClearClassifierChoice.setVisible(false);
+
         //  buttonClearSettings.setVisible(false);
         radioClearProcessingFeature.setVisible(false);
         int n = w.getNumClasses();
@@ -463,7 +466,6 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         textNumParams = new javax.swing.JTextField();
         labelNumFeatures = new javax.swing.JLabel();
         textNumFeatures = new javax.swing.JTextField();
-        buttonClearClassifierChoice = new javax.swing.JRadioButton();
         labelChuckSettings = new javax.swing.JLabel();
         textSettingsDiscrete = new javax.swing.JLabel();
         textSettingsWantDist = new javax.swing.JLabel();
@@ -526,16 +528,9 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         labelGlobalStatus = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
-        openMenuItem = new javax.swing.JMenuItem();
-        saveMenuItem = new javax.swing.JMenuItem();
-        saveAsMenuItem = new javax.swing.JMenuItem();
+        preferencesMenuItem = new javax.swing.JMenuItem();
         exitMenuItem = new javax.swing.JMenuItem();
-        editMenu = new javax.swing.JMenu();
-        cutMenuItem = new javax.swing.JMenuItem();
-        copyMenuItem = new javax.swing.JMenuItem();
-        pasteMenuItem = new javax.swing.JMenuItem();
-        deleteMenuItem = new javax.swing.JMenuItem();
-        helpMenu = new javax.swing.JMenu();
+        viewMenu = new javax.swing.JMenu();
         menuItemViewConsole = new javax.swing.JMenuItem();
         helpMenu1 = new javax.swing.JMenu();
         contentsMenuItem1 = new javax.swing.JMenuItem();
@@ -658,7 +653,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         jPanel8Layout.setHorizontalGroup(
             jPanel8Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel8Layout.createSequentialGroup()
-                .add(chuckRunnerPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 564, Short.MAX_VALUE)
+                .add(chuckRunnerPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 544, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel8Layout.setVerticalGroup(
@@ -672,9 +667,10 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         panelOSC.setLayout(panelOSCLayout);
         panelOSCLayout.setHorizontalGroup(
             panelOSCLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(panelOSCLayout.createSequentialGroup()
-                .add(jPanel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, panelOSCLayout.createSequentialGroup()
+                .add(panelOSCLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jPanel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         panelOSCLayout.setVerticalGroup(
@@ -1106,7 +1102,6 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         jTabbedPane1.addTab("Features", panelFeatures);
 
         buttonUseClassifierSettings.setText("Go!");
-        buttonUseClassifierSettings.setEnabled(false);
         buttonUseClassifierSettings.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonUseClassifierSettingsActionPerformed(evt);
@@ -1124,6 +1119,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         });
 
         buttonGroupClassifierSource.add(buttonCreateNewClassifier);
+        buttonCreateNewClassifier.setSelected(true);
         buttonCreateNewClassifier.setText("Create new model");
         buttonCreateNewClassifier.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1138,9 +1134,6 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         labelNumFeatures.setText("Number of features from ChucK");
 
         textNumFeatures.setEnabled(false);
-
-        buttonGroupClassifierSource.add(buttonClearClassifierChoice);
-        buttonClearClassifierChoice.setText("jRadioButton1");
 
         labelChuckSettings.setText("ChucK settings:");
 
@@ -1158,68 +1151,59 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
             }
         });
 
-        jLabel16.setText("Select features to use for parameter models (optional):");
+        jLabel16.setText("Select features to use for parameter models (optional). Editing WILL ERASE trained classifiers!");
 
         org.jdesktop.layout.GroupLayout panelClassifierLayout = new org.jdesktop.layout.GroupLayout(panelClassifier);
         panelClassifier.setLayout(panelClassifierLayout);
         panelClassifierLayout.setHorizontalGroup(
             panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(panelClassifierLayout.createSequentialGroup()
-                .addContainerGap()
                 .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(panelClassifierLayout.createSequentialGroup()
-                        .add(buttonLoadSavedClassifier)
-                        .add(18, 18, 18)
-                        .add(buttonClearClassifierChoice))
+                        .addContainerGap()
+                        .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(buttonLoadSavedClassifier)
+                            .add(panelClassifierLayout.createSequentialGroup()
+                                .add(buttonCreateNewClassifier)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(comboClassifierType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 239, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                     .add(panelClassifierLayout.createSequentialGroup()
-                        .add(buttonCreateNewClassifier)
+                        .add(71, 71, 71)
+                        .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(labelNumFeatures)
+                            .add(labelNumParams))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(comboClassifierType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 239, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(196, Short.MAX_VALUE))
-            .add(panelClassifierLayout.createSequentialGroup()
-                .add(71, 71, 71)
-                .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(labelNumFeatures)
-                    .add(labelNumParams))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(textNumFeatures, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 65, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(textNumParams, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 65, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(250, Short.MAX_VALUE))
-            .add(panelClassifierLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(labelChuckSettings, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 304, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(textNumFeatures, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 65, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(textNumParams, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 65, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                     .add(panelClassifierLayout.createSequentialGroup()
-                        .add(24, 24, 24)
-                        .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(textSettingsNumClasses, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 304, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(textSettingsDiscrete, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 304, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(textSettingsWantDist, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 304, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(248, Short.MAX_VALUE))
-            .add(panelClassifierLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(labelClassifierStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 304, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(272, Short.MAX_VALUE))
-            .add(panelClassifierLayout.createSequentialGroup()
-                .add(8, 8, 8)
-                .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(featureParameterMaskEditor, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 588, Short.MAX_VALUE)
+                        .addContainerGap()
+                        .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(labelChuckSettings, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 304, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(panelClassifierLayout.createSequentialGroup()
+                                .add(24, 24, 24)
+                                .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(textSettingsNumClasses, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 304, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(textSettingsDiscrete, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 304, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(textSettingsWantDist, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 304, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
                     .add(panelClassifierLayout.createSequentialGroup()
-                        .add(buttonUseClassifierSettings)
-                        .addContainerGap(513, Short.MAX_VALUE))))
-            .add(panelClassifierLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(jLabel16)
-                .addContainerGap(234, Short.MAX_VALUE))
+                        .addContainerGap()
+                        .add(labelClassifierStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 304, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(panelClassifierLayout.createSequentialGroup()
+                        .add(8, 8, 8)
+                        .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel16)
+                            .add(buttonUseClassifierSettings)))
+                    .add(panelClassifierLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(featureParameterMaskEditor, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         panelClassifierLayout.setVerticalGroup(
             panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(panelClassifierLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(buttonLoadSavedClassifier)
-                    .add(buttonClearClassifierChoice))
+                .add(buttonLoadSavedClassifier)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(panelClassifierLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(buttonCreateNewClassifier)
@@ -1839,21 +1823,10 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
 
         jTabbedPane1.addTab("Playalong", panelPlayAlong);
 
-        fileMenu.setText("File");
+        fileMenu.setText("Wekinator");
 
-        openMenuItem.setText("Open");
-        openMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                openMenuItemActionPerformed(evt);
-            }
-        });
-        fileMenu.add(openMenuItem);
-
-        saveMenuItem.setText("Save");
-        fileMenu.add(saveMenuItem);
-
-        saveAsMenuItem.setText("Save As ...");
-        fileMenu.add(saveAsMenuItem);
+        preferencesMenuItem.setText("Preferences");
+        fileMenu.add(preferencesMenuItem);
 
         exitMenuItem.setText("Exit");
         exitMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -1865,23 +1838,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
 
         menuBar.add(fileMenu);
 
-        editMenu.setText("Edit");
-
-        cutMenuItem.setText("Cut");
-        editMenu.add(cutMenuItem);
-
-        copyMenuItem.setText("Copy");
-        editMenu.add(copyMenuItem);
-
-        pasteMenuItem.setText("Paste");
-        editMenu.add(pasteMenuItem);
-
-        deleteMenuItem.setText("Delete");
-        editMenu.add(deleteMenuItem);
-
-        menuBar.add(editMenu);
-
-        helpMenu.setText("View");
+        viewMenu.setText("View");
 
         menuItemViewConsole.setText("Console");
         menuItemViewConsole.addActionListener(new java.awt.event.ActionListener() {
@@ -1889,9 +1846,9 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 menuItemViewConsoleActionPerformed(evt);
             }
         });
-        helpMenu.add(menuItemViewConsole);
+        viewMenu.add(menuItemViewConsole);
 
-        menuBar.add(helpMenu);
+        menuBar.add(viewMenu);
 
         helpMenu1.setText("Help");
 
@@ -1899,6 +1856,11 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         helpMenu1.add(contentsMenuItem1);
 
         aboutMenuItem1.setText("About");
+        aboutMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                aboutMenuItem1ActionPerformed(evt);
+            }
+        });
         helpMenu1.add(aboutMenuItem1);
 
         menuBar.add(helpMenu1);
@@ -1943,6 +1905,8 @@ private void buttonQuitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         } catch (IOException ex) {
         }
     }
+    //Want to save settings here!
+    wek.saveCurrentSettings();
 
     System.exit(0);
 }//GEN-LAST:event_buttonQuitActionPerformed
@@ -1965,7 +1929,7 @@ private void buttonOscDisconnectActionPerformed(java.awt.event.ActionEvent evt) 
 }//GEN-LAST:event_buttonOscDisconnectActionPerformed
 
 private void buttonUseClassifierSettingsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonUseClassifierSettingsActionPerformed
-    if (buttonLoadSavedClassifier.isSelected()) {
+    if (buttonLoadSavedClassifier.isSelected() || w.getTrainingState() == WekaOperator.TrainingState.TRAINED) { //TODO: OR we've just edited the settings for existing...
         //We already have classifier set. Yay.
 
         //TODO: Change combo box!
@@ -1975,7 +1939,40 @@ private void buttonUseClassifierSettingsActionPerformed(java.awt.event.ActionEve
         disableAllSettingsPanel();
         enablePlayalongPanel();
 
+        FeatureToParameterMapping mapping = featureParameterMaskEditor.getFeatureToParameterMapping();
+        //TODO: Ask if changed! & prompt user.
+
+        if (featureParameterMaskEditor.hasMappingChanged()) {
+            //Warning!
+            int clearIt = JOptionPane.showConfirmDialog(this,
+                    "You have edited the relationship between features and \n"
+                    + "parameters. " + "This will cause one or more of your \n"
+                    + "trained models to be forgotten. Proceed anyway? \n"
+                    + "(Select NO and then RESET to undo this change)", "",
+                    JOptionPane.YES_NO_OPTION);
+
+            if (clearIt != JOptionPane.YES_OPTION) {
+                return; //Get out of here!
+            } else {
+                //We are to go ahead with these settings.
+                for (int f = 0; f < fm.getNumFeatures(); f++) {
+                    for (int p = 0; p < myNumParams; p++) {
+                        boolean b = mapping.getIsFeatureUsingParam(f, p);
+                        w.dataset.setIsFeatureActiveForParameter(b, f, p);
+                    }
+                }
+
+                //Now what about classifiers??
+               
+              //  w.setNumParameters(w.getNumParameters()); //Hack: Really  just want to clear the classifiers that need it
+                w.resetClassifiers();
+            }
+        }
+
         panelRealTraining.setVisible(true);
+
+    //Initialize feature parameter mapping from dataset
+
 
     } else if (validateSettingsInput()) {
         //Use new classifier
@@ -2302,10 +2299,16 @@ private void buttonSaveClassifierActionPerformed(java.awt.event.ActionEvent evt)
 }//GEN-LAST:event_buttonSaveClassifierActionPerformed
 
     private void saveTrainedModel() {
-        JFileChooser fc = new JFileChooser();
+        JFileChooser fc = new OverwritePromptingFileChooser();
+
         fc.setDialogType(JFileChooser.SAVE_DIALOG);
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
+        String location = wek.getSettings().getLastClassifierFileLocation();
+        if (location == null || location.equals("")) {
+            location = wek.getSettings().getDefaultClassifierFileLocation();
+        }
+        fc.setCurrentDirectory(new File(location));
 
         int returnVal = fc.showSaveDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -2317,6 +2320,7 @@ private void buttonSaveClassifierActionPerformed(java.awt.event.ActionEvent evt)
                     outstream = new FileOutputStream(file);
                     objout = new ObjectOutputStream(outstream);
                     w.writeOut(objout);
+                    wek.getSettings().setLastClassifierFileLocation(file.getCanonicalPath());
 
                 } catch (FileNotFoundException ex) {
                     Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
@@ -2492,24 +2496,38 @@ private void buttonHoldTrainStateChanged(javax.swing.event.ChangeEvent evt) {//G
 
     }
 
-    private boolean loadFromFile() {
+    private boolean loadModelsFromFile() {
         JFileChooser fc = new JFileChooser();
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        boolean success = true;
+        String location = wek.getSettings().getLastClassifierFileLocation();
+        if (location == null || location.equals("")) {
+            location = wek.getSettings().getDefaultClassifierFileLocation();
+        }
 
+        fc.setCurrentDirectory(new File(location));
+        boolean success = true;
+        File file = null;
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             FileInputStream fin = null;
 
             ObjectInputStream sin = null;
             try {
-                File file = fc.getSelectedFile();
+                file = fc.getSelectedFile();
                 originalClassifierFile = file;
 
                 classifierFilename = file.getName();
                 fin = new FileInputStream(file);
                 sin = new ObjectInputStream(fin);
                 w.readIn(sin);
+
+                if (w.numFeaturesToExpect != fm.getNumFeatures()) {
+                    labelClassifierStatus.setText("Error: Number of loaded model features does not match # features in file");
+                    Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, "Error: Number of loaded model features does not match # features in file");
+
+                    success = false;
+                }
+
                 //if (w.getClassifierType() != WekaOperator.ClassifierType.NN) {
                 //    labelClassifierStatus.setText("Not a multilayer perceptron file");
                 //    success = false;
@@ -2555,36 +2573,45 @@ private void buttonHoldTrainStateChanged(javax.swing.event.ChangeEvent evt) {//G
             System.out.println("fail");
             w.chooseClassifier(WekaOperator.ClassifierType.NONE);
             labelClassifierStatus.setText("Problem with reading from file");
+        } else {
+            try {
+                wek.getSettings().setLastClassifierFileLocation(file.getCanonicalPath());
+            } catch (Exception ex) {
+                wek.getSettings().setLastClassifierFileLocation(file.getAbsolutePath());
+
+            }
         }
         return success;
     }
     private String classifierFilename;
 private void buttonLoadSavedClassifierActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonLoadSavedClassifierActionPerformed
     //System.out.println("Load");
-    boolean success = loadFromFile();
+    boolean success = loadModelsFromFile();
     if (!success) {
-        buttonGroupClassifierSource.setSelected(buttonClearClassifierChoice.getModel(), true);
-        //buttonSaveSettings.setEnabled(false);
-        //buttonGroupSettingsSource.setSelected(buttonClearSettings.getModel(), true);
-        buttonUseClassifierSettings.setEnabled(false);
+        buttonGroupClassifierSource.setSelected(buttonCreateNewClassifier.getModel(), true);
+    //buttonSaveSettings.setEnabled(false);
+    //buttonGroupSettingsSource.setSelected(buttonClearSettings.getModel(), true);
+    // buttonUseClassifierSettings.setEnabled(false);
 
     } else {
         //TODO: update combo box to reflect classifier choice.
         allowNewClassifier(false);
         textNumParams.setText(Integer.toString(w.getNumParameters()));
         textNumFeatures.setText(Integer.toString(w.numFeaturesToExpect));
-        //  buttonSaveSettings.setEnabled(true);
-        buttonUseClassifierSettings.setEnabled(true);
+        featureParameterMaskEditor.setMapping(new FeatureToParameterMapping(w.dataset));
+    //  buttonSaveSettings.setEnabled(true);
+    //   buttonUseClassifierSettings.setEnabled(true);
     //  buttonGroupSettingsSource.setSelected(buttonClearSettings.getModel(), true);
     //   buttonSaveSettings.setEnabled(true);
     //   buttonUseClassifierSettings.setEnabled(true);
     //  buttonUseClassifierSettings.setEnabled(true);
+
     }
 }//GEN-LAST:event_buttonLoadSavedClassifierActionPerformed
 
 private void buttonCreateNewClassifierActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCreateNewClassifierActionPerformed
     allowNewClassifier(true);
-    buttonUseClassifierSettings.setEnabled(true);
+//   buttonUseClassifierSettings.setEnabled(true);
 
 
 }//GEN-LAST:event_buttonCreateNewClassifierActionPerformed
@@ -2642,20 +2669,38 @@ private void buttonSaveFeatureSettingsActionPerformed(java.awt.event.ActionEvent
         setFeatureManager();
         fm.saveSettingsToFile(f);
         System.out.println("Saved settings to file");
+
+        try {
+            wek.getSettings().setLastFeatureFileLocation(f.getCanonicalPath());
+        } catch (Exception ex) {
+            wek.getSettings().setLastFeatureFileLocation(f.getAbsolutePath());
+
+        }
     }
 
 }//GEN-LAST:event_buttonSaveFeatureSettingsActionPerformed
 
     public File findFeatureSetupFileToSave() {
-        JFileChooser fc = new JFileChooser();
+        JFileChooser fc = new OverwritePromptingFileChooser();
         fc.setDialogType(JFileChooser.SAVE_DIALOG);
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        String location = wek.getSettings().getLastFeatureFileLocation();
+        if (location == null || location.equals("")) {
+            location = wek.getSettings().getDefaultFeatureFileLocation();
+        }
+        fc.setCurrentDirectory(new File(location));
+
         File file = null;
 
         int returnVal = fc.showSaveDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
 
             file = fc.getSelectedFile();
+            try {
+                wek.getSettings().setLastFeatureFileLocation(file.getCanonicalPath());
+            } catch (IOException ex) {
+                wek.getSettings().setLastFeatureFileLocation(file.getAbsolutePath());
+            }
         }
         return file;
 
@@ -2796,7 +2841,7 @@ private void checkCustomChuckActionPerformed(java.awt.event.ActionEvent evt) {//
 
 private void buttonEditClassifierActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonEditClassifierActionPerformed
     if (w.myClassifierType == WekaOperator.ClassifierType.KNN) {
-        KnnSettings j = new KnnSettings(w);
+        KnnSettingsOld j = new KnnSettingsOld(w);
         j.setVisible(true);
     } else if (w.myClassifierType == WekaOperator.ClassifierType.ADABOOST) {
         AdaboostSettings j = new AdaboostSettings(w);
@@ -3083,13 +3128,13 @@ private void menuItemViewConsoleActionPerformed(java.awt.event.ActionEvent evt) 
     }
 }//GEN-LAST:event_menuItemViewConsoleActionPerformed
 
-private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMenuItemActionPerformed
-    // TODO add your handling code here:
-}//GEN-LAST:event_openMenuItemActionPerformed
+private void aboutMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItem1ActionPerformed
+    //SHow something about wekinator TODO
+}//GEN-LAST:event_aboutMenuItem1ActionPerformed
 
     private File findHidSetupFileToSave() {
 
-        JFileChooser fc = new JFileChooser();
+        JFileChooser fc = new OverwritePromptingFileChooser();
         fc.setDialogType(JFileChooser.SAVE_DIALOG);
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         File file = null;
@@ -3098,6 +3143,9 @@ private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         if (returnVal == JFileChooser.APPROVE_OPTION) {
 
             file = fc.getSelectedFile();
+        }
+        if (file != null) {
+            wek.getSettings().setLastHidFileLocation(Util.getCanonicalPath(file));
         }
         return file;
     }
@@ -3130,6 +3178,11 @@ private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
     private File findFeatureSetupFile() {
         JFileChooser fc = new JFileChooser();
+        String location = wek.getSettings().getLastFeatureFileLocation();
+        if (location == null || location.equals("")) {
+            location = wek.getSettings().getDefaultFeatureFileLocation();
+        }
+        fc.setCurrentDirectory(new File(location)); //TODO: Could set directory vs file here according to above results
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         boolean success = true;
         File file = null;
@@ -3137,17 +3190,36 @@ private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             file = fc.getSelectedFile();
         }
+
+        if (file != null) {
+            try {
+                wek.getSettings().setLastFeatureFileLocation(file.getCanonicalPath());
+            } catch (Exception ex) {
+                wek.getSettings().setLastFeatureFileLocation(file.getAbsolutePath());
+
+            }
+        }
         return file;
     }
 
     private File findHidSetupFile() {
         JFileChooser fc = new JFileChooser();
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        String location = wek.getSettings().getLastFeatureFileLocation();
+        if (location == null || location.equals("")) {
+            location = wek.getSettings().getDefaultFeatureFileLocation();
+        }
+        fc.setCurrentDirectory(new File(location)); //TODO: Could set directory vs file here according to above results
+
         boolean success = true;
         File file = null;
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             file = fc.getSelectedFile();
+        }
+        if (file != null) {
+            wek.getSettings().setLastHidFileLocation(Util.getCanonicalPath(file));
+
         }
         return file;
     }
@@ -3205,7 +3277,6 @@ private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aboutMenuItem1;
-    private javax.swing.JRadioButton buttonClearClassifierChoice;
     private javax.swing.JButton buttonComputeAccuracy;
     private javax.swing.JRadioButton buttonCreateNewClassifier;
     private javax.swing.JButton buttonEditClassifier;
@@ -3250,14 +3321,9 @@ private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JComboBox comboClassifierType;
     private javax.swing.JComboBox comboWindowType;
     private javax.swing.JMenuItem contentsMenuItem1;
-    private javax.swing.JMenuItem copyMenuItem;
-    private javax.swing.JMenuItem cutMenuItem;
-    private javax.swing.JMenuItem deleteMenuItem;
-    private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem exitMenuItem;
     private wekinator.FeatureParameterMaskEditor featureParameterMaskEditor;
     private javax.swing.JMenu fileMenu;
-    private javax.swing.JMenu helpMenu;
     private javax.swing.JMenu helpMenu1;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButtonShh;
@@ -3321,19 +3387,16 @@ private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JLabel labelTrainingStatus;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem menuItemViewConsole;
-    private javax.swing.JMenuItem openMenuItem;
     private javax.swing.JPanel panelClassifier;
     private javax.swing.JPanel panelFeatures;
     private javax.swing.JPanel panelOSC;
     private javax.swing.JPanel panelPlayAlong;
     private javax.swing.JPanel panelRealTraining;
     private javax.swing.JPanel panelRun;
-    private javax.swing.JMenuItem pasteMenuItem;
+    private javax.swing.JMenuItem preferencesMenuItem;
     private javax.swing.JRadioButton radioClearProcessingFeature;
     private javax.swing.JRadioButton radioColorTracking;
     private javax.swing.JRadioButton radioDownsampled;
-    private javax.swing.JMenuItem saveAsMenuItem;
-    private javax.swing.JMenuItem saveMenuItem;
     private javax.swing.JScrollPane scrollTrainPanel;
     private javax.swing.JTextField textAudioRate;
     private javax.swing.JTextField textFFTSize;
@@ -3350,6 +3413,7 @@ private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JTextField textWindowSize;
     private javax.swing.JToggleButton toggleButtonRun;
     private javax.swing.JToggleButton toggleGetSynthParams;
+    private javax.swing.JMenu viewMenu;
     // End of variables declaration//GEN-END:variables
     private ArrayList<javax.swing.JButton> trainingButtons = new ArrayList<javax.swing.JButton>();
 
@@ -3589,12 +3653,9 @@ private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
             checkViewNNGUI.setVisible(true);
             buttonComputeAccuracy.setVisible(false);
             labelParameterValues.setText("Enter parameter values (any real numbers)");
-
         }
 
-
         FeatureToParameterMapping newMapping = new FeatureToParameterMapping(fm, nParam);
-
         featureParameterMaskEditor.setMapping(newMapping);
         areChuckSettingsReceived = true;
         enableClassifierPanel();

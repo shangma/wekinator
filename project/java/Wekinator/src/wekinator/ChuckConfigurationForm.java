@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileSystemView;
+import wekinator.util.OverwritePromptingFileChooser;
 
 /**
  *
@@ -33,17 +34,16 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
     public ChuckConfigurationForm(ChuckConfiguration c) {
         configuration = c;
         initialConfiguration = new ChuckConfiguration(configuration);
-                initComponents();
+        initComponents();
         updateAllComponents();
     }
 
-   /* public ChuckConfigurationForm(File configurationFile) throws FileNotFoundException, IOException, ClassNotFoundException {
-        configuration = ChuckConfiguration.loadFromFile(configurationFile);
-        initialConfiguration = new ChuckConfiguration(configuration);
-        initComponents();
-        updateAllComponents();
+    /* public ChuckConfigurationForm(File configurationFile) throws FileNotFoundException, IOException, ClassNotFoundException {
+    configuration = ChuckConfiguration.loadFromFile(configurationFile);
+    initialConfiguration = new ChuckConfiguration(configuration);
+    initComponents();
+    updateAllComponents();
     } */
-
     public void setHomePath(String s) {
         homePath = s;
     }
@@ -53,6 +53,27 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         labelSynthExpects.setEnabled(b);
         textSynthMaxParamVals.setEnabled(b);
         comboUseDist.setEnabled(b);
+    }
+
+    private File findExportChuckFile() {
+        String preferredLoc = configuration.getChuckDir();
+        File tmp = new File(preferredLoc);
+        if (!tmp.exists()) {
+            preferredLoc = homePath;
+        }
+
+        JFileChooser fc = new OverwritePromptingFileChooser();
+
+        fc.setSelectedFile(new File(configuration.getChuckDir() + "/main_machine_add_files/config.ck"));
+        fc.setDialogType(JFileChooser.SAVE_DIALOG);
+        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+        int returnVal = fc.showSaveDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            return fc.getSelectedFile();
+        }
+        return null;
+
     }
 
     /** This method is called from within the constructor to
@@ -138,8 +159,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         buttonGroup1.add(radioUseOSCSynth);
         radioUseOSCSynth.setText("Use an OSC synth/composition module (launch manually)");
 
-        textSynthNumParams.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(java.text.NumberFormat.getIntegerInstance())));
-        textSynthNumParams.setText("0");
+        textSynthNumParams.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0"))));
         textSynthNumParams.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 textSynthNumParamsActionPerformed(evt);
@@ -181,7 +201,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
 
         jLabel13.setText("and sends to port ");
 
-        textSynthSendPort.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(java.text.NumberFormat.getIntegerInstance())));
+        textSynthSendPort.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0"))));
         textSynthSendPort.setText("0");
         textSynthSendPort.setEnabled(false);
         textSynthSendPort.addActionListener(new java.awt.event.ActionListener() {
@@ -198,7 +218,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         labelSynthMaxParamVals.setText("Its max # values per parameter is ");
         labelSynthMaxParamVals.setEnabled(false);
 
-        textSynthMaxParamVals.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(java.text.NumberFormat.getIntegerInstance())));
+        textSynthMaxParamVals.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0"))));
         textSynthMaxParamVals.setText("0");
         textSynthMaxParamVals.setEnabled(false);
         textSynthMaxParamVals.addActionListener(new java.awt.event.ActionListener() {
@@ -328,7 +348,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
             }
         });
 
-        textNumCustomFeatures.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(java.text.NumberFormat.getIntegerInstance())));
+        textNumCustomFeatures.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0"))));
         textNumCustomFeatures.setText("0");
         textNumCustomFeatures.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -350,7 +370,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
             }
         });
 
-        textNumOscFeatures.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(java.text.NumberFormat.getIntegerInstance())));
+        textNumOscFeatures.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0"))));
         textNumOscFeatures.setText("0");
         textNumOscFeatures.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -586,7 +606,6 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         );
 
         buttonSaveConfiguration1.setText("Export as .ck file...");
-        buttonSaveConfiguration1.setEnabled(false);
         buttonSaveConfiguration1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonSaveConfiguration1ActionPerformed(evt);
@@ -641,7 +660,6 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-
     private void setConfigurationFromForm() {
         //Want chuck dir:
         configuration.setChuckExecutable(labelChuckExecutable.getText());
@@ -649,9 +667,9 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         configuration.setOscFeatureExtractorEnabled(checkEnableOSCFeature.getModel().isSelected());
         configuration.setCustomChuckFeatureExtractorEnabled(checkEnableCustomChuckFeature.getModel().isSelected());
         configuration.setCustomChuckFeatureExtractorFilename(labelCustomFeatureExtractor.getText());
-            configuration.setNumOSCFeaturesExtracted(Integer.parseInt(textNumOscFeatures.getText()));
+        configuration.setNumOSCFeaturesExtracted(Integer.parseInt(textNumOscFeatures.getText()));
         configuration.setNumCustomChuckFeaturesExtracted(Integer.parseInt(textNumCustomFeatures.getText()));
-    //    configuration.setOscFeatureExtractorSendPort(Integer.parseInt(textExtractorSendPort.getText()));
+        //    configuration.setOscFeatureExtractorSendPort(Integer.parseInt(textExtractorSendPort.getText()));
         if (radioUseChuckSynth.getModel().isSelected()) {
             configuration.setUseChuckSynthClass(true);
             configuration.setUseOscSynth(false);
@@ -678,14 +696,14 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         }
         configuration.setIsOscSynthParamDiscrete(isDiscreteArray);
         configuration.setOscSynthReceivePort(Integer.parseInt(textSynthReceivePort.getText()));
-      //  configuration.setOscSynthSendPort(Integer.parseInt(textSynthSendPort.getText()));
+        //  configuration.setOscSynthSendPort(Integer.parseInt(textSynthSendPort.getText()));
         configuration.setIsPlayalongLearningEnabled(checkEnablePlayalong.getModel().isSelected());
         configuration.setPlayalongLearningFile(labelScorePlayer.getText());
 
         configuration.setNumOscSynthMaxParamVals(Integer.parseInt(textSynthMaxParamVals.getText()));
 
         boolean isDist = (comboUseDist.getSelectedIndex() == 1);
-                boolean isDistArray[] = new boolean[configuration.getNumOscSynthParams()];
+        boolean isDistArray[] = new boolean[configuration.getNumOscSynthParams()];
         for (int i = 0; i < configuration.getNumOscSynthParams(); i++) {
             isDistArray[i] = isDiscrete;
         }
@@ -754,14 +772,20 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
 
     private void buttonSaveConfigurationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSaveConfigurationActionPerformed
         setConfigurationFromForm();
-        File file = findConfigurationSaveFile();
-        if (file != null) {
-            try {
-                configuration.writeToFile(file);
-            } catch (Exception ex) {
-                //TODO: handle:
-                System.out.println("Could not save to file");
+        try {
+            configuration.validate();
+            File file = findConfigurationSaveFile();
+            if (file != null) {
+                try {
+                    configuration.writeToFile(file);
+                } catch (Exception ex) {
+                    //TODO: handle:
+                    System.out.println("Could not save to file");
+                }
             }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid configuration", JOptionPane.ERROR_MESSAGE);
+
         }
     }//GEN-LAST:event_buttonSaveConfigurationActionPerformed
 
@@ -773,13 +797,13 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         try {
             configuration.validate();
             this.dispose();
-            //Valid: Give configuration to parent?
-            // Save configuration & note location for next time?
-            
+        //Valid: Give configuration to parent?
+        // Save configuration & note location for next time?
+
         } catch (Exception ex) {
             //Invalid: Pop up a message box, stay open
-          //   JOptionPane msgPane = new JOptionPane(ex.getMessage(), JOptionPane.ERROR_MESSAGE);
-           //  msgPane.setVisible(true);
+            //   JOptionPane msgPane = new JOptionPane(ex.getMessage(), JOptionPane.ERROR_MESSAGE);
+            //  msgPane.setVisible(true);
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid configuration", JOptionPane.ERROR_MESSAGE);
         }
 
@@ -794,21 +818,36 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
     private void buttonChooseChuckFeatureExtractorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonChooseChuckFeatureExtractorActionPerformed
         File f = findChuckFile();
         if (f != null) {
-            labelCustomFeatureExtractor.setText(f.getAbsolutePath());
-        } 
+            try {
+                labelCustomFeatureExtractor.setText(f.getCanonicalPath());
+            } catch (IOException ex) {
+                               labelCustomFeatureExtractor.setText(f.getAbsolutePath());
+
+            }
+        }
     }//GEN-LAST:event_buttonChooseChuckFeatureExtractorActionPerformed
 
     private void buttonChooseChuckSynthActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonChooseChuckSynthActionPerformed
         File f = findChuckFile();
         if (f != null) {
-            labelSynthClass.setText(f.getAbsolutePath());
+            try {
+                labelSynthClass.setText(f.getCanonicalPath());
+            } catch (IOException ex) {
+                               labelSynthClass.setText(f.getAbsolutePath());
+
+            }
         }
     }//GEN-LAST:event_buttonChooseChuckSynthActionPerformed
 
     private void buttonChoosePlayalongFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonChoosePlayalongFileActionPerformed
-               File f = findChuckFile();
+        File f = findChuckFile();
         if (f != null) {
-            labelScorePlayer.setText(f.getAbsolutePath());
+                      try {
+                labelScorePlayer.setText(f.getCanonicalPath());
+            } catch (IOException ex) {
+                               labelScorePlayer.setText(f.getAbsolutePath());
+
+            }
         }
     }//GEN-LAST:event_buttonChoosePlayalongFileActionPerformed
 
@@ -829,7 +868,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         if (f != null) {
             try {
                 labelCoreChuckDirectory.setText(f.getCanonicalPath());
-                            configuration.setChuckDir(f.getCanonicalPath());
+                configuration.setChuckDir(f.getCanonicalPath());
 
             } catch (IOException ex) {
                 Logger.getLogger(ChuckConfigurationForm.class.getName()).log(Level.SEVERE, null, ex);
@@ -838,7 +877,16 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
 }//GEN-LAST:event_buttonChangeCoreChuckLocationActionPerformed
 
     private void buttonSaveConfiguration1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSaveConfiguration1ActionPerformed
-        // TODO add your handling code here:
+        setConfigurationFromForm();
+        try {
+            configuration.validate();
+            File file = findExportChuckFile();
+            if (file != null) {
+                ChuckRunner.exportConfigurationToChuckFile(configuration, file);
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Unable to export to file", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_buttonSaveConfiguration1ActionPerformed
 
     private void textSynthMaxParamValsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textSynthMaxParamValsActionPerformed
@@ -853,7 +901,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         if (comboRealInteger.getSelectedIndex() == 0) {
             enableDiscreteSynthStuff(false);
         } else {
-                        enableDiscreteSynthStuff(true);
+            enableDiscreteSynthStuff(true);
 
         }
     }//GEN-LAST:event_comboRealIntegerActionPerformed
@@ -889,7 +937,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         return file;
     }
 
-   private File findCoreChuckDirectory() {
+    private File findCoreChuckDirectory() {
         //Start looking in chuck dir if possible
         File core_chuck = new File(configuration.getChuckDir());
         String preferredPath = homePath;
@@ -911,8 +959,9 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
     private File findConfigurationSaveFile() {
         String preferredLoc = configuration.getSaveLocation();
         File tmp = new File(preferredLoc);
-        if (!tmp.exists())
+        if (!tmp.exists()) {
             preferredLoc = homePath;
+        }
 
 
         JFileChooser fc = new JFileChooser(preferredLoc);
@@ -924,7 +973,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             return fc.getSelectedFile();
         }
-        return  null;     
+        return null;
     }
 
     /**
@@ -1004,7 +1053,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         labelCustomFeatureExtractor.setText(configuration.getCustomChuckFeatureExtractorFilename());
         textNumCustomFeatures.setText(Integer.toString(configuration.getNumCustomChuckFeaturesExtracted()));
         textNumOscFeatures.setText(Integer.toString(configuration.getNumOSCFeaturesExtracted()));
-     //   textExtractorSendPort.setText(Integer.toString(configuration.getOscFeatureExtractorSendPort()));
+        //   textExtractorSendPort.setText(Integer.toString(configuration.getOscFeatureExtractorSendPort()));
 
         if (configuration.isUseChuckSynthClass()) {
             buttonGroup1.setSelected(radioUseChuckSynth.getModel(), true);
@@ -1021,7 +1070,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
             enableDiscreteSynthStuff(true);
         } else {
             comboRealInteger.setSelectedIndex(0);
-           enableDiscreteSynthStuff(false);
+            enableDiscreteSynthStuff(false);
         } //TODO TEST!s
 
         textSynthReceivePort.setText(Integer.toString(configuration.getOscSynthReceivePort()));
@@ -1031,22 +1080,20 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         labelScorePlayer.setText(configuration.getPlayalongLearningFile());
         textSynthMaxParamVals.setText(Integer.toString(configuration.getNumOscSynthMaxParamVals()));
 
-                boolean[] isUseDist = configuration.getOscUseDistribution();
+        boolean[] isUseDist = configuration.getOscUseDistribution();
 
-        if (isUseDist.length >0 && isUseDist[0]) {
+        if (isUseDist.length > 0 && isUseDist[0]) {
             comboUseDist.setSelectedIndex(1);
         } else {
             comboUseDist.setSelectedIndex(0);
         }
-       /* if (configuration.isOscSynthIsDiscrete()) {
-            enableDiscreteSynthStuff(true);
+        /* if (configuration.isOscSynthIsDiscrete()) {
+        enableDiscreteSynthStuff(true);
         } else {
-            enableDiscreteSynthStuff(false);
+        enableDiscreteSynthStuff(false);
         } */
 
 
         repaint();
     }
-
-  
 }

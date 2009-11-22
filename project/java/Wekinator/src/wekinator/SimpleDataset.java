@@ -699,6 +699,18 @@ public class SimpleDataset implements Serializable {
         }
     }
 
+    public void exportAsArffFiles(String filePrefix) {
+        //TODO: export arff files, 1 per parameter, as filePrefix_p1.arff ... filePrefix_pN.arff
+    }
+
+    public void exportAsArffFile(String filename) {
+        //TODO: export arff file - 1 file, each param as an attribute, no class set
+    }
+
+    public void importFromArffFile(String filename) {
+        //TODO: import from arff filename; 
+    }
+
     //TODO: add
     /* raw audio support
      * ability to add metafeatures based on statistics of these features (esp.: moving average, time deltas)
