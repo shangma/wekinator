@@ -10,11 +10,8 @@
  */
 package wekinator;
 
-import tmp.*;
 import javax.swing.JFrame;
-import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
-import wekinator.FeatureManager;
 
 
 /**
