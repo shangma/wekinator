@@ -19,6 +19,9 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import javax.swing.JTextArea;
 
+//TODO: implement ability to see recent errors when window opened
+//Tie to log file: show last N lines of file in console window when window opened for 1st time
+
 /**
  *
  * @author rebecca

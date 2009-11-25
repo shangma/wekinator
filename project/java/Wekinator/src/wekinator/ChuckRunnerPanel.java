@@ -20,7 +20,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
+//TODO: add setting of whether or not to prompt user in case of chuck error.
 /**
  *
  * @author rebecca
@@ -92,7 +94,8 @@ public class ChuckRunnerPanel extends javax.swing.JPanel {
             }
         });
 
-                updateRunnerIsRunning(runner.isRunning());
+             //   updateRunnerIsRunning(runner.isRunning());
+        updateRunnerState(runner.getRunnerState());
         updateConfigurationUsable(runner.getConfiguration().isUsable());
     }
 
@@ -238,7 +241,7 @@ public class ChuckRunnerPanel extends javax.swing.JPanel {
         try {
             runner.run();
         } catch (IOException ex) {
-            labelStatus.setText("Chuck encountered an error while running.");
+           // labelStatus.setText("Chuck encountered an error while running.");
             Logger.getLogger(ChuckRunnerPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
 }//GEN-LAST:event_buttonRunActionPerformed
@@ -269,8 +272,9 @@ public class ChuckRunnerPanel extends javax.swing.JPanel {
 
     
                private void runnerPropertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(ChuckRunner.PROP_ISRUNNING)) {
-                updateRunnerIsRunning(runner.isRunning());
+            if (evt.getPropertyName().equals(ChuckRunner.PROP_RUNNERSTATE)) {
+             //   updateRunnerIsRunning(runner.isRunning());
+                updateRunnerState(runner.getRunnerState());
             }
 
         }
@@ -282,14 +286,31 @@ public class ChuckRunnerPanel extends javax.swing.JPanel {
 
         }
 
-    private void updateRunnerIsRunning(boolean running) {
-        buttonRun.setEnabled(!running);
-        buttonStop.setEnabled(running);
+    private void updateRunnerState(ChuckRunner.ChuckRunnerState state) {
+        if (state == ChuckRunner.ChuckRunnerState.RUNNING) {
 
-        if (running) {
+        buttonRun.setEnabled(false);
+        buttonStop.setEnabled(true);
             labelStatus.setText("Status: Chuck running successfully.");
-        } else {
+        } else if (state == ChuckRunner.ChuckRunnerState.NOT_RUNNING) {
             labelStatus.setText("Status: Chuck not running.");
+            buttonRun.setEnabled(true);
+            buttonStop.setEnabled(false);
+
+        } else if (state == ChuckRunner.ChuckRunnerState.TRYING_TO_RUN) {
+            labelStatus.setText("Status: Chuck encountered error");
+            buttonRun.setEnabled(true);
+            buttonStop.setEnabled(false);
+            int lResponse = JOptionPane.showConfirmDialog(this,
+                    "Chuck encountered errors:\n" + runner.getLastErrorMessages()
+                    + "\n Do you want to try to proceed anyway?", "",
+                    JOptionPane.YES_NO_OPTION);
+
+            if (lResponse != JOptionPane.YES_OPTION) {
+                runner.ignoreRunErrors(false);
+            } else {
+                runner.ignoreRunErrors(true);
+            }
         }
         
     }

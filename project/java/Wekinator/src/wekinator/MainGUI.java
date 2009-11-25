@@ -37,6 +37,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import org.jdesktop.swingworker.*;
 import javax.swing.event.ChangeEvent;
+import wekinator.ChuckRunner.ChuckRunnerState;
 import wekinator.util.OverwritePromptingFileChooser;
 import wekinator.util.Util;
 
@@ -247,14 +248,14 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
     }
 
     private void runnerPropertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(ChuckRunner.PROP_ISRUNNING)) {
-            updateRunnerIsRunning(wek.runner.isRunning());
+        if (evt.getPropertyName().equals(ChuckRunner.PROP_RUNNERSTATE)) {
+            updateRunnerState(wek.runner.getRunnerState());
         }
 
     }
 
-    private void updateRunnerIsRunning(boolean isRunning) {
-        if (isRunning) {
+    private void updateRunnerState(ChuckRunner.ChuckRunnerState state) {
+        if (state == ChuckRunnerState.RUNNING) {
             //This configuration works: Save it.
             wek.useConfigurationNextSession();
             updateFeaturesForConfiguration();
@@ -1899,7 +1900,7 @@ private void buttonForgetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
 private void buttonQuitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonQuitActionPerformed
     w.quit();
-    if (wek.runner.running) {
+    if (wek.runner.getRunnerState() == ChuckRunner.ChuckRunnerState.RUNNING) {
         try {
             wek.runner.stop();
         } catch (IOException ex) {

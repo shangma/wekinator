@@ -22,7 +22,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.CharBuffer;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.logging.Level;
@@ -36,17 +35,53 @@ public class ChuckRunner {
 
     private static ChuckRunner ref = null;
     private ChuckConfiguration configuration;
-    protected boolean running = false;
-    public static final String PROP_ISRUNNING = "isRunning";
+ //   protected boolean running = false;
+ //   public static final String PROP_ISRUNNING = "isRunning";
+
+    private String lastErrorMessages = "";
+
+    public String getLastErrorMessages() {
+        return lastErrorMessages;
+    }
+
+    public enum ChuckRunnerState {
+        NOT_RUNNING,
+        TRYING_TO_RUN,
+        RUNNING
+    }
+
+    protected ChuckRunnerState runnerState;
+    public static final String PROP_RUNNERSTATE = "runnerState";
+
+    /**
+     * Get the value of runnerState
+     *
+     * @return the value of runnerState
+     */
+    public ChuckRunnerState getRunnerState() {
+        return runnerState;
+    }
+
+    /**
+     * Set the value of runnerState
+     *
+     * @param runnerState new value of runnerState
+     */
+    protected void setRunnerState(ChuckRunnerState runnerState) {
+        ChuckRunnerState oldRunnerState = this.runnerState;
+        this.runnerState = runnerState;
+        propertyChangeSupport.firePropertyChange(PROP_RUNNERSTATE, oldRunnerState, runnerState);
+    }
+
 
     /**
      * Get the value of running
      *
      * @return the value of running
      */
-    public boolean isRunning() {
+ /*   public boolean isRunning() {
         return running;
-    }
+    } */
 
     static void exportConfigurationToChuckFile(ChuckConfiguration configuration, File file) throws IOException {
         //Open output stream
@@ -104,11 +139,11 @@ public class ChuckRunner {
      *
      * @param running new value of running
      */
-    private void setRunning(boolean isRunning) {
+   /* private void setRunning(boolean isRunning) {
         boolean oldIsRunning = this.running;
         this.running = isRunning;
         propertyChangeSupport.firePropertyChange(PROP_ISRUNNING, oldIsRunning, isRunning);
-    }
+    } */
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     /**
@@ -130,7 +165,8 @@ public class ChuckRunner {
     }
 
     private ChuckRunner() {
-        running = false;
+       // running = false;
+        setRunnerState(ChuckRunnerState.NOT_RUNNING);
     }
 
     public static synchronized ChuckRunner getChuckRunner() {
@@ -171,6 +207,7 @@ public class ChuckRunner {
 
     public void run() throws IOException {
         stop();
+        lastErrorMessages = "";
         try {
             Thread.sleep(1000);
         } catch (InterruptedException ex) {
@@ -243,7 +280,7 @@ public class ChuckRunner {
 
                         child.waitFor();
                     } catch (InterruptedException ex) {
-                        System.out.println("Couldn't waits");
+                        System.out.println("Couldn't wait");
                         Logger.getLogger(ChuckRunner.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
@@ -254,6 +291,7 @@ public class ChuckRunner {
                         output += "In executing command " + cmds.get(i) + " received error:\n";
                         output += (line + '\n');
                         System.out.println("**" + output);
+                        lastErrorMessages += line + "\n";
                     }
                     input.close();
                 } else {
@@ -273,26 +311,46 @@ public class ChuckRunner {
 
         }
 
+        numErrLines = 1;
+        lastErrorMessages += "Test\n";
         if (numErrLines != 0) {
-            System.out.println("Errors were encountered running chuck. Please try again.");
-            stop();
-            throw new IOException("Could not run: Bad configuration");
+            System.out.println("Errors were encountered running chuck.");
+            setRunnerState(ChuckRunnerState.TRYING_TO_RUN);
+            //stop();
+//            throw new IOException("Could not run: Bad configuration");
         } else {
             System.out.println("A miracle! Chuck runs.");
-            setRunning(true);
+        //    setRunning(true);
+            setRunnerState(ChuckRunnerState.RUNNING);
         }
 
     }
 
+    public void ignoreRunErrors(boolean ignore) {
+        if (runnerState == ChuckRunnerState.TRYING_TO_RUN) {
+            if (ignore) {
+                setRunnerState(ChuckRunnerState.RUNNING);
+            } else {
+                try {
+                    stop();
+                } catch (IOException ex) {
+                    Logger.getLogger(ChuckRunner.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+    }
+
     public void stop() throws IOException {
-        String cmd = "chuck --kill";
+        //String cmd = "chuck --kill";
+        String cmd = configuration.getChuckExecutable() + " --kill";
         Process child = Runtime.getRuntime().exec(cmd);
         String cmd2 = "killall chuck";
         Process child2 = Runtime.getRuntime().exec(cmd2);
 
 
         System.out.println("Attempted to kill chuck.");
-        setRunning(false);
+    //    setRunning(false);
+        setRunnerState(ChuckRunnerState.NOT_RUNNING);
     }
 
     public void restart() throws IOException {
