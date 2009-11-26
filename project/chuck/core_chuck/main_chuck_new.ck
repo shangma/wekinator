@@ -129,12 +129,8 @@ OscEvent oscHidSetup;
 OscEvent oscHidSetupStop;
 OscEvent oscHidInit;
 OscEvent oscHidRun;
-OscEvent oscHidInitAxes;
-OscEvent oscHidInitHats;
-OscEvent oscHidInitButtons;
-OscEvent oscHidInitMask;
 OscEvent oscHidSettingsRequest;
-
+OscEvent oscHidInitAll;
 
 //if (useOtherHid) {
 	recv.event("/hidSetup", "i") @=> oscHidSetup;
@@ -245,16 +241,17 @@ fun void receivedHello() {
 //Wait for the signal to enter into hid setup mode
 fun void oscHidSetupWait() {
 	while (true) {
-	<<< "Waiting for hid setup">>>;
-	oscHidSetup => now;
-	while (oscHidSetup.nextMsg() != 0) {
+		<<< "Waiting for hid setup">>>;
+		oscHidSetup => now;
+		while (oscHidSetup.nextMsg() != 0) {
 			oscHidSetup.getInt();
-	}
-	xmit.startMsg( "/hidSetupBegun", "i");
-	0 => xmit.addInt;
-
-	<<< "Entering hid setup mode">>>;
+		}
+		xmit.startMsg( "/hidSetupBegun", "i");
+		0 => xmit.addInt;
+	<<< "Sent setup begun">>>;
+		<<< "Entering hid setup mode">>>;
 		spork ~hd.setup();
+
 	}
 }
 
@@ -281,7 +278,7 @@ fun void oscHidSetupStopWait() {
 	0 => xmit.addInt;
 	<<< "Exiting hid setup mode">>>;
 		computeNumFeats();
-	hd.stopSetupAndStartRun();
+	spork ~hd.stopSetupAndStartRun(); //chg 11/25
 
 	<<< "Use hid? ", useOtherHid >>>;
 	<<< "Using " + numFeats + " features total (make sure java knows)" >>>;
@@ -294,11 +291,12 @@ int hidHatsInits[];
 int hidButtonsInits[];
 int hidMaskInits[];
 0 => int gotAxesInits => int gotHatsInits => int gotButtonsInits => int gotMaskInits;
+
 fun void oscHidInitWait() {
 	while (true) {	
-	<<< "Waiting for HID init">>>;
+	<<< "WAITING FOR HID INIT">>>;
 	oscHidInit => now;
-	//<<< "Got hid init">>>;
+	<<< "GOT HID INIT OSCHIDINIT MSG">>>;
 	int a, b,c;
 	while (oscHidInit.nextMsg() != 0) {
 		oscHidInit.getInt() => numHidAxes;
@@ -311,56 +309,32 @@ fun void oscHidInitWait() {
 	}
 	
 	if (numHidAxes == 0 && numHidHats == 0 && numHidButtons ==0) {
+		<<< "NOTHING TO USE - NO OTHER HID">>>;
 		0 => useOtherHid;
 		return;
 	}
 
-	//now wait for each of the initial value arrays to come in	
-	string s;
-	
-	if (numHidAxes > 0) {	
-		"f" => s;
-		for (1 => int i; i < numHidAxes; i++) {
-			s + " f" => s;
-		}
-		recv.event("/hidInitAxes", s) @=> oscHidInitAxes;
-		spork ~oscHidInitAxesWait();
-	} else {
-		1 => gotAxesInits;
-	}
-	if (numHidButtons > 0) {	
-		"i" => s;
-		for (1 => int i; i < numHidButtons; i++) {
-			s + " i" => s;
-		}
-	//	<<< "Buttons string is ", s >>>;
-		recv.event("/hidInitButtons", s) @=> oscHidInitButtons;
-		spork ~oscHidInitButtonsWait();
-	} else {
-		1 => gotButtonsInits;
-	}
-	if (numHidHats > 0) {	
-		"i" => s;
-		for (1 => int i; i < numHidHats; i++) {
-			s + " i" => s;
-		}
-		recv.event("/hidInitHats", s) @=> oscHidInitHats;
-		spork ~oscHidInitHatsWait();
-	} else {
-		1 => gotHatsInits;
-	}
-
-	"i" => s;
-	for (1 => int i; i< numHidAxes + numHidHats + numHidButtons; i++) {
+	//Otherwise wait for a bunch of stuff!
+	"i" => string s; //HACK
+	for (0 => int i; i < numHidAxes; i++) {
+		s + " f" => s;
+	}	
+	for (0 => int i; i < numHidHats; i++) {
 		s + " i" => s;
 	}
-	recv.event("/hidInitMask", s) @=> oscHidInitMask;
-	spork ~oscHidInitMaskWait();
+	for (0 => int i; i < numHidButtons; i++) {
+		s + " i" => s;
+	}
+	for (0 => int i; i< numHidAxes + numHidHats + numHidButtons; i++) {
+		s + " i" => s;
+	}
+	<<< "Going to wait for HIDINITALL with string ", s>>>;
+	recv.event("/hidInitAll", s) @=> oscHidInitAll;
+	spork ~oscHidInitAllWait();
 
 	//Signal that it's ok to send these values now
 	xmit.startMsg( "/sendHidInitValues", "i");
 	0 => xmit.addInt;
-//	<<< "Send those values now">>>;
   }
 }
 
@@ -376,66 +350,31 @@ fun void oscHidRunWait() {
   }
 }
 
-fun void oscHidInitAxesWait() {
-//	<<< "Waiting for axes" >>>;
-	oscHidInitAxes => now;
-//	<<< "Got axes" >>>;
-	1 => gotAxesInits;
-	new float[numHidAxes] @=> hidAxesInits;
-//	<<< "Got axes initial values">>>;
-	while (oscHidInitAxes.nextMsg() != 0) {
+//New 11/25: Streamlined this.
+fun void oscHidInitAllWait() {
+	oscHidInitAll => now;	
+	while (oscHidInitAll.nextMsg() != 0) {
+		oscHidInitAll.getInt() => int dummy;
+
 		for (0 => int i; i < numHidAxes; i++) {			
-			oscHidInitAxes.getFloat() => hidAxesInits[i];
+		
+			oscHidInitAll.getFloat() => hidAxesInits[i];
 		}
-	}
-//	<<< "Axes size is", hidAxesInits.size()>>>;
-	checkForAllHidInits();
-}
 
-fun void oscHidInitHatsWait() {
-//	<<< "Waiting for hats">>>;
-	oscHidInitHats => now;
-//	<<< "Got hat">>>;
-	1 => gotHatsInits;
-	new int[numHidHats] @=> hidHatsInits;
-//	<<< "Got hats initial values">>>;
-	while (oscHidInitHats.nextMsg() != 0) {
 		for (0 => int i; i < numHidHats; i++) {			
-			oscHidInitHats.getInt() => hidHatsInits[i];
+			oscHidInitAll.getInt() => hidHatsInits[i];
 		}
-	}
-	checkForAllHidInits();
-}
 
-fun void oscHidInitButtonsWait() {
-//	<<< "Waiting for buttons">>>;
-	oscHidInitButtons => now;
-//<<< "Got button" >>>;
-	1 => gotButtonsInits;
-	new int[numHidButtons] @=> hidButtonsInits;
-//	<<< "Got buttons initial values">>>;
-	while (oscHidInitButtons.nextMsg() != 0) {
 		for (0 => int i; i < numHidButtons; i++) {			
-			oscHidInitButtons.getInt() => hidButtonsInits[i];
+			oscHidInitAll.getInt() => hidButtonsInits[i];
 		}
-	}
-	checkForAllHidInits();
 
-}
-
-fun void oscHidInitMaskWait() {
-//	<<< "Waiting for mask">>>;
-	oscHidInitMask => now;
-//	<<< "Got mask" >>>;
-	1 => gotMaskInits;
-	new int[numHidAxes + numHidHats + numHidButtons] @=> hidMaskInits;
-	while (oscHidInitMask.nextMsg() != 0) {
 		for (0 => int i; i < hidMaskInits.size(); i++) {			
-			oscHidInitMask.getInt() => hidMaskInits[i];
+			oscHidInitAll.getInt() => hidMaskInits[i];
 		}
-	}
-	checkForAllHidInits();
-
+	} 
+	hd.initialize(hidAxesInits.size(), hidButtonsInits.size(), hidHatsInits.size(), hidAxesInits, hidButtonsInits, hidHatsInits, hidMaskInits);
+	hd.run();
 }
 
 fun void oscHidSettingsRequestWait() {
@@ -445,69 +384,55 @@ fun void oscHidSettingsRequestWait() {
 	while (oscHidSettingsRequest.nextMsg() != 0) {
 		oscHidSettingsRequest.getInt();
 	}
-	xmit.startMsg( "/hidSettingsNums", "i i i");
+
+	"i i i" => string s; //# axes, numHats, numButtons
+	for (0 => int i; i < hd.getNumAxes(); i++) { //axes vals as f
+		s + " f" => s;
+	}
+	for (0 => int i; i < hd.getNumHats(); i++) { //hat vals as i
+		s + " i" => s;
+	}
+	for (0 => int i; i < hd.getNumButtons(); i++) { //buttons vals as i
+		s + " i" => s;
+	}
+	hd.getMask() @=> int mask[];
+	<<< "Mask length ", mask.size() >>>;
+	for (0 => int i; i < mask.size(); i++) {
+		s + " i" => s;
+	}
+	xmit.startMsg( "/hidSettingsAll", s);
+<<< "Starting message ", s>>>;
 	hd.getNumAxes() => xmit.addInt;
 	hd.getNumHats() => xmit.addInt;
 	hd.getNumButtons() => xmit.addInt;
 
-	string s;
 	if (hd.getNumAxes() > 0) {
-		"f" => s;
 		hd.getAxesVals() @=> float vals[];
-		for (1 => int i; i < vals.size(); i++) {
-			s + " f" => s;
-		}
-		xmit.startMsg("/hidSettingsAxes", s);
 		for (0 => int i; i < vals.size(); i++) {
 			vals[i] => xmit.addFloat;
 		}
 	}
 	if (hd.getNumHats() > 0) {
-		"i" => s;
 		hd.getHatsVals() @=> int vals[];
-		for (1 => int i; i < vals.size(); i++) {
-			s + " i" => s;
-		}
-		xmit.startMsg("/hidSettingsHats", s);
 		for (0 => int i; i < vals.size(); i++) {
 			vals[i] => xmit.addInt;
 		}
 	}
 	if (hd.getNumButtons() > 0) {
-		"i" => s;
 		hd.getButtonsVals() @=> int vals[];
-		for (1 => int i; i < vals.size(); i++) {
-			s + " i" => s;
-		}
-		xmit.startMsg("/hidSettingsButtons", s);
 		for (0 => int i; i < vals.size(); i++) {
 			vals[i] => xmit.addInt;
 		}
 	}
-	"i" => s;
-	hd.getMask() @=> int vals[];
-	for (1 => int i; i < vals.size(); i++) {
-		s + " i" => s;
-	}
-	xmit.startMsg("/hidSettingsMask", s);
-	for (0 => int i; i < vals.size(); i++) {
-		vals[i] => xmit.addInt;
-	}
+
+	//if (hd.getNumButtons() > 0 || hd.getNumHats() > 0 || hd.getNumAxes() > 0) {
+		hd.getMask() @=> int vals[];
+		for (0 => int i; i < vals.size(); i++) {
+			vals[i] => xmit.addInt;
+		}
+//	}
   }
 }
-
-
-//could potentially be weird if nothign found?
-fun void checkForAllHidInits() {
-	//<<< "Checking for all hid inits">>>;
-	if (gotAxesInits && gotButtonsInits && gotHatsInits && gotMaskInits) {
-	//	<<< "Got all hid ints">>>;
-		hd.initialize(hidAxesInits.size(), hidButtonsInits.size(), hidHatsInits.size(), hidAxesInits, hidButtonsInits, hidHatsInits, hidMaskInits);
-		hd.run();
-	}
-}
-
-
 
 //Wait for the signal to start extracting features
 fun void receivedExtract() {
@@ -594,27 +519,6 @@ fun void receivedStopPlaybackRequest() {
 	//mc.stopPlayback();
 	sp.stopScore();
 }
-
-
-
-//Deprecated.
-//Wait to get a request for the params, to use for real-valued training
-/*fun void oscRealRequestWait() {
-	while (true) {
-	<<< "waiting" >>>;
-		oscRealValueRequest => now;
-		//1::second => now;
-		<<< "Saw current value request">>>;
-		xmit.startMsg("/realValue", "f");
-		mc.getFreq() => xmit.addFloat;
-		<<< "sent value ", mc.getFreq(), " via osc">>>;
-		while (oscRealValueRequest.nextMsg() != 0) {
-			oscRealValueRequest.getInt();
-		}
-	}
-} */
-
-
 
 //Send a metadata string, simply describing the # of features
 fun void sendFeatureData() {
@@ -797,6 +701,7 @@ computeNumFeats();
 }
 
 fun void receivedOtherHidMessage(int i) {
+	<<< "RECEIVED OTHER HID MESSAGE ", i>>>;
 	i => useOtherHid;
 	computeNumFeats();
 }

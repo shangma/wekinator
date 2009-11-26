@@ -264,7 +264,9 @@ fun void run() {
 	<<< "Hid running!">>>;
 	1 => isGo;
   while (isGo) {
+	//<<< "STILL RUNNING">>>;
 	js => now;
+	//<<< "GOT JS MESSAGE">>>;
 	while (js.recv(msg)) {
 	//	<<< "Got one">>>;
 		msg.which => int id;
