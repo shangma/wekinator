@@ -9,33 +9,24 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import wekinator.FeatureManager.*;
-import wekinator.util.Subject;
-import wekinator.util.Observer;
 
 /**
- *
+ * //TODO here: fix  handling of backup, and of HID setup.
  * @author rebecca
  */
 public class OscHandler {
 
     private static OscHandler ref = null;
-
-    public int receivePort = 0;
-    public int sendPort = 0;
-
-
+    public int receivePort = 6448;
+    public int sendPort = 6453;
     OSCPortOut sender;
     public OSCPortIn receiver;
     WekaOperator w;
-    HidSetup h = new HidSetup();
-    String startHandshakeString = "/hello";
+    //  HidSetup h = new HidSetup();
+    //  String startHandshakeString = "/hello";
     String returnHandshakeString = "/hiback";
     String featureInfoString = "/featureInfo";
     String featuresString = "/features"; //used for chuck features (not osc feats)
@@ -52,11 +43,13 @@ public class OscHandler {
     String hidSetupStoppedString = "/hidSetupStopped";
     String hidInitString = "/hidInit";
     String sendHidInitValuesString = "/sendHidInitValues";
-    String hidInitAxesString = "/hidInitAxes";
-    String hidInitHatsString = "/hidInitHats";
-    String hidInitButtonsString = "/hidInitButtons";
-    String hidInitMaskString = "/hidInitMask";
+   // String hidInitAxesString = "/hidInitAxes";
+   // String hidInitHatsString = "/hidInitHats";
+    String hidInitAllString = "/hidInitAll";
+   // String hidInitButtonsString = "/hidInitButtons";
+   // String hidInitMaskString = "/hidInitMask";
     String hidSettingsRequestString = "/hidSettingsRequest";
+    String hidSettingsAllString = "/hidSettingsAll";
     String hidSettingsNumsString = "/hidSettingsNums";
     String hidSettingsAxesString = "/hidSettingsAxes";
     String hidSettingsHatsString = "/hidSettingsHats";
@@ -93,15 +86,12 @@ public class OscHandler {
     String startPlaybackMessageString = "startPlayback";
     String stopPlaybackMessageString = "stopPlayback";
     String playAlongMessage = "/playAlongMessage";
-    int counter = 0;
     Logger logger = Logger.getLogger(OscHandler.class.getName());
 
     public enum ConnectionState {
 
         NOT_CONNECTED, CONNECTING, CONNECTED, FAIL
     };
-    private ArrayList<Observer> observers;
-    public ConnectionState oldState = ConnectionState.NOT_CONNECTED;
     private String myStatusMessage = "Not initialized";
     protected ConnectionState connectionState;
     public static final String PROP_CONNECTIONSTATE = "connectionState";
@@ -146,7 +136,7 @@ public class OscHandler {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
-        public static synchronized OscHandler getOscHandler() {
+    public static synchronized OscHandler getOscHandler() {
         if (ref == null) {
             ref = new OscHandler();
         }
@@ -154,23 +144,21 @@ public class OscHandler {
     }
 
     private OscHandler() {
-        h.setOSCHandler(this); //TODO: get rid of this
-                observers = new ArrayList(); // Get rid of this TODO
+        // h.setOSCHandler(this); //TODO: get rid of this
     }
 
-  /*  private OscHandler(WekaOperator w, int receivePort, int sendPort) throws SocketException, UnknownHostException {
-        this.receivePort = receivePort;
-        this.sendPort = sendPort;
-        this.w = w;
-        receiver = new OSCPortIn(receivePort);
-        //  System.out.println("Java listening on " + receivePort);
-        sender = new OSCPortOut(InetAddress.getLocalHost(), sendPort);
-        // System.out.println("Java sending on " + sendPort); 
+    /*  private OscHandler(WekaOperator w, int receivePort, int sendPort) throws SocketException, UnknownHostException {
+    this.receivePort = receivePort;
+    this.sendPort = sendPort;
+    this.w = w;
+    receiver = new OSCPortIn(receivePort);
+    //  System.out.println("Java listening on " + receivePort);
+    sender = new OSCPortOut(InetAddress.getLocalHost(), sendPort);
+    // System.out.println("Java sending on " + sendPort);
     } */
-
     public void setHidSetup(HidSetup h) {
-        this.h = h;
-        h.setOSCHandler(this);
+        //    this.h = h;
+        //    h.setOSCHandler(this);
     }
 
     private void setStatusStringForState() {
@@ -189,15 +177,15 @@ public class OscHandler {
                 break;
             default:
                 myStatusMessage = "Other";
-            
+
 
         }
-        
+
     }
 
     public void startHandshake() throws IOException {
         /*if (receiver.isListening()) {
-            receiver.close();
+        receiver.close();
         } */ //TODO??
 
         receiver = new OSCPortIn(receivePort);
@@ -212,7 +200,7 @@ public class OscHandler {
                 // oldState = ConnectionState.CONNECTED;
                 setConnectionState(ConnectionState.CONNECTED);
                 myStatusMessage = "Connected";
-          //      notifyObservers();
+            //      notifyObservers();
             }
         };
 
@@ -223,16 +211,17 @@ public class OscHandler {
         addHidSetupBegunListener();
         addHidSetupStoppedListener();
         addSendHidInitValuesListener();
-        addHidSettingsNumsListener();
+        /*  addHidSettingsNumsListener();
         addHidSettingsAxesListener();
         addHidSettingsHatsListener();
         addHidSettingsButtonsListener();
-        addHidSettingsMaskListener();
+        addHidSettingsMaskListener(); */
         addNumParamsListener();
         addChuckSettingsListener();
         receiver.startListening();
         sendHandshakeMessage();
         addPlayalongMessageListener();
+        addHidSettingsAllListener();
         //  oldState = ConnectionState.CONNECTING;
 
         setConnectionState(ConnectionState.CONNECTING);
@@ -359,9 +348,6 @@ public class OscHandler {
 
         OSCMessage msg = new OSCMessage(setUseAudioFeatureString, o);
         sender.send(msg);
-
-
-
     }
 
     void setUseMotion(boolean useMotion, int motionExtractionRate) throws IOException {
@@ -424,45 +410,81 @@ public class OscHandler {
     }
 
     void sendHidValues(float[] initAxes, int[] initHats, int[] initButtons, int[] axesMask, int[] hatsMask, int[] buttonsMask) throws IOException {
-        Object[] o1 = new Object[initAxes.length];
+        Object[] o = new Object[1 + (initAxes.length + initHats.length + initButtons.length) * 2];
+        int counter = 0;
+
+        //Send dummy value in case HID is empty
+        o[0] = new Integer(0);
+        counter++;
+
         for (int i = 0; i < initAxes.length; i++) {
-            o1[i] = new Float(initAxes[i]);
+            o[counter] = new Float(initAxes[i]);
+            counter++;
         }
-        OSCMessage msg1 = new OSCMessage(hidInitAxesString, o1);
-        sender.send(msg1);
-
-        Object[] o2 = new Object[initHats.length];
         for (int i = 0; i < initHats.length; i++) {
-            o2[i] = new Integer(initHats[i]);
+            o[counter] = new Integer(initHats[i]);
+            counter++;
         }
-        OSCMessage msg2 = new OSCMessage(hidInitHatsString, o2);
-        sender.send(msg2);
-
-        Object[] o3 = new Object[initButtons.length];
         for (int i = 0; i < initButtons.length; i++) {
-            o3[i] = new Integer(initButtons[i]);
+            o[counter] = new Integer(initButtons[i]);
+            counter++;
         }
-        OSCMessage msg3 = new OSCMessage(hidInitButtonsString, o3);
-        sender.send(msg3);
-
-        Object[] o4 = new Object[initAxes.length + initHats.length + initButtons.length];
-        int j = 0;
         for (int i = 0; i < axesMask.length; i++) {
-            o4[j] = axesMask[i];
-            j++;
+            o[counter] = new Integer(axesMask[i]);
+            counter++;
         }
         for (int i = 0; i < hatsMask.length; i++) {
-            o4[j] = hatsMask[i];
-            j++;
+            o[counter] = new Integer(hatsMask[i]);
+            counter++;
         }
-        for (int i = 0; i < buttonsMask.length; i++) {
-            o4[j] = buttonsMask[i];
-            j++;
-        }
-        OSCMessage msg4 = new OSCMessage(hidInitMaskString, o4);
-        sender.send(msg4);
 
-        System.out.println("Sent 4 init strings");
+        for (int i = 0; i < buttonsMask.length; i++) {
+            o[counter] = new Integer(buttonsMask[i]);
+            counter++;
+        }
+
+        OSCMessage msg = new OSCMessage(hidInitAllString, o);
+        sender.send(msg);
+
+    /*  Object[] o1 = new Object[initAxes.length];
+    for (int i = 0; i < initAxes.length; i++) {
+    o1[i] = new Float(initAxes[i]);
+    }
+    OSCMessage msg1 = new OSCMessage(hidInitAxesString, o1);
+    sender.send(msg1);
+
+    Object[] o2 = new Object[initHats.length];
+    for (int i = 0; i < initHats.length; i++) {
+    o2[i] = new Integer(initHats[i]);
+    }
+    OSCMessage msg2 = new OSCMessage(hidInitHatsString, o2);
+    sender.send(msg2);
+
+    Object[] o3 = new Object[initButtons.length];
+    for (int i = 0; i < initButtons.length; i++) {
+    o3[i] = new Integer(initButtons[i]);
+    }
+    OSCMessage msg3 = new OSCMessage(hidInitButtonsString, o3);
+    sender.send(msg3);
+
+    Object[] o4 = new Object[initAxes.length + initHats.length + initButtons.length];
+    int j = 0;
+    for (int i = 0; i < axesMask.length; i++) {
+    o4[j] = axesMask[i];
+    j++;
+    }
+    for (int i = 0; i < hatsMask.length; i++) {
+    o4[j] = hatsMask[i];
+    j++;
+    }
+    for (int i = 0; i < buttonsMask.length; i++) {
+    o4[j] = buttonsMask[i];
+    j++;
+    }
+    OSCMessage msg4 = new OSCMessage(hidInitMaskString, o4);
+    sender.send(msg4);
+
+    System.out.println("Sent 4 init strings"); */
     }
 
     public void end() {
@@ -751,7 +773,7 @@ public class OscHandler {
             public void acceptMessage(java.util.Date time, OSCMessage message) {
                 System.out.println("Hid Setup begun");
                 Object[] o = message.getArguments();
-                h.setupBegun();
+                WekinatorInstance.getWekinatorInstance().getCurrentHidSetup().setupBegun();
             }
         };
         receiver.addListener(hidSetupBegunString, listener);
@@ -765,8 +787,8 @@ public class OscHandler {
                 try {
                     System.out.println("Hid Setup stopped");
                     Object[] o = message.getArguments();
-
-                    h.setupStopped();
+                    System.out.flush();
+                    WekinatorInstance.getWekinatorInstance().getCurrentHidSetup().setupStopped();
                 } catch (IOException ex) {
                     Logger.getLogger(OscHandler.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -782,7 +804,7 @@ public class OscHandler {
                 System.out.println("Hid received send hid init values message");
                 Object[] o = message.getArguments();
                 try {
-                    h.receivedSendHidInitValues();
+                    WekinatorInstance.getWekinatorInstance().getCurrentHidSetup().receivedSendHidInitValues();
                 } catch (IOException ex) {
                     Logger.getLogger(OscHandler.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -791,102 +813,107 @@ public class OscHandler {
         receiver.addListener(sendHidInitValuesString, listener);
     }
 
-    private void addHidSettingsNumsListener() {
+    /* private void addHidSettingsNumsListener() {
+    OSCListener listener = new OSCListener() {
+
+    public void acceptMessage(java.util.Date time, OSCMessage message) {
+    System.out.println("Received hid settings nums");
+    Object[] o = message.getArguments();
+    if (o.length == 3) {
+    Integer a = (Integer) o[0];
+    Integer b = (Integer) o[1];
+    Integer c = (Integer) o[2];
+    WekinatorInstance.getWekinatorInstance().getCurrentHidSetup().receivedHidSettingsNums(a, b, c);
+    } else {
+    System.out.println("Wrong number of nums received");
+    }
+    }
+    };
+    receiver.addListener(hidSettingsNumsString, listener);
+
+    } */
+    private void addHidSettingsAllListener() {
         OSCListener listener = new OSCListener() {
 
             public void acceptMessage(java.util.Date time, OSCMessage message) {
-                System.out.println("Received hid settings nums");
+                System.out.println("Received hid settings all");
                 Object[] o = message.getArguments();
-                if (o.length == 3) {
-                    Integer a = (Integer) o[0];
-                    Integer b = (Integer) o[1];
-                    Integer c = (Integer) o[2];
-                    h.receivedHidSettingsNums(a, b, c);
-                } else {
-                    System.out.println("Wrong number of nums received");
-                }
+
+                WekinatorInstance.getWekinatorInstance().getCurrentHidSetup().receivedHidSettingsAll(o);
+
             }
         };
-        receiver.addListener(hidSettingsNumsString, listener);
+        receiver.addListener(hidSettingsAllString, listener);
 
     }
 
-    private void addHidSettingsAxesListener() {
-        OSCListener listener = new OSCListener() {
+    /*  private void addHidSettingsAxesListener() {
+    OSCListener listener = new OSCListener() {
 
-            public void acceptMessage(java.util.Date time, OSCMessage message) {
-                System.out.println("Received hid settings axes");
-                Object[] o = message.getArguments();
-                float f[] = new float[o.length];
-                for (int i = 0; i < o.length; i++) {
-                    f[i] = ((Float) o[i]).floatValue();
-                }
-                h.receivedHidAxisSettings(f);
-            }
-        };
-        receiver.addListener(hidSettingsAxesString, listener);
-
+    public void acceptMessage(java.util.Date time, OSCMessage message) {
+    System.out.println("Received hid settings axes");
+    Object[] o = message.getArguments();
+    float f[] = new float[o.length];
+    for (int i = 0; i < o.length; i++) {
+    f[i] = ((Float) o[i]).floatValue();
     }
-
-    private void addHidSettingsHatsListener() {
-        OSCListener listener = new OSCListener() {
-
-            public void acceptMessage(java.util.Date time, OSCMessage message) {
-                System.out.println("Received hid settings hats");
-                Object[] o = message.getArguments();
-                int f[] = new int[o.length];
-                for (int i = 0; i < o.length; i++) {
-                    f[i] = ((Integer) o[i]).intValue();
-                }
-                h.receivedHidHatsSettings(f);
-            }
-        };
-        receiver.addListener(hidSettingsHatsString, listener);
-
+    WekinatorInstance.getWekinatorInstance().getCurrentHidSetup().receivedHidAxisSettings(f);
     }
+    };
+    receiver.addListener(hidSettingsAxesString, listener);
 
-    private void addHidSettingsButtonsListener() {
-        OSCListener listener = new OSCListener() {
+    } */
 
-            public void acceptMessage(java.util.Date time, OSCMessage message) {
-                System.out.println("Received hid settings buttons");
-                Object[] o = message.getArguments();
-                int f[] = new int[o.length];
-                for (int i = 0; i < o.length; i++) {
-                    f[i] = ((Integer) o[i]).intValue();
-                }
-                h.receivedHidButtonsSettings(f);
-            }
-        };
-        receiver.addListener(hidSettingButtonsString, listener);
+    /*  private void addHidSettingsHatsListener() {
+    OSCListener listener = new OSCListener() {
+
+    public void acceptMessage(java.util.Date time, OSCMessage message) {
+    System.out.println("Received hid settings hats");
+    Object[] o = message.getArguments();
+    int f[] = new int[o.length];
+    for (int i = 0; i < o.length; i++) {
+    f[i] = ((Integer) o[i]).intValue();
+    }
+    WekinatorInstance.getWekinatorInstance().getCurrentHidSetup().receivedHidHatsSettings(f);
+    }
+    };
+    receiver.addListener(hidSettingsHatsString, listener);
+
+    } */
+
+    /*  private void addHidSettingsButtonsListener() {
+    OSCListener listener = new OSCListener() {
+
+    public void acceptMessage(java.util.Date time, OSCMessage message) {
+    System.out.println("Received hid settings buttons");
+    Object[] o = message.getArguments();
+    int f[] = new int[o.length];
+    for (int i = 0; i < o.length; i++) {
+    f[i] = ((Integer) o[i]).intValue();
+    }
+    WekinatorInstance.getWekinatorInstance().getCurrentHidSetup().receivedHidButtonsSettings(f);
+    }
+    };
+    receiver.addListener(hidSettingButtonsString, listener);
 
     }
 
     private void addHidSettingsMaskListener() {
-        OSCListener listener = new OSCListener() {
+    OSCListener listener = new OSCListener() {
 
-            public void acceptMessage(java.util.Date time, OSCMessage message) {
-                System.out.println("Received hid settings mask");
-                Object[] o = message.getArguments();
-                int f[] = new int[o.length];
-                for (int i = 0; i < o.length; i++) {
-                    f[i] = ((Integer) o[i]).intValue();
-                }
-                h.receivedHidMaskSettings(f);
-            }
-        };
-        receiver.addListener(hidSettingsMaskString, listener);
-
+    public void acceptMessage(java.util.Date time, OSCMessage message) {
+    System.out.println("Received hid settings mask");
+    Object[] o = message.getArguments();
+    int f[] = new int[o.length];
+    for (int i = 0; i < o.length; i++) {
+    f[i] = ((Integer) o[i]).intValue();
     }
-
- /*   public void addObserver(Observer o) {
-        observers.add(o);
+    WekinatorInstance.getWekinatorInstance().getCurrentHidSetup().receivedHidMaskSettings(f);
     }
+    };
+    receiver.addListener(hidSettingsMaskString, listener);
 
-    public void removeObserver(Observer o) {
-        observers.remove(o);
     } */
-
     public void playScore() throws IOException {
         Object[] o = new Object[2];
         o[0] = startPlaybackMessageString;
@@ -906,12 +933,12 @@ public class OscHandler {
         System.out.println("Asked for start playback");
     }
 
-        @Override
+    @Override
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
     }
 
-            public int getReceivePort() {
+    public int getReceivePort() {
         return receivePort;
     }
 
@@ -927,7 +954,7 @@ public class OscHandler {
         this.sendPort = sendPort;
     }
 
-        public WekaOperator getW() { //TODO: Get rid of this!
+    public WekaOperator getW() { //TODO: Get rid of this!
         return w;
     }
 

@@ -5,9 +5,6 @@
  */
 package wekinator;
 
-import javax.swing.JFrame;
-import javax.swing.JTextField;
-
 /**
  *
  * @author  rebecca

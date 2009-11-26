@@ -17,10 +17,10 @@ public class LearningSystem {
     //Not specific to the GUI
 
     //Has a bunch of classifiers, most recent evaluation results
-    List<IbkLearningAlgorithm> learners;
-    SimpleDataset dataset;
-  //  FeatureExtractor extractor;
-    FeatureToParameterMapping mapping;
+    protected List<LearningAlgorithm> learners;
+    protected SimpleDataset dataset;
+    protected FeatureConfiguration featureConfiguration;
+    protected FeatureToParameterMapping mapping;
 
     //Properties: Num params, type of params, feature/param mask,
     //Other methods: train, compute accuracy (summary), compute individual accuracy, get learner types

@@ -11,13 +11,11 @@
 package wekinator;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.filechooser.FileSystemView;
 import wekinator.util.OverwritePromptingFileChooser;
 
 /**
@@ -28,7 +26,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
 
     ChuckConfiguration configuration;
     ChuckConfiguration initialConfiguration;
-    String homePath = "../../";
+    String homePath = ".." + File.separator + ".." + File.separator; //TODO: get from settings
 
     /** Creates new form ChuckConfigurationForm */
     public ChuckConfigurationForm(ChuckConfiguration c) {

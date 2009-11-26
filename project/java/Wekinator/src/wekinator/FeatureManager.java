@@ -208,7 +208,8 @@ public class FeatureManager {
             objout.writeInt(motionExtractionRate);
             objout.writeBoolean(useOtherHid);
             if (useOtherHid) {
-                hidSetup.writeToStream(objout);
+                objout.writeObject(hidSetup);
+                //hidSetup.writeToStream(objout);
             }
             objout.writeBoolean(useProcessing);
            // objout.writeObject(myProcessingOption);
@@ -276,7 +277,13 @@ public class FeatureManager {
             motionExtractionRate = objin.readInt();
             useOtherHid = objin.readBoolean();
             if (useOtherHid) {
-                hidSetup.readFromStream(objin);
+                try {
+                    hidSetup = (HidSetup) objin.readObject();
+                    WekinatorInstance.getWekinatorInstance().setCurrentHidSetup(hidSetup); //TODO: Do I really want to do this? Or wait until I "apply" this feature set?
+                } catch (ClassNotFoundException ex) {
+                    System.out.println("Problem loading hidset");
+                }
+
             }
             useProcessing = objin.readBoolean();
           //  myProcessingOption = (ProcessingOptions)objin.readObject();

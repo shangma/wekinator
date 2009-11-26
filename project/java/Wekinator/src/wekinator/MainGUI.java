@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BoxLayout;
@@ -151,11 +150,16 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
     int trainingFrequency = 50; //TODO: bind to slider
     boolean isConnected = false;
     private FeatureManager fm;
-    private HidSetup hs;
     LinkedList<MyWorker> trainQueue = new LinkedList<MyWorker>();
     MyWorker currentWorker = null;
     Timer timer = new Timer();
     boolean isAutoTrain = false;
+    PropertyChangeListener hidSetupChangeListener = new PropertyChangeListener() {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            hidSetupPropertyChange(evt);
+        }
+    };
 
     /** Creates new form Bigger1 */
     public MainGUI() {
@@ -182,10 +186,21 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
 
         w.addObserver(this);
         w.setGui(this);
-        hs = new HidSetup();
-        fm.hidSetup = hs;
-        hs.addObserver(this);
+        fm.hidSetup = wek.getCurrentHidSetup(); //TODO: put in fm
+        wek.getCurrentHidSetup().addPropertyChangeListener(new PropertyChangeListener() {
 
+            public void propertyChange(PropertyChangeEvent evt) {
+                hidSetupPropertyChange(evt);
+            }
+        });
+        wek.addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                wekinatorInstancePropertyChangeEvent(evt);
+            }
+        });
+
+        chuckRunnerPanel1.setRunner(WekinatorInstance.getWekinatorInstance().getRunner());
         //  buttonClearSettings.setVisible(false);
         radioClearProcessingFeature.setVisible(false);
         int n = w.getNumClasses();
@@ -439,13 +454,6 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         checkTrackpad = new javax.swing.JCheckBox();
         checkMotionSensor = new javax.swing.JCheckBox();
         checkOtherHID = new javax.swing.JCheckBox();
-        jPanel2 = new javax.swing.JPanel();
-        buttonLoadOtherHID = new javax.swing.JButton();
-        buttonIdentifyNewHID = new javax.swing.JButton();
-        labelHIDDescription = new javax.swing.JLabel();
-        buttonSaveHidFile = new javax.swing.JButton();
-        labelHIDStatus = new javax.swing.JLabel();
-        buttonSetupDone = new javax.swing.JButton();
         checkProcessing = new javax.swing.JCheckBox();
         textMotionRate = new javax.swing.JTextField();
         jLabel11 = new javax.swing.JLabel();
@@ -458,6 +466,8 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         checkCustomOsc = new javax.swing.JCheckBox();
         textNumOsc = new javax.swing.JTextField();
         textNumCustomChuck = new javax.swing.JTextField();
+        buttonSetupOtherHid = new javax.swing.JButton();
+        labelHidDescription = new javax.swing.JLabel();
         panelClassifier = new javax.swing.JPanel();
         buttonUseClassifierSettings = new javax.swing.JButton();
         labelClassifierStatus = new javax.swing.JLabel();
@@ -526,6 +536,8 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         labelClassifiedClass1 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
         jlabelNumInstances = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        featureConfigurationPanel1 = new wekinator.FeatureConfigurationPanel();
         labelGlobalStatus = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
@@ -547,6 +559,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
             }
         });
 
+        jTabbedPane1.setEnabled(false);
         jTabbedPane1.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
                 jTabbedPane1ComponentShown(evt);
@@ -599,11 +612,15 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 .add(jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel5Layout.createSequentialGroup()
                         .addContainerGap()
+                        .add(buttonOscConnect)
+                        .add(227, 227, 227)
+                        .add(buttonOscDisconnect))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel5Layout.createSequentialGroup()
+                        .add(23, 23, 23)
+                        .add(labelOscStatus, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 521, Short.MAX_VALUE))
+                    .add(jPanel5Layout.createSequentialGroup()
+                        .addContainerGap()
                         .add(jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jPanel5Layout.createSequentialGroup()
-                                .add(buttonOscConnect)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(buttonOscDisconnect))
                             .add(jLabel2)
                             .add(jPanel5Layout.createSequentialGroup()
                                 .add(jLabel1)
@@ -614,19 +631,16 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                         .add(jLabel9))
                                     .add(jPanel5Layout.createSequentialGroup()
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                         .add(textOscSend, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 71, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                         .add(jLabel8))))
-                            .add(labelOscStatus1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 151, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(jPanel5Layout.createSequentialGroup()
-                        .add(23, 23, 23)
-                        .add(labelOscStatus, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 521, Short.MAX_VALUE)))
+                            .add(labelOscStatus1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 151, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel5Layout.createSequentialGroup()
-                .addContainerGap(20, Short.MAX_VALUE)
                 .add(labelOscStatus1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -638,10 +652,10 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                     .add(jLabel1)
                     .add(textOscSend, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 44, Short.MAX_VALUE)
                 .add(jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(buttonOscConnect)
-                    .add(buttonOscDisconnect))
+                    .add(buttonOscDisconnect)
+                    .add(buttonOscConnect))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(labelOscStatus)
                 .addContainerGap())
@@ -680,7 +694,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 .add(jPanel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(77, Short.MAX_VALUE))
+                .addContainerGap(60, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Setup", panelOSC);
@@ -850,87 +864,6 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         checkOtherHID.setFont(new java.awt.Font("Lucida Grande", 0, 12));
         checkOtherHID.setText("Other HID");
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-
-        buttonLoadOtherHID.setFont(new java.awt.Font("Lucida Grande", 0, 12));
-        buttonLoadOtherHID.setText("Load from file...");
-        buttonLoadOtherHID.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonLoadOtherHIDActionPerformed(evt);
-            }
-        });
-
-        buttonIdentifyNewHID.setFont(new java.awt.Font("Lucida Grande", 0, 12));
-        buttonIdentifyNewHID.setText("Setup new...");
-        buttonIdentifyNewHID.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonIdentifyNewHIDActionPerformed(evt);
-            }
-        });
-
-        labelHIDDescription.setFont(new java.awt.Font("Lucida Grande", 0, 10));
-        labelHIDDescription.setText("(description)");
-
-        buttonSaveHidFile.setFont(new java.awt.Font("Lucida Grande", 0, 12));
-        buttonSaveHidFile.setText("Save as...");
-        buttonSaveHidFile.setEnabled(false);
-        buttonSaveHidFile.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonSaveHidFileActionPerformed(evt);
-            }
-        });
-
-        labelHIDStatus.setFont(new java.awt.Font("Lucida Grande", 0, 10));
-        labelHIDStatus.setText("(description)");
-
-        buttonSetupDone.setFont(new java.awt.Font("Lucida Grande", 0, 12));
-        buttonSetupDone.setText("Hit to End Setup");
-        buttonSetupDone.setEnabled(false);
-        buttonSetupDone.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonSetupDoneActionPerformed(evt);
-            }
-        });
-
-        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, buttonIdentifyNewHID, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, buttonLoadOtherHID, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel2Layout.createSequentialGroup()
-                        .add(labelHIDDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 226, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(buttonSaveHidFile))
-                    .add(jPanel2Layout.createSequentialGroup()
-                        .add(buttonSetupDone, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 160, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(labelHIDStatus, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
-                .add(20, 20, 20)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, labelHIDDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, buttonLoadOtherHID, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .add(buttonSaveHidFile))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(buttonIdentifyNewHID)
-                    .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(buttonSetupDone)
-                        .add(labelHIDStatus, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 29, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-
         checkProcessing.setFont(new java.awt.Font("Lucida Grande", 0, 12));
         checkProcessing.setText("Processing");
 
@@ -1021,43 +954,62 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
             }
         });
 
+        buttonSetupOtherHid.setText("Configure...");
+        buttonSetupOtherHid.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonSetupOtherHidActionPerformed(evt);
+            }
+        });
+
+        labelHidDescription.setText("None configured");
+
         org.jdesktop.layout.GroupLayout panelFeaturesLayout = new org.jdesktop.layout.GroupLayout(panelFeatures);
         panelFeatures.setLayout(panelFeaturesLayout);
         panelFeaturesLayout.setHorizontalGroup(
             panelFeaturesLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(panelFeaturesLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(panelFeaturesLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, panelFeaturesLayout.createSequentialGroup()
+                .add(panelFeaturesLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(panelFeaturesLayout.createSequentialGroup()
+                        .addContainerGap()
                         .add(panelFeaturesLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(checkOtherHID)
+                            .add(checkProcessing)
                             .add(panelFeaturesLayout.createSequentialGroup()
-                                .add(checkMotionSensor)
+                                .add(buttonSaveFeatureSettings)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(jLabel11))
-                            .add(checkTrackpad))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(textMotionRate, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(checkAudio)
-                    .add(labelOscStatus3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE)
-                    .add(buttonLoadFeatureSettings, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE)
-                    .add(checkProcessing)
-                    .add(panelFeaturesLayout.createSequentialGroup()
-                        .add(buttonSaveFeatureSettings)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(buttonFeaturesGo))
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(panelFeaturesLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, panelFeaturesLayout.createSequentialGroup()
-                            .add(checkCustomChuck)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(textNumCustomChuck))
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, panelFeaturesLayout.createSequentialGroup()
-                            .add(checkCustomOsc)
-                            .add(18, 18, 18)
-                            .add(textNumOsc, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 37, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                                .add(buttonFeaturesGo))
+                            .add(jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(panelFeaturesLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                                .add(org.jdesktop.layout.GroupLayout.LEADING, panelFeaturesLayout.createSequentialGroup()
+                                    .add(checkCustomChuck)
+                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                    .add(textNumCustomChuck))
+                                .add(org.jdesktop.layout.GroupLayout.LEADING, panelFeaturesLayout.createSequentialGroup()
+                                    .add(checkCustomOsc)
+                                    .add(18, 18, 18)
+                                    .add(textNumOsc, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 37, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, panelFeaturesLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(panelFeaturesLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(panelFeaturesLayout.createSequentialGroup()
+                                .add(panelFeaturesLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(panelFeaturesLayout.createSequentialGroup()
+                                        .add(checkOtherHID)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(buttonSetupOtherHid))
+                                    .add(panelFeaturesLayout.createSequentialGroup()
+                                        .add(checkMotionSensor)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(jLabel11))
+                                    .add(checkTrackpad))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(textMotionRate, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(checkAudio)
+                            .add(labelOscStatus3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE)
+                            .add(buttonLoadFeatureSettings, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE)
+                            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, panelFeaturesLayout.createSequentialGroup()
+                        .add(47, 47, 47)
+                        .add(labelHidDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 529, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         panelFeaturesLayout.setVerticalGroup(
@@ -1078,10 +1030,12 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                     .add(jLabel11)
                     .add(textMotionRate, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(checkOtherHID)
+                .add(panelFeaturesLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(checkOtherHID)
+                    .add(buttonSetupOtherHid))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(labelHidDescription)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(checkProcessing)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -1097,7 +1051,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 .add(panelFeaturesLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(buttonSaveFeatureSettings)
                     .add(buttonFeaturesGo))
-                .addContainerGap(15, Short.MAX_VALUE))
+                .addContainerGap(81, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Features", panelFeatures);
@@ -1796,8 +1750,8 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 .addContainerGap()
                 .add(jLabel10)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(labelClassifiedClass1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
-                .add(412, 412, 412))
+                .add(labelClassifiedClass1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
+                .add(418, 418, 418))
         );
         panelPlayAlongLayout.setVerticalGroup(
             panelPlayAlongLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -1823,6 +1777,23 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         );
 
         jTabbedPane1.addTab("Playalong", panelPlayAlong);
+
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .add(featureConfigurationPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(44, Short.MAX_VALUE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .add(featureConfigurationPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(193, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("tab6", jPanel2);
 
         fileMenu.setText("Wekinator");
 
@@ -1919,7 +1890,7 @@ private void buttonOscConnectActionPerformed(java.awt.event.ActionEvent evt) {//
         sendPort = Integer.parseInt(textOscSend.getText());
         receivePort = Integer.parseInt(textOscReceive.getText());
         w.begin(sendPort, receivePort);
-        w.Handler().setHidSetup(hs);
+    // w.Handler().setHidSetup(hs);
     } catch (IOException ex) {
         labelGlobalStatus.setText("Error setting up: " + ex.getMessage());
     }
@@ -1946,10 +1917,7 @@ private void buttonUseClassifierSettingsActionPerformed(java.awt.event.ActionEve
         if (featureParameterMaskEditor.hasMappingChanged()) {
             //Warning!
             int clearIt = JOptionPane.showConfirmDialog(this,
-                    "You have edited the relationship between features and \n"
-                    + "parameters. " + "This will cause one or more of your \n"
-                    + "trained models to be forgotten. Proceed anyway? \n"
-                    + "(Select NO and then RESET to undo this change)", "",
+                    "You have edited the relationship between features and \n" + "parameters. " + "This will cause one or more of your \n" + "trained models to be forgotten. Proceed anyway? \n" + "(Select NO and then RESET to undo this change)", "",
                     JOptionPane.YES_NO_OPTION);
 
             if (clearIt != JOptionPane.YES_OPTION) {
@@ -1964,8 +1932,8 @@ private void buttonUseClassifierSettingsActionPerformed(java.awt.event.ActionEve
                 }
 
                 //Now what about classifiers??
-               
-              //  w.setNumParameters(w.getNumParameters()); //Hack: Really  just want to clear the classifiers that need it
+
+                //  w.setNumParameters(w.getNumParameters()); //Hack: Really  just want to clear the classifiers that need it
                 w.resetClassifiers();
             }
         }
@@ -2183,7 +2151,8 @@ private void buttonTrainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         checkMotionSensor.setSelected(fm.useMotionSensor);
         textMotionRate.setText(Integer.toString(fm.getMotionExtractionRate()));
         checkOtherHID.setSelected(fm.useOtherHid);
-        displayHidSettings();
+        //   displayHidSettings(); //TODO: Decide how to deal with this
+        //Maybe hidsetup is part of the featuremanager, and not part of wekinatorinstance...
         checkProcessing.setSelected(fm.useProcessing);
         if (fm.useProcessing) {
             switch (fm.getProcessingOption()) {
@@ -2258,7 +2227,7 @@ private void buttonTrainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         }
         fm.useOtherHid = checkOtherHID.isSelected();
         if (fm.useOtherHid) {
-            fm.hidSetup = hs;
+            fm.hidSetup = wek.getCurrentHidSetup(); //TODO: delete this
         }
         fm.useProcessing = checkProcessing.isSelected();
         if (fm.useProcessing) {
@@ -2754,7 +2723,7 @@ private void buttonLoadFeatureSettingsActionPerformed(java.awt.event.ActionEvent
         fm.readSettingsFromFile(f);
         if (fm.useOtherHid) {
             try {
-                hs.startHidInit();
+                wek.getCurrentHidSetup().startHidInit();
             } catch (IOException ex) {
                 Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -2764,69 +2733,6 @@ private void buttonLoadFeatureSettingsActionPerformed(java.awt.event.ActionEvent
         System.out.println("loaded feature settings");
     }
 }//GEN-LAST:event_buttonLoadFeatureSettingsActionPerformed
-
-private void buttonLoadOtherHIDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonLoadOtherHIDActionPerformed
-    checkOtherHID.setSelected(true);
-    File f = findHidSetupFile();
-    boolean success = false;
-    if (f != null) {
-        hs.readFromFile(f);
-
-        if (hs != null) {
-            try {
-                //hs.setOSCHandler(w.Handler());
-                //hs.addObserver(this);
-                hs.startHidRun();
-                success = true;
-            } catch (IOException ex) {
-                Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
-        // hs.startHidInit();
-        }
-    }
-    if (!success) {
-        System.out.println("Could not succeed in loading settings");
-    } else {
-        System.out.println("Success loading settings");
-        displayHidSettings();
-        try {
-            hs.startHidInit();
-        } catch (IOException ex) {
-            System.out.println("Couldn't init");
-            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-}//GEN-LAST:event_buttonLoadOtherHIDActionPerformed
-
-private void buttonSaveHidFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSaveHidFileActionPerformed
-    File f = findHidSetupFileToSave();
-    if (f != null) {
-        hs.writeToFile(f);
-    }
-}//GEN-LAST:event_buttonSaveHidFileActionPerformed
-
-private void buttonIdentifyNewHIDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonIdentifyNewHIDActionPerformed
-    try {
-        hs.requestHidSetup();
-        checkOtherHID.setSelected(true);
-        labelHIDStatus.setText("Setup requested");
-    } catch (IOException ex) {
-        labelHIDStatus.setText("Could not start setup");
-        Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-    }
-}//GEN-LAST:event_buttonIdentifyNewHIDActionPerformed
-
-private void buttonSetupDoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSetupDoneActionPerformed
-    try {
-        hs.requestSetupStop();
-
-    } catch (IOException ex) {
-        labelHIDStatus.setText("Setup done.");
-        Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-    }
-
-}//GEN-LAST:event_buttonSetupDoneActionPerformed
 
 private void checkCustomOscActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkCustomOscActionPerformed
 // TODO add your handling code here:
@@ -3133,6 +3039,11 @@ private void aboutMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GE
     //SHow something about wekinator TODO
 }//GEN-LAST:event_aboutMenuItem1ActionPerformed
 
+private void buttonSetupOtherHidActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSetupOtherHidActionPerformed
+    HidSetupForm p = new HidSetupForm();
+    p.setVisible(true);
+}//GEN-LAST:event_buttonSetupOtherHidActionPerformed
+
     private File findHidSetupFileToSave() {
 
         JFileChooser fc = new OverwritePromptingFileChooser();
@@ -3151,32 +3062,33 @@ private void aboutMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GE
         return file;
     }
 
-    private void displayHidSettings() {
-        float a[] = hs.getInitAxes();
-        int b[] = hs.getInitHats();
-        int c[] = hs.getInitButtons();
-        String aa = "";
-        String bb = "";
-        String cc = "";
-        for (int i = 0; i < a.length; i++) {
-            aa += Float.toString(a[i]) + " ";
-        }
-        for (int i = 0; i < b.length; i++) {
-            bb += Integer.toString(b[i]) + " ";
-        }
-        for (int i = 0; i < c.length; i++) {
-            cc += Integer.toString(c[i]) + " ";
-        }
-
-        /* String s = hs.getNumAxes() + " axes: " + aa + " "
-        + hs.getNumHats() + " hats: " + bb + " "
-        + hs.getNumButtons() + " buttons: " + cc;
-         * */
-        String s = hs.getNumAxesTotal() + " axes, " + hs.getNumHatsTotal() + " hats," + hs.getNumButtonsTotal() + " buttons";
-        labelHIDDescription.setText(s);
-
+    /*  private void displayHidSettings() {
+    HidSetup hs = wek.getCurrentHidSetup();
+    float a[] = hs.getInitAxes();
+    int b[] = hs.getInitHats();
+    int c[] = hs.getInitButtons();
+    String aa = "";
+    String bb = "";
+    String cc = "";
+    for (int i = 0; i < a.length; i++) {
+    aa += Float.toString(a[i]) + " ";
+    }
+    for (int i = 0; i < b.length; i++) {
+    bb += Integer.toString(b[i]) + " ";
+    }
+    for (int i = 0; i < c.length; i++) {
+    cc += Integer.toString(c[i]) + " ";
     }
 
+    // String s = hs.getNumAxes() + " axes: " + aa + " "
+    // hs.getNumHats() + " hats: " + bb + " "
+    // hs.getNumButtons() + " buttons: " + cc;
+
+
+    String s = hs.getNumAxesTotal() + " axes, " + hs.getNumHatsTotal() + " hats," + hs.getNumButtonsTotal() + " buttons";
+    //labelHIDDescription.setText(s);
+
+    }*/
     private File findFeatureSetupFile() {
         JFileChooser fc = new JFileChooser();
         String location = wek.getSettings().getLastFeatureFileLocation();
@@ -3288,10 +3200,8 @@ private void aboutMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private javax.swing.ButtonGroup buttonGroupProcessingSource;
     private javax.swing.ButtonGroup buttonGroupSettingsSource;
     private javax.swing.JButton buttonHoldTrain;
-    private javax.swing.JButton buttonIdentifyNewHID;
     private javax.swing.JButton buttonListen;
     private javax.swing.JButton buttonLoadFeatureSettings;
-    private javax.swing.JButton buttonLoadOtherHID;
     private javax.swing.JRadioButton buttonLoadSavedClassifier;
     private javax.swing.JButton buttonOscConnect;
     private javax.swing.JButton buttonOscDisconnect;
@@ -3299,8 +3209,7 @@ private void aboutMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private javax.swing.JButton buttonSaveClassifier;
     private javax.swing.JButton buttonSaveClassifier1;
     private javax.swing.JButton buttonSaveFeatureSettings;
-    private javax.swing.JButton buttonSaveHidFile;
-    private javax.swing.JButton buttonSetupDone;
+    private javax.swing.JButton buttonSetupOtherHid;
     private javax.swing.JButton buttonTrain;
     private javax.swing.JButton buttonTrain1;
     private javax.swing.JButton buttonUseClassifierSettings;
@@ -3323,6 +3232,7 @@ private void aboutMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private javax.swing.JComboBox comboWindowType;
     private javax.swing.JMenuItem contentsMenuItem1;
     private javax.swing.JMenuItem exitMenuItem;
+    private wekinator.FeatureConfigurationPanel featureConfigurationPanel1;
     private wekinator.FeatureParameterMaskEditor featureParameterMaskEditor;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenu helpMenu1;
@@ -3373,8 +3283,7 @@ private void aboutMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private javax.swing.JLabel labelClassifierStatus;
     private javax.swing.JLabel labelFeatureStatus;
     private javax.swing.JLabel labelGlobalStatus;
-    private javax.swing.JLabel labelHIDDescription;
-    private javax.swing.JLabel labelHIDStatus;
+    private javax.swing.JLabel labelHidDescription;
     private javax.swing.JLabel labelNumFeatures;
     private javax.swing.JLabel labelNumParams;
     private javax.swing.JLabel labelOscStatus;
@@ -3513,67 +3422,41 @@ private void aboutMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GE
             }
 
 
-        } else if (o instanceof OscHandler) { //TODO TODO TODO: Move somewhere else.
-      /*      labelOscStatus.setText("OSC status: " + updateString);
-
-            if ((OscHandler.ConnectionState) state == OscHandler.ConnectionState.CONNECTED ||
-            (OscHandler.ConnectionState) state == OscHandler.ConnectionState.CONNECTING) {
-            buttonOscDisconnect.setEnabled(true);
-            buttonOscConnect.setEnabled(false);
-
-
-            if ((OscHandler.ConnectionState) state == OscHandler.ConnectionState.CONNECTED) {
-            isConnected = true;
-            enableTrainButtons();
-            enableFeaturePanel();
-            jTabbedPane1.setSelectedComponent(panelFeatures);
-            } else {
-            isConnected = false;
-            }
-
-            } else {
-            isConnected = false;
-            disableTrainButtons();
-            buttonOscDisconnect.setEnabled(false);
-            buttonOscConnect.setEnabled(true);
-            } */
-        } else if (o == hs) {
-            buttonSetupDone.setEnabled((HidSetup.HidState) state == HidSetup.HidState.SETUP_BEGUN);
-            if (((HidSetup.HidState) state == HidSetup.HidState.INIT_DONE) || ((HidSetup.HidState) state == HidSetup.HidState.SETUP_STOPPED)) {
-                buttonSaveHidFile.setEnabled(true);
-            }
-
-            if ((HidSetup.HidState) state == HidSetup.HidState.INIT_DONE) {
-                System.out.println("init done!");
-                labelHIDStatus.setText("Initialization done.");
-                displayHidSettings();
-            } else if ((HidSetup.HidState) state == HidSetup.HidState.INIT_REQUESTED) {
-                labelHIDStatus.setText("Initialization requested.");
-            } else if ((HidSetup.HidState) state == HidSetup.HidState.NONE) {
-                labelHIDStatus.setText("No status.");
-            } else if ((HidSetup.HidState) state == HidSetup.HidState.RUN_REQUESTED) {
-                labelHIDStatus.setText("Run requested.");
-            } else if ((HidSetup.HidState) state == HidSetup.HidState.SETTINGS_RECEIVED) {
-                labelHIDStatus.setText("Settings received.");
-                displayHidSettings();
-            } else if ((HidSetup.HidState) state == HidSetup.HidState.SETTINGS_REQUESTED) {
-                labelHIDStatus.setText("Settings requested.");
-            } else if ((HidSetup.HidState) state == HidSetup.HidState.SETUP_BEGUN) {
-                System.out.println("Setup begun seen");
-                labelHIDStatus.setText("Setup begun. Engage HID and press button to stop.");
-                buttonSetupDone.setEnabled(true);
-            } else if ((HidSetup.HidState) state == HidSetup.HidState.SETUP_REQUESTED) {
-                labelHIDStatus.setText("Setup requested.");
-            } else if ((HidSetup.HidState) state == HidSetup.HidState.SETUP_STOPPED) {
-                labelHIDStatus.setText("Setup done.");
-                displayHidSettings();
-            } else if ((HidSetup.HidState) state == HidSetup.HidState.SETUP_STOP_REQUESTED) {
-                labelHIDStatus.setText("Setup stop requested.");
-            }
-
-
         }
+    /*else if (o == hs) {
+    buttonSetupDone.setEnabled((HidSetup.HidState) state == HidSetup.HidState.SETUP_BEGUN);
+    if (((HidSetup.HidState) state == HidSetup.HidState.INIT_DONE) || ((HidSetup.HidState) state == HidSetup.HidState.SETUP_STOPPED)) {
+    buttonSaveHidFile.setEnabled(true);
+    }
 
+    if ((HidSetup.HidState) state == HidSetup.HidState.INIT_DONE) {
+    System.out.println("init done!");
+    labelHIDStatus.setText("Initialization done.");
+    displayHidSettings();
+    } else if ((HidSetup.HidState) state == HidSetup.HidState.INIT_REQUESTED) {
+    labelHIDStatus.setText("Initialization requested.");
+    } else if ((HidSetup.HidState) state == HidSetup.HidState.NONE) {
+    labelHIDStatus.setText("No status.");
+    //   } else if ((HidSetup.HidState) state == HidSetup.HidState.RUN_REQUESTED) {
+    //       labelHIDStatus.setText("Run requested.");
+    } else if ((HidSetup.HidState) state == HidSetup.HidState.SETTINGS_RECEIVED) {
+    labelHIDStatus.setText("Settings received.");
+    displayHidSettings();
+    } else if ((HidSetup.HidState) state == HidSetup.HidState.SETTINGS_REQUESTED) {
+    labelHIDStatus.setText("Settings requested.");
+    } else if ((HidSetup.HidState) state == HidSetup.HidState.SETUP_BEGUN) {
+    System.out.println("Setup begun seen");
+    labelHIDStatus.setText("Setup begun. Engage HID and press button to stop.");
+    buttonSetupDone.setEnabled(true);
+    } else if ((HidSetup.HidState) state == HidSetup.HidState.SETUP_REQUESTED) {
+    labelHIDStatus.setText("Setup requested.");
+    } else if ((HidSetup.HidState) state == HidSetup.HidState.SETUP_STOPPED) {
+    labelHIDStatus.setText("Setup done.");
+    displayHidSettings();
+    } else if ((HidSetup.HidState) state == HidSetup.HidState.SETUP_STOP_REQUESTED) {
+    labelHIDStatus.setText("Setup stop requested.");
+    }
+    } */
     }
 
     public void displayNumInstances(int numInstances) {
@@ -3708,6 +3591,23 @@ private void aboutMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GE
             disableTrainButtons();
             buttonOscDisconnect.setEnabled(false);
             buttonOscConnect.setEnabled(true);
+        }
+    }
+
+    //TODO: get rid of this.
+    private void hidSetupPropertyChange(PropertyChangeEvent evt) {
+        System.out.println("GUI RECVD HID SETUP change w/ name: " + evt.getPropertyName());
+        labelHidDescription.setText(wek.getCurrentHidSetup().getDescription());
+    }
+
+    private void wekinatorInstancePropertyChangeEvent(PropertyChangeEvent evt) {
+        // System.out.println("NEW HID SETUP");
+        //  labelHidDescription.setText(wek.getCurrentHidSetup().getDescription());
+        if (evt.getPropertyName().equals(WekinatorInstance.PROP_CURRENTHIDSETUP))  {
+            ((HidSetup) evt.getOldValue()).removePropertyChangeListener(hidSetupChangeListener);
+            ((HidSetup) evt.getNewValue()).addPropertyChangeListener(hidSetupChangeListener);
+                    labelHidDescription.setText(wek.getCurrentHidSetup().getDescription());
+
         }
     }
 }

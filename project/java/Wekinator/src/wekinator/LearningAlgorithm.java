@@ -28,7 +28,7 @@ public interface LearningAlgorithm extends Serializable {
 
     LearningAlgorithm copy();
 
-    Classifier getClassifier();
+   // Classifier getClassifier(); // Don't want to do this!
 
     /**
      * Get the value of trainingState

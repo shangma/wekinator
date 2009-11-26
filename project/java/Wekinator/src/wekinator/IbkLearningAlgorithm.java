@@ -7,16 +7,13 @@ package wekinator;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.Serializable;
-import javax.swing.JFrame;
-import weka.classifiers.Classifier;
 import weka.classifiers.lazy.IBk;
 
 /**
  *
  * @author rebecca
  */
-public class IbkLearningAlgorithm implements LearningAlgorithm {
+public class IbkLearningAlgorithm implements ClassifierLearningAlgorithm {
 
     IBk knn = null;
     KnnSettingsFrame settingsFrame = null;

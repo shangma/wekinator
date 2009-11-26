@@ -27,6 +27,8 @@ import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+//TODO: kill listener threads when chuck runner stops!
+
 /**
  *
  * @author rebecca
@@ -35,13 +37,15 @@ public class ChuckRunner {
 
     private static ChuckRunner ref = null;
     private ChuckConfiguration configuration;
- //   protected boolean running = false;
- //   public static final String PROP_ISRUNNING = "isRunning";
 
     private String lastErrorMessages = "";
 
     public String getLastErrorMessages() {
         return lastErrorMessages;
+    }
+
+    public void setLastErrorMessages(String lastErrorMessages) {
+        this.lastErrorMessages = lastErrorMessages;
     }
 
     public enum ChuckRunnerState {
@@ -72,16 +76,6 @@ public class ChuckRunner {
         this.runnerState = runnerState;
         propertyChangeSupport.firePropertyChange(PROP_RUNNERSTATE, oldRunnerState, runnerState);
     }
-
-
-    /**
-     * Get the value of running
-     *
-     * @return the value of running
-     */
- /*   public boolean isRunning() {
-        return running;
-    } */
 
     static void exportConfigurationToChuckFile(ChuckConfiguration configuration, File file) throws IOException {
         //Open output stream
@@ -134,17 +128,8 @@ public class ChuckRunner {
         w.close();
     }
 
-    /**
-     * Set the value of running
-     *
-     * @param running new value of running
-     */
-   /* private void setRunning(boolean isRunning) {
-        boolean oldIsRunning = this.running;
-        this.running = isRunning;
-        propertyChangeSupport.firePropertyChange(PROP_ISRUNNING, oldIsRunning, isRunning);
-    } */
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
 
     /**
      * Add PropertyChangeListener.
@@ -311,8 +296,8 @@ public class ChuckRunner {
 
         }
 
-        numErrLines = 1;
-        lastErrorMessages += "Test\n";
+       // numErrLines = 1;
+        //lastErrorMessages += "";
         if (numErrLines != 0) {
             System.out.println("Errors were encountered running chuck.");
             setRunnerState(ChuckRunnerState.TRYING_TO_RUN);
@@ -363,7 +348,6 @@ public class ChuckRunner {
         throw new CloneNotSupportedException();
     }
 }
-
 class LoggerThread implements Runnable {
 
     Thread t;

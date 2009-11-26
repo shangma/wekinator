@@ -31,14 +31,59 @@ public class WekinatorInstance {
     protected ChuckConfiguration configuration = null;
     protected ChuckRunner runner = null;
     private WekinatorSettings settings = null;
-    private OscHandler oscHandler = null;
+    protected HidSetup currentHidSetup;
 
 
 
     private static final String settingsSaveFile = "wekinator.usersettings";
     protected FeatureManager featureManager;
     public static final String PROP_FEATUREMANAGER = "featureManager";
+    public static final String PROP_CURRENTHIDSETUP = "currentHidSetup";
     private LinkedList<Handler> handlers;
+    protected FeatureConfiguration currentFeatureConfiguration = null;
+    public static final String PROP_CURRENTFEATURECONFIGURATION = "currentFeatureConfiguration";
+    protected LearningSystem currentLearningSystem = null;
+    public static final String PROP_CURRENTLEARNINGSYSTEM = "currentLearningSystem";
+
+    /**
+     * Get the value of currentLearningSystem
+     *
+     * @return the value of currentLearningSystem
+     */
+    public LearningSystem getCurrentLearningSystem() {
+        return currentLearningSystem;
+    }
+
+    /**
+     * Set the value of currentLearningSystem
+     *
+     * @param currentLearningSystem new value of currentLearningSystem
+     */
+    public void setCurrentLearningSystem(LearningSystem currentLearningSystem) {
+        LearningSystem oldCurrentLearningSystem = this.currentLearningSystem;
+        this.currentLearningSystem = currentLearningSystem;
+        propertyChangeSupport.firePropertyChange(PROP_CURRENTLEARNINGSYSTEM, oldCurrentLearningSystem, currentLearningSystem);
+    }
+
+    /**
+     * Get the value of currentFeatureConfiguration
+     *
+     * @return the value of currentFeatureConfiguration
+     */
+    public FeatureConfiguration getCurrentFeatureConfiguration() {
+        return currentFeatureConfiguration;
+    }
+
+    /**
+     * Set the value of currentFeatureConfiguration
+     *
+     * @param currentFeatureConfiguration new value of currentFeatureConfiguration
+     */
+    public void setCurrentFeatureConfiguration(FeatureConfiguration currentFeatureConfiguration) {
+        FeatureConfiguration oldCurrentFeatureConfiguration = this.currentFeatureConfiguration;
+        this.currentFeatureConfiguration = currentFeatureConfiguration;
+        propertyChangeSupport.firePropertyChange(PROP_CURRENTFEATURECONFIGURATION, oldCurrentFeatureConfiguration, currentFeatureConfiguration);
+    }
 
     /**
      * Get the value of featureManager
@@ -60,6 +105,26 @@ public class WekinatorInstance {
         propertyChangeSupport.firePropertyChange(PROP_FEATUREMANAGER, oldFeatureManager, featureManager);
     }
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+        /**
+     * Get the value of currentHidSetup
+     *
+     * @return the value of currentHidSetup
+     */
+    public HidSetup getCurrentHidSetup() {
+        return currentHidSetup;
+    }
+
+    /**
+     * Set the value of currentHidSetup
+     *
+     * @param currentHidSetup new value of currentHidSetup
+     */
+    public void setCurrentHidSetup(HidSetup currentHidSetup) {
+       HidSetup oldCurrentHidSetup = this.currentHidSetup;
+        this.currentHidSetup = currentHidSetup;
+        propertyChangeSupport.firePropertyChange(PROP_CURRENTHIDSETUP, oldCurrentHidSetup, currentHidSetup);
+    }
 
     /**
      * Add PropertyChangeListener.
@@ -126,7 +191,7 @@ public class WekinatorInstance {
             sin.close();
             fin.close();
             System.out.println("Loaded user settings");
-        } catch (Exception ex) { 
+        } catch (Exception ex) {
             System.out.println("No user settings found");
             settings = new WekinatorSettings();
             settings.setLastConfigurationFileLocation("chuckconfiguration.usersettings");
@@ -164,7 +229,7 @@ public class WekinatorInstance {
             } catch (IOException ex) {
                 Logger.getLogger(WekinatorInstance.class.getName()).log(Level.INFO, null, ex);
             }
-        } 
+        }
 
         runner = ChuckRunner.getChuckRunner();
         runner.setConfiguration(configuration);
@@ -181,6 +246,10 @@ public class WekinatorInstance {
         } catch (Exception ex) {
             System.out.println("Couldn't create log file");
         }
+
+       currentHidSetup = new HidSetup();
+
+
     }
 
     public void saveCurrentSettings() {
@@ -246,10 +315,6 @@ public class WekinatorInstance {
 
    void removeLoggingHandler(WekinatorConsoleHandler h) {
         handlers.remove(h);
-    }
-
-       public OscHandler getOscHandler() {
-        return oscHandler;
     }
 
     public WekinatorSettings getSettings() {
