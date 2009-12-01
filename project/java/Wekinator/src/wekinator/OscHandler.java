@@ -43,11 +43,11 @@ public class OscHandler {
     String hidSetupStoppedString = "/hidSetupStopped";
     String hidInitString = "/hidInit";
     String sendHidInitValuesString = "/sendHidInitValues";
-   // String hidInitAxesString = "/hidInitAxes";
-   // String hidInitHatsString = "/hidInitHats";
+    // String hidInitAxesString = "/hidInitAxes";
+    // String hidInitHatsString = "/hidInitHats";
     String hidInitAllString = "/hidInitAll";
-   // String hidInitButtonsString = "/hidInitButtons";
-   // String hidInitMaskString = "/hidInitMask";
+    // String hidInitButtonsString = "/hidInitButtons";
+    // String hidInitMaskString = "/hidInitMask";
     String hidSettingsRequestString = "/hidSettingsRequest";
     String hidSettingsAllString = "/hidSettingsAll";
     String hidSettingsNumsString = "/hidSettingsNums";
@@ -62,8 +62,9 @@ public class OscHandler {
     String setUseProcessingFeature = "/useProcessingFeature";
     // String setUseAudioFeature = "/useAudioFeature";
     String requestNumParamsString = "/requestNumParams";
-    String numParamsString = "/numParams";
+    String numParamsString = "/numParams"; //TODO TODO TODO Use this...
     String setUseAudioFeatureString = "/useAudioFeature";
+    String setUseAllFeatureString = "/useFeatureList";
     String sendFeatureMessageString = "/useFeatureMessage";
     String trackpadMessageString = "trackpad";
     String motionMessageString = "motion";
@@ -75,6 +76,7 @@ public class OscHandler {
     String helloMessageString = "hello";
     String requestNumParamsMessageString = "requestNumParams";
     String requestChuckSettingsMessageString = "requestChuckSettings";
+    String requestChuckSettingsArrayMsgString = "requestChuckSettingsArrays";
     String extractMessageString = "extract";
     String stopMessageString = "stop";
     String stopSoundMessageString = "stopSound";
@@ -86,6 +88,7 @@ public class OscHandler {
     String startPlaybackMessageString = "startPlayback";
     String stopPlaybackMessageString = "stopPlayback";
     String playAlongMessage = "/playAlongMessage";
+    String chuckSettingsArrayString = "/chuckSettingsArrays";
     Logger logger = Logger.getLogger(OscHandler.class.getName());
 
     public enum ConnectionState {
@@ -222,6 +225,7 @@ public class OscHandler {
         sendHandshakeMessage();
         addPlayalongMessageListener();
         addHidSettingsAllListener();
+        addChuckSettingsArrayListener();
         //  oldState = ConnectionState.CONNECTING;
 
         setConnectionState(ConnectionState.CONNECTING);
@@ -589,6 +593,21 @@ public class OscHandler {
 
     }
 
+    void requestChuckSettingsArray() {
+        Object[] o = new Object[2];
+        o[0] = requestChuckSettingsArrayMsgString;
+        o[1] = new Integer(0);
+        OSCMessage msg = new OSCMessage(sendControlMessageString, o);
+        try {
+
+            sender.send(msg);
+        //System.out.println("sent label... I think");
+        } catch (IOException ex) {
+            System.out.println("123");
+            Logger.getLogger(OscHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     void sendRealValueMulti(float[] realVals) {
         //   System.out.println("sending real values:");
         Object[] o = new Object[realVals.length];
@@ -728,6 +747,22 @@ public class OscHandler {
             }
         };
         receiver.addListener(chuckSettingsString, listener);
+    }
+
+    private void addChuckSettingsArrayListener() {
+        OSCListener listener = new OSCListener() {
+
+            public void acceptMessage(java.util.Date time, OSCMessage message) {
+                System.out.println("settings received!");
+                Object[] o = message.getArguments();
+                //   System.out.println("class " + o[0].getClass().toString());
+
+                //w.receivedChuckSettingsArray(o);
+                ChuckSystem.getChuckSystem().receivedChuckSettings(o);
+
+            }
+        };
+        receiver.addListener(chuckSettingsArrayString, listener);
     }
 
     private void addFeatureListener() {
@@ -960,5 +995,36 @@ public class OscHandler {
 
     public void setW(WekaOperator w) { //TODO: get rid of this!
         this.w = w;
+    }
+
+    public void sendFeatureConfiguration(FeatureConfiguration f) throws IOException {
+        Object[] o = new Object[16]; //TODO
+        o[0] = new Integer((f.getNumAudioFeatures() > 0) ? 1 : 0);
+        o[1] = new Integer(f.isUseFFT() ? 1 : 0);
+        o[2] = new Integer(f.isUseRMS() ? 1 : 0);
+        o[3] = new Integer(f.isUseCentroid() ? 1 : 0);
+        o[4] = new Integer(f.isUseRolloff() ? 1 : 0);
+        o[5] = new Integer(f.isUseFlux() ? 1 : 0);
+        o[6] = new Integer(f.getFftSize());
+        o[7] = new Integer(f.getFftWindowSize());
+        if (f.getWindowType() == FeatureConfiguration.WindowType.HAMMING) {
+            o[8] = new Integer(3);
+        } else if (f.getWindowType() == FeatureConfiguration.WindowType.HANN) {
+            o[8] = new Integer(2);
+        } else {
+            o[8] = new Integer(0);
+        }
+        o[9] = new Integer(f.getAudioExtractionRate());
+
+        o[10] = new Integer(f.isUseTrackpad() ? 1 : 0);
+        o[11] = new Integer(f.isUseMotionSensor() ? f.getMotionSensorExtractionRate() : 0);
+        o[12] = new Integer(f.isUseOtherHid() ? 1 : 0);
+        o[13] = new Integer(f.isUseProcessing() ? f.getNumProcessingFeatures() : 0);
+        o[14] = new Integer(f.isUseCustomOscFeatures() ? f.getNumCustomOscFeatures() : 0);
+        o[15] = new Integer(f.isUseCustomChuckFeatures() ? f.getNumCustomChuckFeatures() : 0);
+
+        OSCMessage msg = new OSCMessage(setUseAllFeatureString, o);
+        sender.send(msg);
+
     }
 }

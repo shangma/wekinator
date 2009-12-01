@@ -38,6 +38,7 @@ public class ChuckConfiguration implements Serializable {
     protected boolean usable = false;
     public static final String PROP_USABLE = "usable";
 
+
     /**
      * Get the value of usable
      *

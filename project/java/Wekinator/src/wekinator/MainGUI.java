@@ -536,8 +536,6 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         labelClassifiedClass1 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
         jlabelNumInstances = new javax.swing.JLabel();
-        jPanel2 = new javax.swing.JPanel();
-        featureConfigurationPanel1 = new wekinator.FeatureConfigurationPanel();
         labelGlobalStatus = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
@@ -559,7 +557,6 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
             }
         });
 
-        jTabbedPane1.setEnabled(false);
         jTabbedPane1.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
                 jTabbedPane1ComponentShown(evt);
@@ -1778,23 +1775,6 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
 
         jTabbedPane1.addTab("Playalong", panelPlayAlong);
 
-        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
-                .add(featureConfigurationPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(44, Short.MAX_VALUE))
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
-                .add(featureConfigurationPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(193, Short.MAX_VALUE))
-        );
-
-        jTabbedPane1.addTab("tab6", jPanel2);
-
         fileMenu.setText("Wekinator");
 
         preferencesMenuItem.setText("Preferences");
@@ -2682,10 +2662,10 @@ private void buttonFeaturesGoActionPerformed(java.awt.event.ActionEvent evt) {//
         disableRunPanel();
         disablePlayalongPanel();
         buttonFeaturesGo.setEnabled(false);
-        setFeatureManager();
-        fm.sendToChuck(w.Handler());
+        setFeatureManager(); //TODO TODO TODO :
+        fm.sendToChuck(w.Handler()); //This does: ?
         textNumFeatures.setText(Integer.toString(fm.getNumFeatures()));
-        w.requestChuckSettings();
+        w.requestChuckSettings(); //Add
         System.out.println("Waiting for chuck to send settings");
     } catch (Exception ex) {
         System.out.println("Error sending to chuck!");
@@ -3232,7 +3212,6 @@ private void buttonSetupOtherHidActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JComboBox comboWindowType;
     private javax.swing.JMenuItem contentsMenuItem1;
     private javax.swing.JMenuItem exitMenuItem;
-    private wekinator.FeatureConfigurationPanel featureConfigurationPanel1;
     private wekinator.FeatureParameterMaskEditor featureParameterMaskEditor;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenu helpMenu1;
@@ -3260,7 +3239,6 @@ private void buttonSetupOtherHidActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JLabel jLabel9;
     private javax.swing.JLabel jLabelPlayalongProgress;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;

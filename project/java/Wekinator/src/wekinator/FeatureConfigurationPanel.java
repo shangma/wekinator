@@ -652,7 +652,14 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
-
+        try {
+            //Now communicate features to chuck
+            OscHandler.getOscHandler().sendFeatureConfiguration(featureConfiguration);
+            OscHandler.getOscHandler().requestChuckSettingsArray();
+        } catch (IOException ex) {
+            Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
     }//GEN-LAST:event_buttonGoActionPerformed
 
     private File findFeatureSetupFile() {

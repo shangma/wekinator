@@ -151,6 +151,31 @@ public class SynthClass {
 			<<< s >>>;
 		}
 	}
+	
+	fun int[] useDistributionArray() {
+		new int[numParams] @=> int a[];
+		for (0 => int i; i < numParams; i++) {
+			amIUsingDistribution => a[i];
+		}
+		return a;
+	}
+
+	fun int[] isDiscreteArray() {
+		new int[numParams] @=> int a[];
+		for (0 => int i; i < numParams; i++) {
+			amIDiscrete => a[i];
+		}
+		return a;
+	}
+
+	fun int[] getNumClassesArray() {
+		new int[numParams] @=> int a[];
+		for (0 => int i; i < numParams; i++) {
+			myNumClasses => a[i];
+		}
+		return a;
+	}
+
 }
 
 

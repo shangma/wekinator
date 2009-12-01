@@ -55,6 +55,7 @@ public class CustomFeatureExtractor {
 
 	//Return the features
 	fun float[] getFeatures() {
+		<<< "Getting features">>>;
 		return features;
 	}
 

@@ -32,7 +32,7 @@ new SynthClass @=> SynthClass mc;
 
 if (me.args() > 0) {
 	//args for setting up synth class
-	for (0 => int i; i < me.args(); i++) {
+	for (0 => int i; i < me.args(); i++) { //TODO: use requestor methods instead of setting directly
 		if (me.arg(i) == "synthNumParams") {
 			Std.atoi(me.arg(i+1)) => mc.numParams;
 		} else if (me.arg(i) == "synthIsDiscrete") {
@@ -53,8 +53,11 @@ if (me.args() > 0) {
 mc.setup();
 mc.getNumParams() => int numParams;
 mc.useDistribution() => int wantDist;
+mc.useDistributionArray() @=> int wantDistArray[];
 mc.isDiscrete() => int isDiscrete;
+mc.isDiscreteArray() @=> int isDiscreteArray[];
 mc.getNumClasses() => int numClasses;
+mc.getNumClassesArray() @=> int numClassesArray[];
 
 //Keep track of feature sources
 0 => int useAudio;
@@ -84,7 +87,7 @@ recv.listen();
 recv.event("/control", "s i") @=> OscEvent oscControl;
 recv.event("/useAudioFeature", "i i i i i i i i i i") @=> OscEvent oscUseAudio;
 recv.event("/useFeatureMessage", "s i") @=> OscEvent oscUseFeatureMessage;
-
+recv.event("/useFeatureList", "i i i i i i i i i i i i i i i i") @=> OscEvent oscUseFeatureList;
 
 OscEvent oscDist, oscLabel;
 if (isDiscrete && wantDist) {
@@ -159,6 +162,7 @@ sp.setup(mc, xmit);
 spork ~oscUseAudioWait();
 spork ~oscUseFeatureMessageWait();
 spork ~oscControlWait();
+spork ~oscUseFeatureListWait();
 
 //spork ~oscExtractWait();
 
@@ -204,6 +208,8 @@ fun void oscControlWait() {
 				receivedRealValueRequest();
 			} else if (s == "requestChuckSettings") {
 				receivedRequestSettings();
+			} else if (s == "requestChuckSettingsArrays") {
+				receivedRequestSettingsArrays();
 			} else if (s == "stopSound") {
 				receivedStopSound();
 			} else if (s == "startSound") {
@@ -266,6 +272,30 @@ fun void receivedRequestSettings() {
 	wantDist => xmit.addInt;
 	isDiscrete => xmit.addInt;
 	numClasses => xmit.addInt;	
+}
+
+fun void receivedRequestSettingsArrays() {
+	"i i i" => string s; //# params, whether using chuck feat ext, # chuck feats
+	
+	for (0 => int j; j < 3; j++) { //wantDist + isDiscrete + numClasses
+		for (0 => int i; i < numParams; i++) {
+			s + " i" => s;
+		}
+	}
+	xmit.startMsg("/chuckSettingsArrays", s);
+	numParams => xmit.addInt;
+	useOscCustom => xmit.addInt;
+	oscCustomFE.numFeatures() => xmit.addInt;
+
+	for (0 => int i; i < wantDistArray.size(); i++) {
+		wantDistArray[i] => xmit.addInt;
+	}
+	for (0 => int i; i < isDiscreteArray.size(); i++) {
+		isDiscreteArray[i] => xmit.addInt;
+	}
+	for (0 => int i; i < numClassesArray.size(); i++) {
+		numClassesArray[i] => xmit.addInt;
+	}
 }
 
 fun void oscHidSetupStopWait() {
@@ -554,7 +584,7 @@ fun void computeNumFeats() {
 		}
 		featureMessageString + "f " => featureMessageString;
 	}
-	//<<< "Using ", numFeats, "features">>>;
+	<<< "Chuck using ", numFeats, "features">>>;
 }
 
 //lump the features into one message and hope for the best
@@ -625,6 +655,112 @@ fun void oscLabelWait() {
 			}
 			mc.setParams(vals);
 		}
+	}
+}
+
+fun void oscUseFeatureListWait() {
+	while (true) {
+		oscUseFeatureList => now;
+
+		//Audio
+		if (audioFE != null) {
+				audioFE.stop();
+		}
+		oscUseFeatureList.getInt() => useAudio;
+		if (useAudio) {
+			new AudioFeatureExtractor @=> audioFE;
+			oscUseFeatureList.getInt() => int useFFT;
+			oscUseFeatureList.getInt() => int useRMS;
+			oscUseFeatureList.getInt() => int useCentroid;
+			oscUseFeatureList.getInt() => int useRolloff;
+			oscUseFeatureList.getInt() => int useFlux;
+			oscUseFeatureList.getInt() => int fftSize;
+			oscUseFeatureList.getInt() => int windowSize;
+			oscUseFeatureList.getInt() => int windowType;
+			oscUseFeatureList.getInt() => int rate;
+			audioFE.setup(useFFT, useRMS, useCentroid, useRolloff, useFlux, fftSize, windowSize, windowType, rate::ms);
+		}
+
+		//Trackpad
+		oscUseFeatureList.getInt() => useTrackpadXY;
+		if (trackpadFE != null) {
+			trackpadFE.stop();
+		}
+		if (useTrackpadXY) {
+			new TrackpadFeatureExtractor @=> trackpadFE;
+			trackpadFE.setup();
+			if (!trackpadFE.isOK) {
+				0 => useTrackpadXY;
+			}
+		}
+
+		//motion
+		oscUseFeatureList.getInt() => int use;
+		if (motionFE != null) {
+			motionFE.stop();
+		}
+		if (use > 0) {
+			1 => useMotionXYZ;
+			new MotionFeatureExtractor @=> motionFE;
+			motionFE.setup(use::ms);
+			if (!motionFE.isOK) {
+				0 => useMotionXYZ;
+			}
+		} else {
+			0 => useMotionXYZ;
+		}
+	
+		//other hid
+		oscUseFeatureList.getInt() => useOtherHid;
+
+		//use procesing
+		oscUseFeatureList.getInt() => use;
+		if (processingFE != null) {
+			processingFE.stop();
+		}
+		if (use > 0) {
+			1 => useProcessing;
+			new ProcessingFeatureExtractor @=> processingFE;
+			processingFE.setup(use, recv);
+			if (!processingFE.isOK) {
+				0 => useProcessing;
+			}
+		} else {
+			0 => useProcessing;
+		}
+
+		//custom osc
+		oscUseFeatureList.getInt() => use;
+		if (oscCustomFE != null) {
+			oscCustomFE.stop();
+		}
+		if (use > 0) {
+			1 => useOscCustom;
+			new CustomOSCFeatureExtractor @=> oscCustomFE;
+			oscCustomFE.setup(use, recv);
+			if (!oscCustomFE.isOK) {
+				0 => useOscCustom;
+			}
+		} else {
+			0 => useOscCustom;
+		}
+	
+		//custom chuck
+		oscUseFeatureList.getInt() => use;
+		if (customFE != null) {
+			customFE.stop();
+		}
+		if (use > 0) {
+			1 => useCustom;
+			new CustomFeatureExtractor @=> customFE;
+			customFE.setup(use);
+			if (!customFE.isOK) {
+				0 => useCustom;
+			}
+		} else {
+			0 => useCustom;
+		}
+		computeNumFeats();	
 	}
 }
 
