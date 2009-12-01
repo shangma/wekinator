@@ -1890,6 +1890,7 @@ private void buttonUseClassifierSettingsActionPerformed(java.awt.event.ActionEve
         updateTrainingPanelForParams();
         disableAllSettingsPanel();
         enablePlayalongPanel();
+        enableRunPanel();
 
         FeatureToParameterMapping mapping = featureParameterMaskEditor.getFeatureToParameterMapping();
         //TODO: Ask if changed! & prompt user.
