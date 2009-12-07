@@ -18,11 +18,41 @@ public class WekinatorLearningManager {
 
     private static WekinatorLearningManager ref = null;
     protected double[] params;
+    protected boolean[] mask;
     protected LearningSystem learningSystem = null;
     public static final String PROP_LEARNINGSYSTEM = "learningSystem";
 
     protected FeatureConfiguration featureConfiguration = null;
     public static final String PROP_FEATURECONFIGURATION = "featureConfiguration";
+
+    protected double[] p2 = null;
+    public static final String PROP_PARAMS = "params";
+
+
+
+    /**
+     * Set the value of p2
+     *
+     * @param p2 new value of p2
+     */
+    public void setParams(double[] params) {
+        double[] oldparams = this.params;
+        this.params = params;
+        propertyChangeSupport.firePropertyChange(PROP_PARAMS, oldparams, p2);
+    }
+
+    /**
+     * Get the value of p2 at specified index
+     *
+     * @param index
+     * @return the value of p2 at specified index
+     */
+    public double getP2(int index) {
+        return this.p2[index];
+    }
+
+  
+
 
     protected PropertyChangeListener learningSystemPropertyChange = new PropertyChangeListener() {
 
@@ -60,15 +90,10 @@ public class WekinatorLearningManager {
         return params;
     }
 
-    /**
-     * Set the value of params
-     *
-     * @param params new value of params
-     */
-    public void setParams(double[] params) {
-        this.params = params;
+    public void setParamsAndMask(double[] params, boolean[] mask) {
+        setParams(params);
+        this.mask = mask;
     }
-
     /**
      * Get the value of params at specified index
      *
@@ -79,15 +104,7 @@ public class WekinatorLearningManager {
         return this.params[index];
     }
 
-    /**
-     * Set the value of params at specified index.
-     *
-     * @param index
-     * @param newParams new value of params at specified index
-     */
-    public void setParams(int index, double newParams) {
-        this.params[index] = newParams;
-    }
+
     /**
      * Get the value of outputs
      *
@@ -148,6 +165,38 @@ public class WekinatorLearningManager {
         Mode oldMode = this.mode;
         this.mode = mode;
         propertyChangeSupport.firePropertyChange(PROP_MODE, oldMode, mode);
+    }
+
+    public void startDatasetCreation() {
+        if (mode == Mode.RUNNING) {
+            stopRunning();
+        } if (mode == Mode.TRAINING) {
+            stopTraining();
+        }
+        setMode(Mode.DATASET_CREATION);
+    }
+
+    public void stopRunning() {
+        setMode(Mode.NONE);
+    }
+
+    public void startRunning() {
+        if (mode == Mode.TRAINING) {
+            return;
+        }
+        if (mode == Mode.DATASET_CREATION) {
+            stopDatasetCreation();
+        }
+        setMode(Mode.RUNNING);
+    }
+
+    public void stopDatasetCreation() {
+        setMode(Mode.NONE);
+    }
+
+    public void stopTraining() {
+        //TODO: cancel training here
+        setMode(Mode.NONE);
     }
 
     public void updateFeatures(double[] features) {
@@ -271,7 +320,6 @@ public class WekinatorLearningManager {
 
     private void learningSystemPropertyChanged(PropertyChangeEvent evt) {
         updateMyState();
-
     }
 
     protected void updateMyState() {

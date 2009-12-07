@@ -30,10 +30,20 @@ public class PlayalongScore {
     public static final String PROP_ISPLAYING = "isPlaying";
     MainGUI oldGui = null;
         protected EventListenerList listenerList = new EventListenerList();
-
+        PlayalongScoreViewer myViewer = null; //TODO: put elsewhere?
 
     public void setMainGui(MainGUI g) {
         oldGui = g;
+    }
+
+    public void view() {
+        if (myViewer == null) {
+            myViewer = new PlayalongScoreViewer(this, null);
+            myViewer.setVisible(true);
+        } 
+        myViewer.setVisible(true);
+        myViewer.toFront();
+
     }
 
         /**
@@ -72,7 +82,7 @@ public class PlayalongScore {
         propertyChangeSupport.firePropertyChange(PROP_ISPLAYING, oldIsPlaying, isPlaying);
     }
 
-    
+
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private ChangeEvent changeEvent = null;
 

@@ -24,6 +24,28 @@ public class LearningSystem implements Serializable {
 
     protected boolean[] paramMask;
     protected double[] defaultValues;
+    protected PlayalongScore score = null;
+    public static final String PROP_SCORE = "score";
+
+    /**
+     * Get the value of score
+     *
+     * @return the value of score
+     */
+    public PlayalongScore getScore() {
+        return score;
+    }
+
+    /**
+     * Set the value of score
+     *
+     * @param score new value of score
+     */
+    public void setScore(PlayalongScore score) {
+        PlayalongScore oldScore = this.score;
+        this.score = score;
+        propertyChangeSupport.firePropertyChange(PROP_SCORE, oldScore, score);
+    }
 
 
     //Has a bunch of classifiers, most recent evaluation results
@@ -85,6 +107,7 @@ public class LearningSystem implements Serializable {
                 learners[i].forget();
             }
         }
+        setSystemTrainingState(LearningSystemTrainingState.NOT_TRAINED);
     }
 
     public enum LearningAlgorithmsInitializationState {
@@ -107,7 +130,6 @@ public class LearningSystem implements Serializable {
     };
 
     public enum DatasetState {
-
         NO_DATA,
         HAS_DATA
     };
@@ -317,6 +339,7 @@ public class LearningSystem implements Serializable {
             paramMask[i] = true;
             defaultValues[i] = 0.0;
         }
+        setScore(new PlayalongScore(numParams));
     }
 
     /**

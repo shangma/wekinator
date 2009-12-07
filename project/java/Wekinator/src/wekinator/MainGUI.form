@@ -45,7 +45,7 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="menuItemOtfScore">
               <Properties>
-                <Property name="text" type="java.lang.String" value="On-the-fly score"/>
+                <Property name="text" type="java.lang.String" value="Score clipboard"/>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
             </MenuItem>
@@ -100,7 +100,7 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="panelMainTabs" alignment="0" pref="617" max="32767" attributes="0"/>
+                  <Component id="panelMainTabs" alignment="0" pref="839" max="32767" attributes="0"/>
                   <Component id="buttonQuit" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="labelGlobalStatus" alignment="0" min="-2" pref="493" max="-2" attributes="0"/>
               </Group>
@@ -193,7 +193,7 @@
                               </Group>
                               <Group type="102" alignment="1" attributes="0">
                                   <EmptySpace min="-2" pref="23" max="-2" attributes="0"/>
-                                  <Component id="labelOscStatus" pref="521" max="32767" attributes="0"/>
+                                  <Component id="labelOscStatus" pref="743" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
@@ -325,7 +325,7 @@
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
-                          <Component id="chuckRunnerPanel1" pref="544" max="32767" attributes="0"/>
+                          <Component id="chuckRunnerPanel1" pref="766" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -405,14 +405,14 @@
                                       <Component id="textMotionRate" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Component id="checkAudio" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="labelOscStatus3" alignment="0" pref="556" max="32767" attributes="1"/>
-                                  <Component id="buttonLoadFeatureSettings" alignment="0" pref="556" max="32767" attributes="1"/>
+                                  <Component id="labelOscStatus3" alignment="0" pref="778" max="32767" attributes="1"/>
+                                  <Component id="buttonLoadFeatureSettings" alignment="0" pref="778" max="32767" attributes="1"/>
                                   <Component id="jPanel1" alignment="0" max="32767" attributes="1"/>
                               </Group>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="-2" pref="47" max="-2" attributes="0"/>
-                              <Component id="labelHidDescription" pref="529" max="32767" attributes="0"/>
+                              <Component id="labelHidDescription" pref="751" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -535,12 +535,12 @@
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Group type="102" attributes="0">
                                           <Component id="checkRMS" min="-2" max="-2" attributes="0"/>
-                                          <EmptySpace pref="222" max="32767" attributes="0"/>
+                                          <EmptySpace pref="444" max="32767" attributes="0"/>
                                           <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <Group type="102" attributes="0">
                                           <Component id="checkRolloff" min="-2" max="-2" attributes="0"/>
-                                          <EmptySpace pref="186" max="32767" attributes="0"/>
+                                          <EmptySpace pref="408" max="32767" attributes="0"/>
                                           <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <Component id="jLabel5" alignment="1" min="-2" max="-2" attributes="0"/>
@@ -808,7 +808,7 @@
                               </Group>
                               <Component id="radioColorTracking" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="145" max="32767" attributes="0"/>
+                          <EmptySpace pref="367" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -988,7 +988,7 @@
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="featureParameterMaskEditor" pref="573" max="32767" attributes="0"/>
+                              <Component id="featureParameterMaskEditor" pref="778" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -1168,10 +1168,18 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="labelRunningStatus" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
-                                      <Component id="buttonHoldTrain" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="buttonListen" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="102" attributes="0">
+                                              <Component id="buttonHoldTrain" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="buttonListen" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" alignment="1" attributes="0">
+                                              <Component id="jToggleButton1" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace min="-2" pref="45" max="-2" attributes="0"/>
+                                          </Group>
+                                      </Group>
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Group type="102" alignment="0" attributes="0">
                                               <Component id="jButtonShh" min="-2" max="-2" attributes="0"/>
@@ -1226,7 +1234,10 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="labelParameterValues" min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="labelParameterValues" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="jToggleButton1" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="jButtonShh" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="buttonViewData" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -1290,7 +1301,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="labelClassifiedClass" pref="313" max="32767" attributes="0"/>
+                                  <Component id="labelClassifiedClass" pref="527" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
@@ -1470,6 +1481,11 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton2ActionPerformed"/>
               </Events>
             </Component>
+            <Component class="javax.swing.JToggleButton" name="jToggleButton1">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="jToggleButton1"/>
+              </Properties>
+            </Component>
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="panelPlayAlong">
@@ -1534,17 +1550,17 @@
                               </Group>
                           </Group>
                       </Group>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace pref="231" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jLabel10" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="labelClassifiedClass1" pref="98" max="32767" attributes="0"/>
+                      <Component id="labelClassifiedClass1" pref="316" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="439" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
-                      <EmptySpace pref="21" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                       <Component id="checkOtfPlayalong" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="480" max="-2" attributes="0"/>
                   </Group>
@@ -1954,8 +1970,8 @@
         <Container class="javax.swing.JPanel" name="panelTabFeatureConfiguration">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="NewFeatures">
-                <Property name="tabTitle" type="java.lang.String" value="NewFeatures"/>
+              <JTabbedPaneConstraints tabName="AlphaFeatures">
+                <Property name="tabTitle" type="java.lang.String" value="AlphaFeatures"/>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -1963,7 +1979,7 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="featureConfigurationPanel1" alignment="0" pref="596" max="32767" attributes="0"/>
+                  <Component id="featureConfigurationPanel1" alignment="0" pref="818" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
@@ -1986,8 +2002,8 @@
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="NewSettings">
-                <Property name="tabTitle" type="java.lang.String" value="NewSettings"/>
+              <JTabbedPaneConstraints tabName="AlphaSettings">
+                <Property name="tabTitle" type="java.lang.String" value="AlphaSettings"/>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -1995,7 +2011,7 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="learningSystemConfigurationPanel" alignment="1" pref="596" max="32767" attributes="0"/>
+                  <Component id="learningSystemConfigurationPanel" alignment="1" pref="818" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
@@ -2012,6 +2028,15 @@
             </Component>
           </SubComponents>
         </Container>
+        <Component class="wekinator.TrainRunPanel" name="trainRunPanel1">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="AlphaTrainRun">
+                <Property name="tabTitle" type="java.lang.String" value="AlphaTrainRun"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+        </Component>
       </SubComponents>
     </Container>
     <Component class="javax.swing.JLabel" name="labelGlobalStatus">

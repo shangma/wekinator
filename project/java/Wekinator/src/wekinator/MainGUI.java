@@ -236,6 +236,9 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         // buttonSaveFeatureSettings.setVisible(false);
 
 
+      
+
+
         KeyEventPostProcessor processor = new KeyEventPostProcessor() {
 
             public boolean postProcessKeyEvent(KeyEvent e) {
@@ -528,6 +531,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         scrollTrainPanel = new javax.swing.JScrollPane();
         panelRealTraining = new javax.swing.JPanel();
         jButton2 = new javax.swing.JButton();
+        jToggleButton1 = new javax.swing.JToggleButton();
         panelPlayAlong = new javax.swing.JPanel();
         labelRunningStatus1 = new javax.swing.JLabel();
         labelPlayalongUpdate = new javax.swing.JLabel();
@@ -564,6 +568,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         featureConfigurationPanel1 = new wekinator.FeatureConfigurationPanel();
         panelTabLearningSystemConfiguration = new javax.swing.JPanel();
         learningSystemConfigurationPanel = new wekinator.LearningSystemConfigurationPanel();
+        trainRunPanel1 = new wekinator.TrainRunPanel();
         labelGlobalStatus = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
@@ -643,7 +648,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                         .add(buttonOscDisconnect))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel5Layout.createSequentialGroup()
                         .add(23, 23, 23)
-                        .add(labelOscStatus, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 521, Short.MAX_VALUE))
+                        .add(labelOscStatus, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 743, Short.MAX_VALUE))
                     .add(jPanel5Layout.createSequentialGroup()
                         .addContainerGap()
                         .add(jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -694,7 +699,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         jPanel8Layout.setHorizontalGroup(
             jPanel8Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel8Layout.createSequentialGroup()
-                .add(chuckRunnerPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 544, Short.MAX_VALUE)
+                .add(chuckRunnerPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 766, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel8Layout.setVerticalGroup(
@@ -834,11 +839,11 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                         .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jPanel1Layout.createSequentialGroup()
                                 .add(checkRMS)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 222, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 444, Short.MAX_VALUE)
                                 .add(jLabel3))
                             .add(jPanel1Layout.createSequentialGroup()
                                 .add(checkRolloff)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 186, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 408, Short.MAX_VALUE)
                                 .add(jLabel4))
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel5))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -938,7 +943,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                         .add(86, 86, 86)
                         .add(radioClearProcessingFeature))
                     .add(radioColorTracking))
-                .addContainerGap(145, Short.MAX_VALUE))
+                .addContainerGap(367, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -1030,12 +1035,12 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(textMotionRate, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                             .add(checkAudio)
-                            .add(labelOscStatus3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE)
-                            .add(buttonLoadFeatureSettings, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE)
+                            .add(labelOscStatus3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 778, Short.MAX_VALUE)
+                            .add(buttonLoadFeatureSettings, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 778, Short.MAX_VALUE)
                             .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, panelFeaturesLayout.createSequentialGroup()
                         .add(47, 47, 47)
-                        .add(labelHidDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 529, Short.MAX_VALUE)))
+                        .add(labelHidDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 751, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         panelFeaturesLayout.setVerticalGroup(
@@ -1177,7 +1182,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                             .add(buttonUseClassifierSettings)))
                     .add(panelClassifierLayout.createSequentialGroup()
                         .addContainerGap()
-                        .add(featureParameterMaskEditor, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)))
+                        .add(featureParameterMaskEditor, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 778, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         panelClassifierLayout.setVerticalGroup(
@@ -1280,7 +1285,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jLabel7)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(labelClassifiedClass, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE))
+                        .add(labelClassifiedClass, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 527, Short.MAX_VALUE))
                     .add(jPanel3Layout.createSequentialGroup()
                         .addContainerGap()
                         .add(buttonComputeAccuracy, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 237, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
@@ -1399,6 +1404,8 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
             }
         });
 
+        jToggleButton1.setText("jToggleButton1");
+
         org.jdesktop.layout.GroupLayout panelRunLayout = new org.jdesktop.layout.GroupLayout(panelRun);
         panelRun.setLayout(panelRunLayout);
         panelRunLayout.setHorizontalGroup(
@@ -1410,10 +1417,15 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                         .add(panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(labelRunningStatus)
                             .add(panelRunLayout.createSequentialGroup()
-                                .add(buttonHoldTrain)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(buttonListen)
-                                .add(6, 6, 6)
+                                .add(panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(panelRunLayout.createSequentialGroup()
+                                        .add(buttonHoldTrain)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(buttonListen)
+                                        .add(6, 6, 6))
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, panelRunLayout.createSequentialGroup()
+                                        .add(jToggleButton1)
+                                        .add(45, 45, 45)))
                                 .add(panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(panelRunLayout.createSequentialGroup()
                                         .add(jButtonShh)
@@ -1453,7 +1465,9 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                     .add(toggleGetSynthParams))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(labelParameterValues)
+                    .add(panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(labelParameterValues)
+                        .add(jToggleButton1))
                     .add(panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                         .add(jButtonShh)
                         .add(buttonViewData)))
@@ -1793,15 +1807,15 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                             .add(panelPlayAlongLayout.createSequentialGroup()
                                 .add(121, 121, 121)
                                 .add(buttonViewOtfPlayalong)))))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(231, Short.MAX_VALUE))
             .add(panelPlayAlongLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(jLabel10)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(labelClassifiedClass1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 98, Short.MAX_VALUE)
+                .add(labelClassifiedClass1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
                 .add(439, 439, 439))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, panelPlayAlongLayout.createSequentialGroup()
-                .addContainerGap(21, Short.MAX_VALUE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(checkOtfPlayalong)
                 .add(480, 480, 480))
         );
@@ -1837,7 +1851,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         panelTabFeatureConfiguration.setLayout(panelTabFeatureConfigurationLayout);
         panelTabFeatureConfigurationLayout.setHorizontalGroup(
             panelTabFeatureConfigurationLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(featureConfigurationPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 596, Short.MAX_VALUE)
+            .add(featureConfigurationPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 818, Short.MAX_VALUE)
         );
         panelTabFeatureConfigurationLayout.setVerticalGroup(
             panelTabFeatureConfigurationLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -1846,7 +1860,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 .addContainerGap(193, Short.MAX_VALUE))
         );
 
-        panelMainTabs.addTab("NewFeatures", panelTabFeatureConfiguration);
+        panelMainTabs.addTab("AlphaFeatures", panelTabFeatureConfiguration);
 
         panelTabLearningSystemConfiguration.setEnabled(false);
 
@@ -1854,7 +1868,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         panelTabLearningSystemConfiguration.setLayout(panelTabLearningSystemConfigurationLayout);
         panelTabLearningSystemConfigurationLayout.setHorizontalGroup(
             panelTabLearningSystemConfigurationLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, learningSystemConfigurationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 596, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, learningSystemConfigurationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 818, Short.MAX_VALUE)
         );
         panelTabLearningSystemConfigurationLayout.setVerticalGroup(
             panelTabLearningSystemConfigurationLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -1863,7 +1877,8 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 .addContainerGap(71, Short.MAX_VALUE))
         );
 
-        panelMainTabs.addTab("NewSettings", panelTabLearningSystemConfiguration);
+        panelMainTabs.addTab("AlphaSettings", panelTabLearningSystemConfiguration);
+        panelMainTabs.addTab("AlphaTrainRun", trainRunPanel1);
 
         fileMenu.setText("Wekinator");
 
@@ -1890,7 +1905,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         });
         viewMenu.add(menuItemViewConsole);
 
-        menuItemOtfScore.setText("On-the-fly score");
+        menuItemOtfScore.setText("Score clipboard");
         menuItemOtfScore.setEnabled(false);
         viewMenu.add(menuItemOtfScore);
 
@@ -1920,7 +1935,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(panelMainTabs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 617, Short.MAX_VALUE)
+                    .add(panelMainTabs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 839, Short.MAX_VALUE)
                     .add(buttonQuit)
                     .add(labelGlobalStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 493, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
@@ -3390,6 +3405,7 @@ private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     private javax.swing.JSlider jSliderFastAccurate;
     private javax.swing.JSlider jSliderTrainingFrequency;
     private javax.swing.JTextField jTextAutoStopThreshold;
+    private javax.swing.JToggleButton jToggleButton1;
     private javax.swing.JToggleButton jToggleButtonPlayAlong;
     private javax.swing.JToggleButton jToggleButtonPlayScore;
     private javax.swing.JToggleButton jToggleButtonRunPlayalong;
@@ -3445,6 +3461,7 @@ private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     private javax.swing.JTextField textWindowSize;
     private javax.swing.JToggleButton toggleButtonRun;
     private javax.swing.JToggleButton toggleGetSynthParams;
+    private wekinator.TrainRunPanel trainRunPanel1;
     private javax.swing.JMenu viewMenu;
     // End of variables declaration//GEN-END:variables
     private ArrayList<javax.swing.JButton> trainingButtons = new ArrayList<javax.swing.JButton>();

@@ -8,8 +8,15 @@
  *
  * Created on Dec 4, 2009, 7:40:57 PM
  */
-
 package wekinator;
+
+import java.awt.CardLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.JFrame;
+import wekinator.LearningSystem.DatasetState;
+import wekinator.LearningSystem.LearningAlgorithmsInitializationState;
+import wekinator.LearningSystem.LearningAlgorithmsTrainingState;
 
 /**
  *
@@ -17,9 +24,63 @@ package wekinator;
  */
 public class TrainRunPanel extends javax.swing.JPanel {
 
+    LearningSystem ls = null;
+    PropertyChangeListener learningSystemChangeListener = new PropertyChangeListener() {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            learningSystemChange(evt);
+        }
+    };
+
     /** Creates new form TrainRunPanel */
     public TrainRunPanel() {
         initComponents();
+
+          WekinatorLearningManager.getInstance().addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(WekinatorLearningManager.PROP_LEARNINGSYSTEM)) {
+                    setLearningSystem(WekinatorLearningManager.getInstance().getLearningSystem());
+                }
+            }
+        });
+
+    }
+
+    public void setLearningSystem(LearningSystem ls) {
+        System.out.println("setting learning system in train run pane");
+        if (this.ls != null) {
+            this.ls.removePropertyChangeListener(learningSystemChangeListener);
+        }
+        this.ls = ls;
+        if (this.ls != null) {
+            ls.addPropertyChangeListener(learningSystemChangeListener);
+        }
+        buildPanel.setLearningSystem(ls);
+        trainPanel.setLearningSystem(ls);
+        runPanel.setLearningSystem(ls);
+        editPanel.setLearningSystem(ls);
+    }
+
+    private void learningSystemChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(LearningSystem.PROP_INITIALIZATIONSTATE)) {
+            LearningAlgorithmsInitializationState s = ls.getInitializationState();
+            if (s != LearningAlgorithmsInitializationState.ALL_INITIALIZED) {
+                buttonCollect.setEnabled(false);
+                buttonTrain.setEnabled(false);
+                buttonRun.setEnabled(false);
+                buttonConfigure.setEnabled(false);
+            } else {
+                buttonCollect.setEnabled(true);
+                buttonConfigure.setEnabled(true);
+            }
+        } else if (evt.getPropertyName().equals(LearningSystem.PROP_DATASETSTATE)) {
+            DatasetState s = ls.getDatasetState();
+            buttonTrain.setEnabled(s == DatasetState.HAS_DATA);
+        } else if (evt.getPropertyName().equals(LearningSystem.PROP_TRAININGSTATE)) {
+            LearningAlgorithmsTrainingState s = ls.getTrainingState();
+            buttonRun.setEnabled(s != LearningAlgorithmsTrainingState.NOT_TRAINED);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -31,98 +92,89 @@ public class TrainRunPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel4 = new javax.swing.JPanel();
-        panelBuild = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
-        jPanel5 = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
+        buttonGroup1 = new javax.swing.ButtonGroup();
+        buttonGroup2 = new javax.swing.ButtonGroup();
+        layoutPanel = new javax.swing.JPanel();
+        buildPanel = new wekinator.BuildPanel();
+        trainPanel = new wekinator.TrainPanel();
+        runPanel = new wekinator.RunPanel();
+        editPanel = new wekinator.EditPanel();
+        menuPanel = new javax.swing.JPanel();
+        buttonCollect = new javax.swing.JButton();
+        buttonTrain = new javax.swing.JButton();
+        buttonRun = new javax.swing.JButton();
+        buttonConfigure = new javax.swing.JButton();
+        buttonShh = new javax.swing.JButton();
 
-        jPanel4.setLayout(new java.awt.CardLayout());
+        jLabel3.setText("jLabel3");
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Parameter values"));
+        layoutPanel.setLayout(new java.awt.CardLayout());
+        layoutPanel.add(buildPanel, "cardBuild");
+        layoutPanel.add(trainPanel, "cardTrain");
+        layoutPanel.add(runPanel, "cardRun");
+        layoutPanel.add(editPanel, "cardEdit");
 
-        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 336, Short.MAX_VALUE)
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 128, Short.MAX_VALUE)
-        );
+        buttonCollect.setText("COLLECT DATA");
+        buttonCollect.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonCollectActionPerformed(evt);
+            }
+        });
 
-        org.jdesktop.layout.GroupLayout panelBuildLayout = new org.jdesktop.layout.GroupLayout(panelBuild);
-        panelBuild.setLayout(panelBuildLayout);
-        panelBuildLayout.setHorizontalGroup(
-            panelBuildLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        panelBuildLayout.setVerticalGroup(
-            panelBuildLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(panelBuildLayout.createSequentialGroup()
-                .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(105, Short.MAX_VALUE))
-        );
+        buttonTrain.setText("TRAIN & CONFIGURE");
+        buttonTrain.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonTrainActionPerformed(evt);
+            }
+        });
 
-        jPanel4.add(panelBuild, "card2");
+        buttonRun.setText("RUN");
+        buttonRun.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonRunActionPerformed(evt);
+            }
+        });
 
-        jLabel2.setText("two");
+        buttonConfigure.setText("CONFIGURE & EVALUATE");
+        buttonConfigure.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonConfigureActionPerformed(evt);
+            }
+        });
 
-        org.jdesktop.layout.GroupLayout jPanel5Layout = new org.jdesktop.layout.GroupLayout(jPanel5);
-        jPanel5.setLayout(jPanel5Layout);
-        jPanel5Layout.setHorizontalGroup(
-            jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel5Layout.createSequentialGroup()
-                .add(127, 127, 127)
-                .add(jLabel2)
-                .addContainerGap(198, Short.MAX_VALUE))
-        );
-        jPanel5Layout.setVerticalGroup(
-            jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel5Layout.createSequentialGroup()
-                .add(94, 94, 94)
-                .add(jLabel2)
-                .addContainerGap(151, Short.MAX_VALUE))
-        );
-
-        jPanel4.add(jPanel5, "card2");
-
-        jButton1.setText("COLLECT DATA");
-
-        jButton2.setText("TRAIN");
-
-        jButton3.setText("RUN");
-
-        jButton4.setText("everything else");
-
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jButton1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
-            .add(jButton2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
-            .add(jButton3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
-            .add(jButton4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(jButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 69, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jButton2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 69, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jButton3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 70, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jButton4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        org.jdesktop.layout.GroupLayout menuPanelLayout = new org.jdesktop.layout.GroupLayout(menuPanel);
+        menuPanel.setLayout(menuPanelLayout);
+        menuPanelLayout.setHorizontalGroup(
+            menuPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(buttonCollect, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 236, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(buttonTrain, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 236, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(buttonRun, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 236, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(buttonConfigure, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 236, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
         );
 
-        jPanel1Layout.linkSize(new java.awt.Component[] {jButton1, jButton2, jButton3, jButton4}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        menuPanelLayout.linkSize(new java.awt.Component[] {buttonCollect, buttonConfigure, buttonRun, buttonTrain}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
+        menuPanelLayout.setVerticalGroup(
+            menuPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(menuPanelLayout.createSequentialGroup()
+                .add(buttonCollect, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 69, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(buttonTrain, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 69, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(buttonRun, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 70, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(buttonConfigure, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        );
+
+        menuPanelLayout.linkSize(new java.awt.Component[] {buttonCollect, buttonConfigure, buttonRun, buttonTrain}, org.jdesktop.layout.GroupLayout.VERTICAL);
+
+        buttonShh.setText("audio off");
+        buttonShh.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonShhActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -130,36 +182,74 @@ public class TrainRunPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(26, 26, 26)
-                .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 348, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(202, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(buttonShh)
+                    .add(layout.createSequentialGroup()
+                        .add(menuPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(26, 26, 26)
+                        .add(layoutPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(45, Short.MAX_VALUE))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(53, Short.MAX_VALUE)
-                .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 261, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(83, 83, 83))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(layoutPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(menuPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(buttonShh)
+                        .add(276, 276, 276))))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void buttonShhActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonShhActionPerformed
+        // TODO add your handling code here:
+}//GEN-LAST:event_buttonShhActionPerformed
 
+    private void buttonConfigureActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonConfigureActionPerformed
+        CardLayout c = (CardLayout) layoutPanel.getLayout();
+        c.show(layoutPanel, "cardEdit");
+}//GEN-LAST:event_buttonConfigureActionPerformed
+
+    private void buttonCollectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCollectActionPerformed
+        CardLayout c = (CardLayout) layoutPanel.getLayout();
+        c.show(layoutPanel, "cardBuild");
+}//GEN-LAST:event_buttonCollectActionPerformed
+
+    private void buttonTrainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonTrainActionPerformed
+        CardLayout c = (CardLayout) layoutPanel.getLayout();
+        c.show(layoutPanel, "cardTrain");
+}//GEN-LAST:event_buttonTrainActionPerformed
+
+    private void buttonRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRunActionPerformed
+        CardLayout c = (CardLayout) layoutPanel.getLayout();
+        c.show(layoutPanel, "cardRun");
+}//GEN-LAST:event_buttonRunActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
-    private javax.swing.JPanel panelBuild;
+    private wekinator.BuildPanel buildPanel;
+    private javax.swing.JButton buttonCollect;
+    private javax.swing.JButton buttonConfigure;
+    private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.ButtonGroup buttonGroup2;
+    private javax.swing.JButton buttonRun;
+    private javax.swing.JButton buttonShh;
+    private javax.swing.JButton buttonTrain;
+    private wekinator.EditPanel editPanel;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JPanel layoutPanel;
+    private javax.swing.JPanel menuPanel;
+    private wekinator.RunPanel runPanel;
+    private wekinator.TrainPanel trainPanel;
     // End of variables declaration//GEN-END:variables
 
+    public static void main(String[] args) {
+        JFrame f = new JFrame();
+        TrainRunPanel p = new TrainRunPanel();
+        f.add(p);
+        f.setVisible(true);
+    }
 }

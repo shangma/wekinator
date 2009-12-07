@@ -23,13 +23,14 @@ import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Remove;
 import weka.filters.unsupervised.attribute.Reorder;
 import wekinator.util.SerializedFileUtil;
+import javax.swing.event.*;
 
 /**
  *
  * @author Rebecca Fiebrink
  */
 public class SimpleDataset implements Serializable {
-
+        protected EventListenerList listenerList = new EventListenerList();
     private int numParams = 0;
     private int numFeatures = 0; //Total # features being stored, doesn't include my metadata
     private boolean featureParamMask[][] = null;
@@ -54,6 +55,7 @@ public class SimpleDataset implements Serializable {
     protected boolean hasInstances = false;
     public static final String PROP_HASINSTANCES = "hasInstances";
     protected FeatureLearnerConfiguration featureLearnerConfiguration = null;
+    private ChangeEvent changeEvent = null;
 
     /**
      * Get the value of featureLearnerConfiguration
@@ -627,7 +629,7 @@ public class SimpleDataset implements Serializable {
         in.setDataset(allInstances);
         allInstances.add(in);
         setHasInstances(true);
-
+    fireStateChanged();
 
 
     // idMap.put(thisId, in);
@@ -662,6 +664,7 @@ public class SimpleDataset implements Serializable {
             if (allInstances.numInstances() == 0) {
                 setHasInstances(false);
             }
+    fireStateChanged();
 
             return true;
 
@@ -676,6 +679,8 @@ public class SimpleDataset implements Serializable {
     public void deleteAll() {
         allInstances.delete();
         setHasInstances(false);
+            fireStateChanged();
+
 
     }
 
@@ -733,7 +738,10 @@ public class SimpleDataset implements Serializable {
     public void setFeatureName(int featureNum, String name) {
         if (featureNum >= 0 && featureNum < numFeatures) {
             featureNames[featureNum] = name;
+                fireStateChanged();
+
         }
+
     }
 
     public String getFeatureName(int featureNum) {
@@ -750,6 +758,8 @@ public class SimpleDataset implements Serializable {
     public void setParameterName(int paramNum, String name) {
         if (paramNum >= 0 && paramNum < numParams) {
             paramNames[paramNum] = name;
+                fireStateChanged();
+
         }
     }
 
@@ -937,5 +947,25 @@ public class SimpleDataset implements Serializable {
 
     void writeToFile(File file) throws Exception {
         SerializedFileUtil.writeToFile(file, this);
+    }
+
+    public void addChangeListener(ChangeListener l) {
+        listenerList.add(ChangeListener.class, l);
+    }
+
+    public void removeChangeListener(ChangeListener l) {
+        listenerList.remove(ChangeListener.class, l);
+    }
+
+    protected void fireStateChanged() {
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = listeners.length - 2; i >= 0; i -=2 ) {
+            if (listeners[i] == ChangeListener.class) {
+                if (changeEvent == null) {
+                    changeEvent = new ChangeEvent(this);
+                }
+                ((ChangeListener)listeners[i+1]).stateChanged(changeEvent);
+            }
+        }
     }
 }
