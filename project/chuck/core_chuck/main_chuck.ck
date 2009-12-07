@@ -30,8 +30,13 @@ new SynthClass @=> SynthClass mc;
 mc.setup();
 mc.getNumParams() => int numParams;
 mc.useDistribution() => int wantDist;
+mc.useDistributionArray() @=> int wantDistArray[];
 mc.isDiscrete() => int isDiscrete;
+mc.isDiscreteArray() @=> int isDiscreteArray[];
 mc.getNumClasses() => int numClasses;
+mc.getNumClassesArray() @=> int numClassesArray[];
+mc.getParamNamesArray() @=> string paramNamesArray[];
+customFE.getFeatureNamesArray() @=> string customNamesArray[];
 
 //Keep track of feature sources
 0 => int useAudio;
@@ -61,9 +66,11 @@ recv.listen();
 recv.event("/control", "s i") @=> OscEvent oscControl;
 recv.event("/useAudioFeature", "i i i i i i i i i i") @=> OscEvent oscUseAudio;
 recv.event("/useFeatureMessage", "s i") @=> OscEvent oscUseFeatureMessage;
-
+recv.event("/useFeatureList", "i i i i i i i i i i i i i i i i") @=> OscEvent oscUseFeatureList;
 
 OscEvent oscDist, oscLabel;
+
+//TODO: update this to not break 
 if (isDiscrete && wantDist) {
 	"f" => string s;
 	for (1 => int i; i < numClasses * numParams; i++) {
@@ -80,7 +87,6 @@ if (isDiscrete && wantDist) {
 	recv.event("/realLabel", ss) @=> oscLabel;
 	spork ~oscLabelWait();
 }
-
 
 //Will get set automatically later on
 int numFeats;
@@ -136,6 +142,7 @@ sp.setup(mc, xmit);
 spork ~oscUseAudioWait();
 spork ~oscUseFeatureMessageWait();
 spork ~oscControlWait();
+spork ~oscUseFeatureListWait();
 
 //spork ~oscExtractWait();
 
@@ -181,6 +188,8 @@ fun void oscControlWait() {
 				receivedRealValueRequest();
 			} else if (s == "requestChuckSettings") {
 				receivedRequestSettings();
+			} else if (s == "requestChuckSettingsArrays") {
+				receivedRequestSettingsArrays();
 			} else if (s == "stopSound") {
 				receivedStopSound();
 			} else if (s == "startSound") {
@@ -243,6 +252,51 @@ fun void receivedRequestSettings() {
 	wantDist => xmit.addInt;
 	isDiscrete => xmit.addInt;
 	numClasses => xmit.addInt;	
+}
+
+fun void receivedRequestSettingsArrays() {
+	<<< "ChucK: received request settings arrays">>>;
+	"i i i" => string s; //# params, whether using chuck feat ext, # chuck feats
+
+	for (0 => int j; j < 3; j++) { //wantDist + isDiscrete + numClasses
+		for (0 => int i; i < numParams; i++) {
+			s + " i" => s;
+		}
+	}
+	for (0 => int i; i < numParams; i++) {
+		s + " s" => s;
+	}
+	if (useCustom) {
+		for (0 => int i; i < customFE.numFeatures(); i++) {
+			s + " s" => s;
+		}
+	}
+
+	xmit.startMsg("/chuckSettingsArrays", s);
+	numParams => xmit.addInt;
+	//useOscCustom => xmit.addInt;
+	useCustom => xmit.addInt; //HELP RAF BAD
+	//oscCustomFE.numFeatures() => xmit.addInt;
+	customFE.numFeatures() => xmit.addInt;
+
+	for (0 => int i; i < wantDistArray.size(); i++) {
+		wantDistArray[i] => xmit.addInt;
+	}
+	for (0 => int i; i < isDiscreteArray.size(); i++) {
+		isDiscreteArray[i] => xmit.addInt;
+	}
+	for (0 => int i; i < numClassesArray.size(); i++) {
+		numClassesArray[i] => xmit.addInt;
+	}
+	for (0 => int i; i < paramNamesArray.size(); i++) {
+		paramNamesArray[i] => xmit.addString;
+	}
+	if (useCustom) {
+		for (0 => int i; i < customFE.numFeatures(); i++) {
+			customNamesArray[i] => xmit.addString;
+		}
+	}
+	<<< "Chuck: Sent chuck settings array">>>;
 }
 
 fun void oscHidSetupStopWait() {
@@ -531,7 +585,7 @@ fun void computeNumFeats() {
 		}
 		featureMessageString + "f " => featureMessageString;
 	}
-	//<<< "Using ", numFeats, "features">>>;
+	<<< "Chuck using ", numFeats, "features">>>;
 }
 
 //lump the features into one message and hope for the best
@@ -605,9 +659,128 @@ fun void oscLabelWait() {
 	}
 }
 
+fun void oscUseFeatureListWait() {
+	while (true) {
+		oscUseFeatureList => now;
+		<<< "Chuck received feature list message">>>;
+		  while (oscUseFeatureList.nextMsg() != 0) {
+			<<< "Chuck feature list msg has another message">>>;
+			//Audio
+			if (audioFE != null) {
+					audioFE.stop();
+			}
+			oscUseFeatureList.getInt() => useAudio;
+			if (useAudio) {
+				new AudioFeatureExtractor @=> audioFE;
+				oscUseFeatureList.getInt() => int useFFT;
+				oscUseFeatureList.getInt() => int useRMS;
+				oscUseFeatureList.getInt() => int useCentroid;
+				oscUseFeatureList.getInt() => int useRolloff;
+				oscUseFeatureList.getInt() => int useFlux;
+				oscUseFeatureList.getInt() => int fftSize;
+				oscUseFeatureList.getInt() => int windowSize;
+				oscUseFeatureList.getInt() => int windowType;
+				oscUseFeatureList.getInt() => int rate;
+				audioFE.setup(useFFT, useRMS, useCentroid, useRolloff, useFlux, fftSize, windowSize, windowType, rate::ms);
+			} else {
+				//Pull same # of ints off OSC message
+				for (0 => int i; i < 9; i++) {
+					oscUseFeatureList.getInt() => int tmp;
+				}
+
+			}
+
+			//Trackpad
+			oscUseFeatureList.getInt() => useTrackpadXY;
+			if (trackpadFE != null) {
+				trackpadFE.stop();
+			}
+			if (useTrackpadXY) {
+				new TrackpadFeatureExtractor @=> trackpadFE;
+				trackpadFE.setup();
+				if (!trackpadFE.isOK) {
+					0 => useTrackpadXY;
+				}
+			}
+
+			//motion
+			oscUseFeatureList.getInt() => int use;
+			if (motionFE != null) {
+				motionFE.stop();
+			}
+			if (use > 0) {
+				1 => useMotionXYZ;
+				new MotionFeatureExtractor @=> motionFE;
+				motionFE.setup(use::ms);
+				if (!motionFE.isOK) {
+						0 => useMotionXYZ;
+				}
+			} else {
+				0 => useMotionXYZ;
+			}
+
+			//other hid
+			oscUseFeatureList.getInt() => useOtherHid;
+
+			//use procesing
+			oscUseFeatureList.getInt() => use;
+			if (processingFE != null) {
+				processingFE.stop();
+			}
+			if (use > 0) {
+				1 => useProcessing;
+				new ProcessingFeatureExtractor @=> processingFE;
+				processingFE.setup(use, recv);
+				if (!processingFE.isOK) {
+					0 => useProcessing;
+				}
+			} else {
+				0 => useProcessing;
+			}
+
+			//custom osc
+			oscUseFeatureList.getInt() => use;
+			if (oscCustomFE != null) {
+				oscCustomFE.stop();
+			}
+			if (use > 0) {
+				1 => useOscCustom;
+				new CustomOSCFeatureExtractor @=> oscCustomFE;
+				oscCustomFE.setup(use, recv);
+				if (!oscCustomFE.isOK) {
+					0 => useOscCustom;
+				}
+			} else {
+				0 => useOscCustom;
+			}
+
+			//custom chuck
+			oscUseFeatureList.getInt() => use;
+			<<< "Chuck received ", use, " for use custom CHUCK">>>;
+			if (customFE != null) {
+				customFE.stop();
+			}
+			if (use > 0) {
+				1 => useCustom;
+				new CustomFeatureExtractor @=> customFE;
+			//	customFE.setup(use);
+			//	if (!customFE.isOK) {
+			//		0 => useCustom;
+				customFE.setup();
+				//}
+			} else {
+				0 => useCustom;
+			}
+			computeNumFeats();
+			<<< "ChucK: done receiving feature list">>>;
+		}//end while msg
+	} //end while true
+}
+
 fun void oscUseFeatureMessageWait() {
 	while (true) {
 		oscUseFeatureMessage => now;
+		<<< "Chuck: received feature MESSAGE: BAD ">>>;
 		string s;
 		int i;
 		<<< "Received feature message" >>>;
