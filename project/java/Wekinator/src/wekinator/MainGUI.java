@@ -57,6 +57,14 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         labelPlayalongUpdate.setText(string);
     }
 
+    private void setFeatureConfigurationPanelEnabled(boolean enabled) {
+        panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelTabFeatureConfiguration), enabled);
+    }
+
+    private void setLearningSystemConfigurationPanelEnabled(boolean enabled) {
+        panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelTabLearningSystemConfiguration), enabled);
+    }
+
     class MyWorker extends SwingWorker<ArrayList<Double>, Void> {
 
         @Override
@@ -160,11 +168,24 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
             hidSetupPropertyChange(evt);
         }
     };
+    PlayalongScore score = null;
+    PlayalongScoreViewer scoreViewer = null;
+    boolean useMyScorePlayer = true;
 
     /** Creates new form Bigger1 */
     public MainGUI() {
         initComponents();
+        //Anywhere we add a listener, also update to current property.
+
+
         fm = wek.getFeatureManager();
+        ChuckSystem.getChuckSystem().addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                chuckSystemPropertyChange(evt);
+            }
+        });
+        updateGUIforChuckSystem();
 
         Logger.getLogger(MainGUI.class.getName()).log(Level.INFO, "Here's some info");
 
@@ -182,7 +203,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 oscHandlerPropertyChange(evt);
             }
         });
-
+        updateGUIforOscStatus();
 
         w.addObserver(this);
         w.setGui(this);
@@ -205,10 +226,10 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         radioClearProcessingFeature.setVisible(false);
         int n = w.getNumClasses();
 
-        jTabbedPane1.setEnabledAt(jTabbedPane1.indexOfComponent(panelRun), false);
-        jTabbedPane1.setEnabledAt(jTabbedPane1.indexOfComponent(panelFeatures), false);
-        jTabbedPane1.setEnabledAt(jTabbedPane1.indexOfComponent(panelClassifier), false);
-        jTabbedPane1.setEnabledAt(jTabbedPane1.indexOfComponent(panelPlayAlong), false);
+        panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelRun), false);
+        panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelFeatures), false);
+        panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelClassifier), false);
+        panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelPlayAlong), false);
 
         // buttonPanic.setVisible(false);
         // buttonLoadFeatureSettings.setVisible(false);
@@ -221,17 +242,17 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 if (e.getID() == KeyEvent.KEY_PRESSED) {
                     if (e.getKeyCode() == KeyEvent.VK_PAGE_DOWN) {
                         System.out.println("Page down pressed");
-                        if (jTabbedPane1.getSelectedComponent() == panelRun) {
+                        if (panelMainTabs.getSelectedComponent() == panelRun) {
                             buttonHoldTrain.getModel().setSelected(true);
                             buttonHoldTrain.getModel().setPressed(true);
-                        } else if (jTabbedPane1.getSelectedComponent() == panelPlayAlong) {
+                        } else if (panelMainTabs.getSelectedComponent() == panelPlayAlong) {
                             jToggleButtonPlayAlong.getModel().setSelected(true);
                             jToggleButtonPlayAlong.getModel().setPressed(true);
                         }
 
                     } else if (e.getKeyCode() == KeyEvent.VK_PAGE_UP) {
                         System.out.println("Page up presed");
-                        if (jTabbedPane1.getSelectedComponent() == panelPlayAlong) {
+                        if (panelMainTabs.getSelectedComponent() == panelPlayAlong) {
                             jToggleButtonPlayScore.getModel().setSelected(!jToggleButtonPlayScore.getModel().isSelected());
                         }
 
@@ -239,10 +260,10 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 } else if (e.getID() == KeyEvent.KEY_RELEASED) {
                     if (e.getKeyCode() == KeyEvent.VK_PAGE_DOWN) {
                         System.out.println("Page down released");
-                        if (jTabbedPane1.getSelectedComponent() == panelRun) {
+                        if (panelMainTabs.getSelectedComponent() == panelRun) {
                             buttonHoldTrain.getModel().setPressed(false);
                             buttonHoldTrain.getModel().setSelected(false);
-                        } else if (jTabbedPane1.getSelectedComponent() == panelPlayAlong) {
+                        } else if (panelMainTabs.getSelectedComponent() == panelPlayAlong) {
                             jToggleButtonPlayAlong.getModel().setSelected(false);
                             jToggleButtonPlayAlong.getModel().setPressed(false);
                         }
@@ -379,7 +400,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
     }
 
     private void disableAllSettingsPanel() {
-        jTabbedPane1.setSelectedComponent(panelRun);
+        panelMainTabs.setSelectedComponent(panelRun);
     //  jTabbedPane1.setEnabledAt(jTabbedPane1.indexOfComponent(panelClassifier), false);
 
     }
@@ -389,7 +410,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         if (isChuckDiscrete) {
             buttonComputeAccuracy.setEnabled(false);
         }
-        jTabbedPane1.setEnabledAt(jTabbedPane1.indexOfComponent(panelRun), true);
+        panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelRun), true);
     }
 
     private void enableTrainButtons() {
@@ -417,7 +438,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         buttonGroupSettingsSource = new javax.swing.ButtonGroup();
         buttonGroupProcessingSource = new javax.swing.ButtonGroup();
         buttonQuit = new javax.swing.JButton();
-        jTabbedPane1 = new javax.swing.JTabbedPane();
+        panelMainTabs = new javax.swing.JTabbedPane();
         panelOSC = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
         labelOscStatus1 = new javax.swing.JLabel();
@@ -506,6 +527,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         buttonViewData = new javax.swing.JButton();
         scrollTrainPanel = new javax.swing.JScrollPane();
         panelRealTraining = new javax.swing.JPanel();
+        jButton2 = new javax.swing.JButton();
         panelPlayAlong = new javax.swing.JPanel();
         labelRunningStatus1 = new javax.swing.JLabel();
         labelPlayalongUpdate = new javax.swing.JLabel();
@@ -536,6 +558,12 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         labelClassifiedClass1 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
         jlabelNumInstances = new javax.swing.JLabel();
+        checkOtfPlayalong = new javax.swing.JCheckBox();
+        buttonViewOtfPlayalong = new javax.swing.JButton();
+        panelTabFeatureConfiguration = new javax.swing.JPanel();
+        featureConfigurationPanel1 = new wekinator.FeatureConfigurationPanel();
+        panelTabLearningSystemConfiguration = new javax.swing.JPanel();
+        learningSystemConfigurationPanel = new wekinator.LearningSystemConfigurationPanel();
         labelGlobalStatus = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
@@ -543,6 +571,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         exitMenuItem = new javax.swing.JMenuItem();
         viewMenu = new javax.swing.JMenu();
         menuItemViewConsole = new javax.swing.JMenuItem();
+        menuItemOtfScore = new javax.swing.JMenuItem();
         helpMenu1 = new javax.swing.JMenu();
         contentsMenuItem1 = new javax.swing.JMenuItem();
         aboutMenuItem1 = new javax.swing.JMenuItem();
@@ -557,14 +586,14 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
             }
         });
 
-        jTabbedPane1.addComponentListener(new java.awt.event.ComponentAdapter() {
+        panelMainTabs.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
-                jTabbedPane1ComponentShown(evt);
+                panelMainTabsComponentShown(evt);
             }
         });
-        jTabbedPane1.addChangeListener(new javax.swing.event.ChangeListener() {
+        panelMainTabs.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                jTabbedPane1StateChanged(evt);
+                panelMainTabsStateChanged(evt);
             }
         });
 
@@ -694,7 +723,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 .addContainerGap(60, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Setup", panelOSC);
+        panelMainTabs.addTab("Setup", panelOSC);
 
         buttonSaveFeatureSettings.setFont(new java.awt.Font("Lucida Grande", 0, 12));
         buttonSaveFeatureSettings.setText("Save settings to file...");
@@ -1051,7 +1080,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 .addContainerGap(81, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Features", panelFeatures);
+        panelMainTabs.addTab("Features", panelFeatures);
 
         buttonUseClassifierSettings.setText("Go!");
         buttonUseClassifierSettings.addActionListener(new java.awt.event.ActionListener() {
@@ -1187,7 +1216,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("Settings", panelClassifier);
+        panelMainTabs.addTab("Settings", panelClassifier);
 
         panelRun.setEnabled(false);
         panelRun.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -1239,22 +1268,23 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel3Layout.createSequentialGroup()
-                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel3Layout.createSequentialGroup()
+                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jPanel3Layout.createSequentialGroup()
+                        .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel3Layout.createSequentialGroup()
+                                .addContainerGap()
+                                .add(buttonSaveClassifier, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel3Layout.createSequentialGroup()
+                                .add(17, 17, 17)
+                                .add(toggleButtonRun)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jLabel7)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(labelClassifiedClass, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE))
+                    .add(jPanel3Layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(buttonSaveClassifier, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel3Layout.createSequentialGroup()
-                        .add(17, 17, 17)
-                        .add(toggleButtonRun)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel7)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(labelClassifiedClass, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE)
+                        .add(buttonComputeAccuracy, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 237, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
-            .add(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(buttonComputeAccuracy, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
-                .add(133, 133, 133))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -1362,6 +1392,13 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
 
         scrollTrainPanel.setViewportView(panelRealTraining);
 
+        jButton2.setText("Add to OTF score");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout panelRunLayout = new org.jdesktop.layout.GroupLayout(panelRun);
         panelRun.setLayout(panelRunLayout);
         panelRunLayout.setHorizontalGroup(
@@ -1382,14 +1419,14 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                                         .add(jButtonShh)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                                         .add(buttonViewData))
-                                    .add(toggleGetSynthParams)))))
+                                    .add(toggleGetSynthParams)
+                                    .add(jButton2)))))
                     .add(panelRunLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(labelFeatureStatus)
-                            .add(labelTrainingStatus)
                             .add(panelRunLayout.createSequentialGroup()
-                                .add(jPanel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(labelTrainingStatus)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(buttonEditClassifier))
                             .add(panelRunLayout.createSequentialGroup()
@@ -1403,8 +1440,9 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                         .add(labelParameterValues))
                     .add(panelRunLayout.createSequentialGroup()
                         .addContainerGap()
-                        .add(scrollTrainPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 316, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .add(scrollTrainPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 316, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         panelRunLayout.setVerticalGroup(
             panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -1420,7 +1458,9 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                         .add(jButtonShh)
                         .add(buttonViewData)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(scrollTrainPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 158, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(scrollTrainPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 158, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jButton2))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(buttonTrain)
@@ -1429,21 +1469,18 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(labelFeatureStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(labelTrainingStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(labelTrainingStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(buttonEditClassifier))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(panelRunLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(panelRunLayout.createSequentialGroup()
-                        .add(jPanel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 132, Short.MAX_VALUE)
-                        .add(labelRunningStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(panelRunLayout.createSequentialGroup()
-                        .add(buttonEditClassifier)
-                        .addContainerGap())))
+                .add(jPanel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 123, Short.MAX_VALUE)
+                .add(labelRunningStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
         jPanel3.getAccessibleContext().setAccessibleName("Use trained model");
 
-        jTabbedPane1.addTab("Train/Run", panelRun);
+        panelMainTabs.addTab("Train/Run", panelRun);
 
         panelPlayAlong.setEnabled(false);
 
@@ -1712,6 +1749,15 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
 
         jlabelNumInstances.setText("0");
 
+        checkOtfPlayalong.setText("NEW: Use your own on-the-fly playalong score");
+
+        buttonViewOtfPlayalong.setText("View OTF score");
+        buttonViewOtfPlayalong.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonViewOtfPlayalongActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout panelPlayAlongLayout = new org.jdesktop.layout.GroupLayout(panelPlayAlong);
         panelPlayAlong.setLayout(panelPlayAlongLayout);
         panelPlayAlongLayout.setHorizontalGroup(
@@ -1738,22 +1784,34 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                             .add(panelPlayAlongLayout.createSequentialGroup()
                                 .addContainerGap()
                                 .add(jToggleButtonPlayScore)))
-                        .add(57, 57, 57)
-                        .add(labelParameterValues2)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jlabelNumInstances, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 44, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(panelPlayAlongLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(panelPlayAlongLayout.createSequentialGroup()
+                                .add(57, 57, 57)
+                                .add(labelParameterValues2)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jlabelNumInstances, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 44, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(panelPlayAlongLayout.createSequentialGroup()
+                                .add(121, 121, 121)
+                                .add(buttonViewOtfPlayalong)))))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .add(panelPlayAlongLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(jLabel10)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(labelClassifiedClass1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
-                .add(418, 418, 418))
+                .add(labelClassifiedClass1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 98, Short.MAX_VALUE)
+                .add(439, 439, 439))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, panelPlayAlongLayout.createSequentialGroup()
+                .addContainerGap(21, Short.MAX_VALUE)
+                .add(checkOtfPlayalong)
+                .add(480, 480, 480))
         );
         panelPlayAlongLayout.setVerticalGroup(
             panelPlayAlongLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(panelPlayAlongLayout.createSequentialGroup()
-                .addContainerGap()
+                .add(panelPlayAlongLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(checkOtfPlayalong)
+                    .add(buttonViewOtfPlayalong))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(panelPlayAlongLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jToggleButtonPlayScore)
                     .add(jToggleButtonPlayAlong)
@@ -1773,7 +1831,39 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 .add(labelRunningStatus1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
-        jTabbedPane1.addTab("Playalong", panelPlayAlong);
+        panelMainTabs.addTab("Playalong", panelPlayAlong);
+
+        org.jdesktop.layout.GroupLayout panelTabFeatureConfigurationLayout = new org.jdesktop.layout.GroupLayout(panelTabFeatureConfiguration);
+        panelTabFeatureConfiguration.setLayout(panelTabFeatureConfigurationLayout);
+        panelTabFeatureConfigurationLayout.setHorizontalGroup(
+            panelTabFeatureConfigurationLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(featureConfigurationPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 596, Short.MAX_VALUE)
+        );
+        panelTabFeatureConfigurationLayout.setVerticalGroup(
+            panelTabFeatureConfigurationLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(panelTabFeatureConfigurationLayout.createSequentialGroup()
+                .add(featureConfigurationPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(193, Short.MAX_VALUE))
+        );
+
+        panelMainTabs.addTab("NewFeatures", panelTabFeatureConfiguration);
+
+        panelTabLearningSystemConfiguration.setEnabled(false);
+
+        org.jdesktop.layout.GroupLayout panelTabLearningSystemConfigurationLayout = new org.jdesktop.layout.GroupLayout(panelTabLearningSystemConfiguration);
+        panelTabLearningSystemConfiguration.setLayout(panelTabLearningSystemConfigurationLayout);
+        panelTabLearningSystemConfigurationLayout.setHorizontalGroup(
+            panelTabLearningSystemConfigurationLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, learningSystemConfigurationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 596, Short.MAX_VALUE)
+        );
+        panelTabLearningSystemConfigurationLayout.setVerticalGroup(
+            panelTabLearningSystemConfigurationLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(panelTabLearningSystemConfigurationLayout.createSequentialGroup()
+                .add(learningSystemConfigurationPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 551, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(71, Short.MAX_VALUE))
+        );
+
+        panelMainTabs.addTab("NewSettings", panelTabLearningSystemConfiguration);
 
         fileMenu.setText("Wekinator");
 
@@ -1799,6 +1889,10 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
             }
         });
         viewMenu.add(menuItemViewConsole);
+
+        menuItemOtfScore.setText("On-the-fly score");
+        menuItemOtfScore.setEnabled(false);
+        viewMenu.add(menuItemOtfScore);
 
         menuBar.add(viewMenu);
 
@@ -1826,7 +1920,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 617, Short.MAX_VALUE)
+                    .add(panelMainTabs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 617, Short.MAX_VALUE)
                     .add(buttonQuit)
                     .add(labelGlobalStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 493, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
@@ -1835,7 +1929,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(10, Short.MAX_VALUE)
-                .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 668, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(panelMainTabs, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 668, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(buttonQuit)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -1891,6 +1985,9 @@ private void buttonUseClassifierSettingsActionPerformed(java.awt.event.ActionEve
         disableAllSettingsPanel();
         enablePlayalongPanel();
         enableRunPanel();
+
+
+
 
         FeatureToParameterMapping mapping = featureParameterMaskEditor.getFeatureToParameterMapping();
         //TODO: Ask if changed! & prompt user.
@@ -1965,7 +2062,11 @@ private void buttonUseClassifierSettingsActionPerformed(java.awt.event.ActionEve
         }
 
     }
-
+    score = new PlayalongScore(myNumParams);
+    score.setMainGui(this);
+    menuItemOtfScore.setEnabled(true);
+    scoreViewer = new PlayalongScoreViewer(score, this);
+   // scoreViewer.setVisible(true);
 
 
 
@@ -2659,7 +2760,7 @@ private void buttonSaveFeatureSettingsActionPerformed(java.awt.event.ActionEvent
 
 private void buttonFeaturesGoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonFeaturesGoActionPerformed
     try {
-        jTabbedPane1.setEnabledAt(jTabbedPane1.indexOfComponent(panelClassifier), false);
+        panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelClassifier), false);
         disableRunPanel();
         disablePlayalongPanel();
         buttonFeaturesGo.setEnabled(false);
@@ -2822,13 +2923,25 @@ private void buttonTrain1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     }
 
 private void jToggleButtonPlayScoreItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jToggleButtonPlayScoreItemStateChanged
-    if (jToggleButtonPlayScore.getModel().isSelected()) {
-        w.playScore();
-    } else {
-        if (jToggleButtonPlayAlong.getModel().isSelected()) {
-            jToggleButtonPlayAlong.getModel().setSelected(false);
+    if (!checkOtfPlayalong.isSelected()) {
+        if (jToggleButtonPlayScore.getModel().isSelected()) {
+            w.playScore();
+        } else {
+            if (jToggleButtonPlayAlong.getModel().isSelected()) {
+                jToggleButtonPlayAlong.getModel().setSelected(false);
+            }
+            w.stopPlaying();
         }
-        w.stopPlaying();
+    } else {
+
+        if (jToggleButtonPlayScore.getModel().isSelected()) {
+            score.play();
+        } else {
+            if (jToggleButtonPlayAlong.getModel().isSelected()) {
+                jToggleButtonPlayAlong.getModel().setSelected(false);
+            }
+            score.stop();
+        }
     }
 }//GEN-LAST:event_jToggleButtonPlayScoreItemStateChanged
 
@@ -2841,6 +2954,7 @@ private void jToggleButtonPlayScoreStateChanged(javax.swing.event.ChangeEvent ev
 }//GEN-LAST:event_jToggleButtonPlayScoreStateChanged
 
 private void jToggleButtonPlayAlongItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jToggleButtonPlayAlongItemStateChanged
+
     if (jToggleButtonPlayAlong.getModel().isSelected()) {
         if (!jToggleButtonPlayScore.getModel().isSelected()) {
             jToggleButtonPlayScore.getModel().setSelected(true);
@@ -2864,19 +2978,19 @@ private void jToggleButtonPlayAlongStateChanged(javax.swing.event.ChangeEvent ev
     // TODO add your handling code here:
 }//GEN-LAST:event_jToggleButtonPlayAlongStateChanged
 
-private void jTabbedPane1ComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_jTabbedPane1ComponentShown
+private void panelMainTabsComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_panelMainTabsComponentShown
     System.out.println("Component shown");
 
-}//GEN-LAST:event_jTabbedPane1ComponentShown
+}//GEN-LAST:event_panelMainTabsComponentShown
 
-private void jTabbedPane1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jTabbedPane1StateChanged
+private void panelMainTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_panelMainTabsStateChanged
     //  System.out.println(jTabbedPane1.getModel().getSelectedIndex());
-    if (jTabbedPane1.getModel().getSelectedIndex() == 4) {
+    if (panelMainTabs.getModel().getSelectedIndex() == 4) {
         w.isPlayAlong = true;
-    } else if (jTabbedPane1.getModel().getSelectedIndex() == 3) {
+    } else if (panelMainTabs.getModel().getSelectedIndex() == 3) {
         w.isPlayAlong = false;
     }
-}//GEN-LAST:event_jTabbedPane1StateChanged
+}//GEN-LAST:event_panelMainTabsStateChanged
 
 private void jSliderTrainingFrequencyStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSliderTrainingFrequencyStateChanged
     // System.out.println("Slider state changed");
@@ -3024,6 +3138,27 @@ private void buttonSetupOtherHidActionPerformed(java.awt.event.ActionEvent evt) 
     HidSetupForm p = new HidSetupForm();
     p.setVisible(true);
 }//GEN-LAST:event_buttonSetupOtherHidActionPerformed
+
+private void buttonViewOtfPlayalongActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonViewOtfPlayalongActionPerformed
+    scoreViewer.setVisible(true);
+    scoreViewer.toFront();
+}//GEN-LAST:event_buttonViewOtfPlayalongActionPerformed
+
+private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    double[] f = new double[myNumParams];
+    for (int i = 0; i < myNumParams; i++) {
+
+        try {
+            f[i] = Double.parseDouble(paramFields[i].getText());
+
+        } catch (NumberFormatException ex) {
+            paramFields[i].setText("0");
+            f[i] = 0;
+        }
+    //   System.out.println("got val " + f[i]);
+    }
+    score.addParams(f, 1.0);
+}//GEN-LAST:event_jButton2ActionPerformed
 
     private File findHidSetupFileToSave() {
 
@@ -3195,6 +3330,7 @@ private void buttonSetupOtherHidActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JButton buttonTrain1;
     private javax.swing.JButton buttonUseClassifierSettings;
     private javax.swing.JButton buttonViewData;
+    private javax.swing.JButton buttonViewOtfPlayalong;
     private javax.swing.JCheckBox checkAudio;
     private javax.swing.JCheckBox checkCentroid;
     private javax.swing.JCheckBox checkCustomChuck;
@@ -3202,6 +3338,7 @@ private void buttonSetupOtherHidActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JCheckBox checkFFT;
     private javax.swing.JCheckBox checkFlux;
     private javax.swing.JCheckBox checkMotionSensor;
+    private javax.swing.JCheckBox checkOtfPlayalong;
     private javax.swing.JCheckBox checkOtherHID;
     private javax.swing.JCheckBox checkProcessing;
     private javax.swing.JCheckBox checkRMS;
@@ -3213,10 +3350,12 @@ private void buttonSetupOtherHidActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JComboBox comboWindowType;
     private javax.swing.JMenuItem contentsMenuItem1;
     private javax.swing.JMenuItem exitMenuItem;
+    private wekinator.FeatureConfigurationPanel featureConfigurationPanel1;
     private wekinator.FeatureParameterMaskEditor featureParameterMaskEditor;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenu helpMenu1;
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JButton jButtonShh;
     private javax.swing.JCheckBox jCheckBoxAutoStopThreshold;
     private javax.swing.JCheckBox jCheckBoxAutomaticTraining;
@@ -3250,7 +3389,6 @@ private void buttonSetupOtherHidActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JProgressBar jProgressBarTrain;
     private javax.swing.JSlider jSliderFastAccurate;
     private javax.swing.JSlider jSliderTrainingFrequency;
-    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTextField jTextAutoStopThreshold;
     private javax.swing.JToggleButton jToggleButtonPlayAlong;
     private javax.swing.JToggleButton jToggleButtonPlayScore;
@@ -3274,14 +3412,19 @@ private void buttonSetupOtherHidActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JLabel labelRunningStatus;
     private javax.swing.JLabel labelRunningStatus1;
     private javax.swing.JLabel labelTrainingStatus;
+    private wekinator.LearningSystemConfigurationPanel learningSystemConfigurationPanel;
     private javax.swing.JMenuBar menuBar;
+    private javax.swing.JMenuItem menuItemOtfScore;
     private javax.swing.JMenuItem menuItemViewConsole;
     private javax.swing.JPanel panelClassifier;
     private javax.swing.JPanel panelFeatures;
+    private javax.swing.JTabbedPane panelMainTabs;
     private javax.swing.JPanel panelOSC;
     private javax.swing.JPanel panelPlayAlong;
     private javax.swing.JPanel panelRealTraining;
     private javax.swing.JPanel panelRun;
+    private javax.swing.JPanel panelTabFeatureConfiguration;
+    private javax.swing.JPanel panelTabLearningSystemConfiguration;
     private javax.swing.JMenuItem preferencesMenuItem;
     private javax.swing.JRadioButton radioClearProcessingFeature;
     private javax.swing.JRadioButton radioColorTracking;
@@ -3307,35 +3450,35 @@ private void buttonSetupOtherHidActionPerformed(java.awt.event.ActionEvent evt) 
     private ArrayList<javax.swing.JButton> trainingButtons = new ArrayList<javax.swing.JButton>();
 
     public void enableFeaturePanel() {
-        jTabbedPane1.setEnabledAt(jTabbedPane1.indexOfComponent(panelFeatures), true);
+        panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelFeatures), true);
     }
 
     public void enableClassifierPanel() {
-        jTabbedPane1.setEnabledAt(jTabbedPane1.indexOfComponent(panelClassifier), true);
+        panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelClassifier), true);
 
     }
 
     public void disableFeaturePanel() {
-        jTabbedPane1.setEnabledAt(jTabbedPane1.indexOfComponent(panelFeatures), false);
+        panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelFeatures), false);
     }
 
     public void disableRunPanel() {
-        jTabbedPane1.setEnabledAt(jTabbedPane1.indexOfComponent(panelRun), false);
+        panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelRun), false);
     }
 
     public void enableRunPanel() {
-        jTabbedPane1.setEnabledAt(jTabbedPane1.indexOfComponent(panelRun), true);
+        panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelRun), true);
 
 
     }
 
     public void enablePlayalongPanel() {
-        jTabbedPane1.setEnabledAt(jTabbedPane1.indexOfComponent(panelPlayAlong), true);
+        panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelPlayAlong), true);
 
     }
 
     public void disablePlayalongPanel() {
-        jTabbedPane1.setEnabledAt(jTabbedPane1.indexOfComponent(panelPlayAlong), false);
+        panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelPlayAlong), false);
     }
 
     private void setFastAccurate(int value) {
@@ -3389,11 +3532,11 @@ private void buttonSetupOtherHidActionPerformed(java.awt.event.ActionEvent evt) 
                 labelClassifierStatus.setText("Classifier status: " + updateString);
 
                 if (((WekaOperator.ClassifierType) state) == WekaOperator.ClassifierType.NONE) {
-                    jTabbedPane1.setEnabledAt(jTabbedPane1.indexOfComponent(panelRun), false);
-                    jTabbedPane1.setEnabledAt(jTabbedPane1.indexOfComponent(panelPlayAlong), false);
+                    panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelRun), false);
+                    panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelPlayAlong), false);
                 } else {
-                    jTabbedPane1.setEnabledAt(jTabbedPane1.indexOfComponent(panelRun), true);
-                    jTabbedPane1.setEnabledAt(jTabbedPane1.indexOfComponent(panelPlayAlong), true);
+                    panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelRun), true);
+                    panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelPlayAlong), true);
                 }
 
             } else if (state == null) {
@@ -3524,7 +3667,7 @@ private void buttonSetupOtherHidActionPerformed(java.awt.event.ActionEvent evt) 
         enableClassifierPanel();
         buttonFeaturesGo.setEnabled(true);
         //  disableFeaturePanel();
-        jTabbedPane1.setSelectedComponent(panelClassifier);
+        panelMainTabs.setSelectedComponent(panelClassifier);
     }
 
     private void wekaOperatorPropertyChange(PropertyChangeEvent evt) {
@@ -3546,7 +3689,10 @@ private void buttonSetupOtherHidActionPerformed(java.awt.event.ActionEvent evt) 
     }
 
     private void oscHandlerPropertyChange(PropertyChangeEvent evt) {
+        updateGUIforOscStatus();
+    }
 
+    protected void updateGUIforOscStatus() {
         OscHandler h = OscHandler.getOscHandler();
         labelOscStatus.setText("OSC status: " + h.getStatusMessage());
 
@@ -3560,7 +3706,9 @@ private void buttonSetupOtherHidActionPerformed(java.awt.event.ActionEvent evt) 
                 isConnected = true;
                 enableTrainButtons();
                 enableFeaturePanel();
-                jTabbedPane1.setSelectedComponent(panelFeatures);
+
+
+                panelMainTabs.setSelectedComponent(panelFeatures);
             } else {
                 isConnected = false;
             }
@@ -3571,6 +3719,12 @@ private void buttonSetupOtherHidActionPerformed(java.awt.event.ActionEvent evt) 
             buttonOscDisconnect.setEnabled(false);
             buttonOscConnect.setEnabled(true);
         }
+
+        setFeatureConfigurationPanelEnabled(isConnected);
+        if (!isConnected) {
+            setLearningSystemConfigurationPanelEnabled(false);
+        }
+
     }
 
     //TODO: get rid of this.
@@ -3582,12 +3736,33 @@ private void buttonSetupOtherHidActionPerformed(java.awt.event.ActionEvent evt) 
     private void wekinatorInstancePropertyChangeEvent(PropertyChangeEvent evt) {
         // System.out.println("NEW HID SETUP");
         //  labelHidDescription.setText(wek.getCurrentHidSetup().getDescription());
-        if (evt.getPropertyName().equals(WekinatorInstance.PROP_CURRENTHIDSETUP))  {
+        if (evt.getPropertyName().equals(WekinatorInstance.PROP_CURRENTHIDSETUP)) {
             ((HidSetup) evt.getOldValue()).removePropertyChangeListener(hidSetupChangeListener);
             ((HidSetup) evt.getNewValue()).addPropertyChangeListener(hidSetupChangeListener);
-                    labelHidDescription.setText(wek.getCurrentHidSetup().getDescription());
+            labelHidDescription.setText(wek.getCurrentHidSetup().getDescription());
 
         }
+    }
+
+    /** To keep */
+    //Possibly put in non-gui file... e.g. WekinatorManager
+    private void chuckSystemPropertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(ChuckSystem.PROP_STATE)) {
+            ChuckSystem cs = ChuckSystem.getChuckSystem();
+            updateGUIforChuckSystem();
+            // panelTabLearningSystemConfiguration.setEnabled(cs.getState() == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID);
+            if (evt.getOldValue() != ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID && evt.getNewValue() == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID) {
+                learningSystemConfigurationPanel.configure(cs.getNumParams(), cs.getParamNames(), cs.isIsParamDiscrete(), WekinatorLearningManager.getInstance().getFeatureConfiguration());
+                panelMainTabs.setSelectedComponent(panelTabLearningSystemConfiguration);
+            }
+
+        } else if (evt.getPropertyName().equals(ChuckSystem.PROP_NUMPARAMS)) {
+            //Currently don't worry about this -- only happens as part of a chuck system total update.
+        }
+    }
+
+    private void updateGUIforChuckSystem() {
+        setLearningSystemConfigurationPanelEnabled(ChuckSystem.getChuckSystem().getState() == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID);
     }
 }
 

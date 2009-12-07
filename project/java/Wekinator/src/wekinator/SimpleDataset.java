@@ -4,8 +4,9 @@
  */
 package wekinator;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -20,6 +21,8 @@ import weka.core.Instance;
 import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Remove;
+import weka.filters.unsupervised.attribute.Reorder;
+import wekinator.util.SerializedFileUtil;
 
 /**
  *
@@ -36,9 +39,9 @@ public class SimpleDataset implements Serializable {
     private int numParamValues[] = null;
     private Instances allInstances = null;
     private Instances dummyInstances = null; //An empty set of instances with proper heading info
-    private Remove[] paramFilters = null;
-    private Remove featuresFilter = null;
-    private Remove paramsFilter = null;
+    private Filter[] learnerFilters = null;
+    private Remove allFeaturesOnly = null;
+    private Remove allParamsOnly = null;
     private int nextID = 0;
     private List<RawAudioSegment> audioSegments = null;
     private int currentTrainingRound = 0;
@@ -48,6 +51,77 @@ public class SimpleDataset implements Serializable {
     private int trainingIndex = 2;
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HHmmss");
     public static final SimpleDateFormat prettyDateFormat = new SimpleDateFormat("HH:mm:ss");
+    protected boolean hasInstances = false;
+    public static final String PROP_HASINSTANCES = "hasInstances";
+    protected FeatureLearnerConfiguration featureLearnerConfiguration = null;
+
+    /**
+     * Get the value of featureLearnerConfiguration
+     *
+     * @return the value of featureLearnerConfiguration
+     */
+    public FeatureLearnerConfiguration getFeatureLearnerConfiguration() {
+        return featureLearnerConfiguration;
+    }
+
+    /**
+     * Set the value of featureLearnerConfiguration
+     *
+     * @param featureLearnerConfiguration new value of featureLearnerConfiguration
+     */
+    protected void setFeatureLearnerConfiguration(FeatureLearnerConfiguration featureLearnerConfiguration) {
+        this.featureLearnerConfiguration = featureLearnerConfiguration;
+        try {
+            updateFilters();
+        } catch (Exception ex) {
+            System.out.println("ERROR HERE");
+            Logger.getLogger(SimpleDataset.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void setMappingForLearner(int learner, int[] mapping) throws Exception {
+        featureLearnerConfiguration.setFeatureMappingForLearner(learner, mapping);
+        updateFilters(); //TODO: set to only update this learner's filter
+    }
+
+    /**
+     * Get the value of hasInstances
+     *
+     * @return the value of hasInstances
+     */
+    public boolean isHasInstances() {
+        return hasInstances;
+    }
+
+    /**
+     * Set the value of hasInstances
+     *
+     * @param hasInstances new value of hasInstances
+     */
+    protected void setHasInstances(boolean hasInstances) {
+        boolean oldHasInstances = this.hasInstances;
+        this.hasInstances = hasInstances;
+        propertyChangeSupport.firePropertyChange(PROP_HASINSTANCES, oldHasInstances, hasInstances);
+    }
+    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+    /**
+     * Add PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Remove PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
 
     //For serialization
     private static final long serialVersionUID = -6463977379713550249L;
@@ -59,12 +133,12 @@ public class SimpleDataset implements Serializable {
         this.numParams = numParams;
         this.numFeatures = numFeatures;
 
-        featureParamMask = new boolean[numFeatures][numParams];
+        /* featureParamMask = new boolean[numFeatures][numParams];
         for (int i = 0; i < this.numFeatures; i++) {
-            for (int j = 0; j < this.numParams; j++) {
-                featureParamMask[i][j] = true;
-            }
+        for (int j = 0; j < this.numParams; j++) {
+        featureParamMask[i][j] = true;
         }
+        }*/
 
         this.featureNames = new String[numFeatures];
         if (featureNames != null && featureNames.length == numFeatures) {
@@ -142,6 +216,7 @@ public class SimpleDataset implements Serializable {
         dummyInstances = new Instances(allInstances);
 
         try {
+            setFeatureLearnerConfiguration(new FeatureLearnerConfiguration(numParams, numFeatures));
 
             setupFilters();
         } catch (Exception ex) {
@@ -205,7 +280,7 @@ public class SimpleDataset implements Serializable {
         //use filter[paramNum];
         Instances i;
         try {
-            i = Filter.useFilter(allInstances, paramFilters[paramNum]);
+            i = Filter.useFilter(allInstances, learnerFilters[paramNum]);
             //set class index
             i.setClassIndex(i.numAttributes() - 1);
             return i;
@@ -217,11 +292,11 @@ public class SimpleDataset implements Serializable {
 
     }
 
-    private void updateFilter(int filterNum) throws Exception {
-        assert (filterNum > 0 && filterNum < paramFilters.length);
+    private void updateFilterOld(int filterNum) throws Exception {
+        assert (filterNum > 0 && filterNum < learnerFilters.length);
 
         //Get rid of metadata, other params, and non-used features
-        paramFilters[filterNum] = new Remove();
+        learnerFilters[filterNum] = new Remove();
 
         String removeString = ""; //string is index starting w/ 1
 
@@ -246,21 +321,45 @@ public class SimpleDataset implements Serializable {
         //Remove last comma
         removeString = removeString.substring(0, removeString.length());
 
-        paramFilters[filterNum].setAttributeIndices(removeString);
+        // RAF CHANGED learnerFilters[filterNum].setAttributeIndices(removeString);
 
-        paramFilters[filterNum].setInputFormat(dummyInstances);
+        learnerFilters[filterNum].setInputFormat(dummyInstances);
 
+    }
+
+    private void updateFilters() throws Exception {
+        learnerFilters = new Reorder[numParams];
+        //PROBLEM: also have those pesky other features specific to our dataset.
+        for (int i = 0; i < numParams; i++) {
+            //learnerFilters[i] = featureLearnerConfiguration.getReorderFilterForLearner(i);
+            Reorder r = new Reorder();
+            int[] featureMapping = featureLearnerConfiguration.getFeatureMappingForLearner(i);
+            int[] reordering = new int[featureMapping.length + 1];
+
+            //Features
+            for (int f = 0; f < featureMapping.length; f++) {
+                reordering[f] = featureMapping[f] + numMetaData;
+            }
+
+            //The actual class parameter
+            reordering[reordering.length - 1] = numMetaData + numFeatures + i;
+            r.setAttributeIndicesArray(reordering);
+            r.setInputFormat(dummyInstances);
+
+            learnerFilters[i] = r;
+
+        }
     }
 
     //TODO: test this
     private void setupFilters() throws Exception {
-        paramFilters = new Remove[numParams];
-        for (int p = 0; p < numParams; p++) {
-            updateFilter(p);
-        }
+        // learnerFilters = new Remove[numParams];
+        // for (int p = 0; p < numParams; p++) {
+        //     updateFilterOld(p);
+        // }
 
         //Filter so only features are present
-        featuresFilter = new Remove();
+        allFeaturesOnly = new Remove();
         int[] indicesToRemove = new int[numMetaData + numParams];
         for (int i = 0; i < numMetaData; i++) {
             indicesToRemove[i] = i;
@@ -268,11 +367,11 @@ public class SimpleDataset implements Serializable {
         for (int i = 0; i < numParams; i++) {
             indicesToRemove[numMetaData + i] = numMetaData + numFeatures + i;
         }
-        featuresFilter.setAttributeIndicesArray(indicesToRemove);
-        featuresFilter.setInputFormat(dummyInstances);
+        allFeaturesOnly.setAttributeIndicesArray(indicesToRemove);
+        allFeaturesOnly.setInputFormat(dummyInstances);
 
         //Filter so only params are present
-        paramsFilter = new Remove();
+        allParamsOnly = new Remove();
         indicesToRemove = new int[numMetaData + numFeatures];
         for (int i = 0; i < numMetaData; i++) {
             indicesToRemove[i] = i;
@@ -280,8 +379,8 @@ public class SimpleDataset implements Serializable {
         for (int i = 0; i < numFeatures; i++) {
             indicesToRemove[numMetaData + i] = numMetaData + i;
         }
-        paramsFilter.setAttributeIndicesArray(indicesToRemove);
-        paramsFilter.setInputFormat(dummyInstances);
+        allParamsOnly.setAttributeIndicesArray(indicesToRemove);
+        allParamsOnly.setInputFormat(dummyInstances);
     }
 
 
@@ -305,13 +404,15 @@ public class SimpleDataset implements Serializable {
             return 0;
         }
 
-        int sum = 0;
+        /*   int sum = 0;
         for (int i = 0; i < numFeatures; i++) {
-            if (featureParamMask[i][paramNum]) {
-                sum++;
-            }
+        if (featureParamMask[i][paramNum]) {
+        sum++;
         }
-        return sum;
+        }
+        return sum; */
+        return featureLearnerConfiguration.getFeatureMappingForLearner(paramNum).length;
+
     }
 
     public int getNumParameters() {
@@ -339,7 +440,7 @@ public class SimpleDataset implements Serializable {
             Instances tmp = new Instances(dummyInstances);
             tmp.add(is[i]);
             try {
-                tmp = Filter.useFilter(tmp, paramFilters[i]);
+                tmp = Filter.useFilter(tmp, learnerFilters[i]);
                 tmp.setClassIndex(tmp.numAttributes() - 1);
                 is[i] = tmp.firstInstance();
             } catch (Exception ex) {
@@ -352,7 +453,6 @@ public class SimpleDataset implements Serializable {
         return is;
     }
 
-
     /**
      *
      * @param index the Instance ID
@@ -362,8 +462,8 @@ public class SimpleDataset implements Serializable {
     /*public double[] getFeatures(int index) {
     if (idMap.containsKey(index)) {
     Instance i = new Instance(idMap.get(index));
-    featuresFilter.input(i);
-    Instance ii = featuresFilter.output();
+    allFeaturesOnly.input(i);
+    Instance ii = allFeaturesOnly.output();
     return ii.toDoubleArray();
     } else {
     System.out.println("No such key found" + index);
@@ -378,8 +478,8 @@ public class SimpleDataset implements Serializable {
             return null;
         }
 
-        featuresFilter.input(i);
-        Instance ii = featuresFilter.output();
+        allFeaturesOnly.input(i);
+        Instance ii = allFeaturesOnly.output();
         return ii.toDoubleArray();
     }
 
@@ -472,8 +572,8 @@ public class SimpleDataset implements Serializable {
     public double[] getParameters(int index) {
         if (index >= 0 && index < allInstances.numInstances()) {
             Instance i = allInstances.instance(index);
-            paramsFilter.input(i);
-            Instance ii = paramsFilter.output();
+            allParamsOnly.input(i);
+            Instance ii = allParamsOnly.output();
             return ii.toDoubleArray();
         } else {
             System.out.println("No such index found" + index);
@@ -526,6 +626,7 @@ public class SimpleDataset implements Serializable {
         }
         in.setDataset(allInstances);
         allInstances.add(in);
+        setHasInstances(true);
 
 
 
@@ -558,6 +659,10 @@ public class SimpleDataset implements Serializable {
     public boolean deleteInstance(int index) {
         if (index >= 0 && index < allInstances.numInstances()) {
             allInstances.delete(index);
+            if (allInstances.numInstances() == 0) {
+                setHasInstances(false);
+            }
+
             return true;
 
         } else {
@@ -570,6 +675,8 @@ public class SimpleDataset implements Serializable {
      */
     public void deleteAll() {
         allInstances.delete();
+        setHasInstances(false);
+
     }
 
     /**
@@ -582,7 +689,7 @@ public class SimpleDataset implements Serializable {
             throw new IllegalArgumentException("Invalid paramNum");
         }
         try {
-            Instances in = Filter.useFilter(allInstances, paramFilters[paramNum]);
+            Instances in = Filter.useFilter(allInstances, learnerFilters[paramNum]);
             in.setClassIndex(in.numAttributes() - 1);
             in.deleteWithMissingClass();
             return in;
@@ -593,32 +700,34 @@ public class SimpleDataset implements Serializable {
     }
 
     public void setIsFeatureActiveForParameter(boolean isActive, int featNum, int paramNum) {
-        if (featNum < 0 || featNum >= numFeatures || paramNum < 0 || paramNum >= numParams) {
-            throw new IllegalArgumentException("Invalid paramNum or featNum");
+        /*      if (featNum < 0 || featNum >= numFeatures || paramNum < 0 || paramNum >= numParams) {
+        throw new IllegalArgumentException("Invalid paramNum or featNum");
 
         }
 
         if (featureParamMask[featNum][paramNum] != isActive) {
-            featureParamMask[featNum][paramNum] = isActive;
-            try {
-                updateFilter(paramNum);
-            } catch (Exception ex) {
-                System.out.println("Error: Couldn't update filter");
-                Logger.getLogger(SimpleDataset.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        featureParamMask[featNum][paramNum] = isActive;
+        try {
+        updateFilterOld(paramNum);
+        } catch (Exception ex) {
+        System.out.println("Error: Couldn't update filter");
+        Logger.getLogger(SimpleDataset.class.getName()).log(Level.SEVERE, null, ex);
+        }
         }
 
-    //TODO
-    //If not active, do we really want to delete it? Probably not; keep it around just in case.
+        //TODO
+        //If not active, do we really want to delete it? Probably not; keep it around just in case.
+         * */
     }
 
     public boolean isFeatureActiveForParameter(int featNum, int paramNum) {
-        if (featNum < 0 || featNum >= numFeatures || paramNum < 0 || paramNum >= numParams) {
-            System.out.println("Error: invalid featNum / paramNum");
-            return false;
+        /* if (featNum < 0 || featNum >= numFeatures || paramNum < 0 || paramNum >= numParams) {
+        System.out.println("Error: invalid featNum / paramNum");
+        return false;
         }
 
-        return featureParamMask[featNum][paramNum];
+        return featureParamMask[featNum][paramNum]; */
+        return true;
     }
 
     public void setFeatureName(int featureNum, String name) {
@@ -634,6 +743,10 @@ public class SimpleDataset implements Serializable {
         return null;
     }
 
+    public String[] getFeatureNames() {
+        return featureNames;
+    }
+
     public void setParameterName(int paramNum, String name) {
         if (paramNum >= 0 && paramNum < numParams) {
             paramNames[paramNum] = name;
@@ -645,6 +758,10 @@ public class SimpleDataset implements Serializable {
             return paramNames[paramNum];
         }
         return null;
+    }
+
+    public String[] getParameterNames() {
+        return paramNames;
     }
 
     public boolean isParameterDiscrete(int paramNum) {
@@ -661,6 +778,10 @@ public class SimpleDataset implements Serializable {
         }
 
         return -1; //TODO: something better?
+    }
+
+    public int[] getMaxLegalDiscreteParamValues() {
+        return numParamValues;
     }
 
     public String datasetToString() {
@@ -734,9 +855,27 @@ public class SimpleDataset implements Serializable {
         s.startNewTrainingRound();
         s.addInstance(fvals2, pvals2, mask1, new Date());
 
-        s.setIsFeatureActiveForParameter(false, 1, 0);
+        FeatureLearnerConfiguration flc = new FeatureLearnerConfiguration(2, 5);
+        int[] t = {4, 3};
+        try {
+            flc.setFeatureMappingForLearner(0, t);
+        //   s.setIsFeatureActiveForParameter(false, 1, 0);
+        } catch (Exception ex) {
+            Logger.getLogger(SimpleDataset.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        s.setFeatureLearnerConfiguration(flc);
+        System.out.println("Printing out 0");
+        Instances i = s.getClassifiableInstances(0);
+        System.out.println(i);
 
-        s.setIsFeatureActiveForParameter(false, 2, 0);
+        System.out.println("*****\n1:");
+        i = s.getClassifiableInstances(1);
+        System.out.println(i);
+
+
+        //   s.setIsFeatureActiveForParameter(false, 1, 0);
+
+        //  s.setIsFeatureActiveForParameter(false, 2, 0);
 
         //System.out.println(s.isFeatureActiveForParameter(1, 0));
 
@@ -751,7 +890,7 @@ public class SimpleDataset implements Serializable {
         System.out.println(is[i].classIndex());
         }*/
 
-        System.out.println(s.datasetToString());
+        // System.out.println(s.datasetToString());
 
         /* System.out.println("Instance 0");
 
@@ -777,11 +916,26 @@ public class SimpleDataset implements Serializable {
          * */
 
         System.out.println("***");
-        double[] d = s.getParameters(1);
-        for (int i = 0; i < d.length; i++) {
-            System.out.println(d[i]);
+        double[] d = s.getParameters(0);
+        for (int f = 0; f < d.length; f++) {
+            System.out.println(d[f]);
+        }
+
+        System.out.println("***");
+        d = s.getFeatures(0);
+        for (int f = 0; f < d.length; f++) {
+            System.out.println(d[f]);
         }
 
 
+
+    }
+
+    public static SimpleDataset readFromFile(File f) throws Exception {
+        return (SimpleDataset) SerializedFileUtil.readFromFile(f);
+    }
+
+    void writeToFile(File file) throws Exception {
+        SerializedFileUtil.writeToFile(file, this);
     }
 }

@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package wekinator;
 
 import java.beans.PropertyChangeListener;
@@ -17,25 +16,20 @@ import wekinator.util.SerializedFileUtil;
  */
 public class FeatureConfiguration implements Serializable {
 
-    public static FeatureConfiguration readFromFile(File f) throws Exception {
-       return (FeatureConfiguration) SerializedFileUtil.readFromFile(f);
-    }
 
-    void writeToFile(File file) throws Exception {
-        SerializedFileUtil.writeToFile(file, this);
-    }
 
     public enum WindowType {
+
         HAMMING,
         HANN,
         RECTANGULAR
     };
 
     public enum ProcessingExractorType {
+
         DOWNSAMPLED_100,
         COLOR_6
     };
-
     protected boolean useFFT = false;
     protected boolean useCentroid = false;
     protected boolean useFlux = false;
@@ -58,8 +52,6 @@ public class FeatureConfiguration implements Serializable {
     protected ProcessingExractorType processingExtractorType = ProcessingExractorType.DOWNSAMPLED_100;
     public static final String PROP_HIDSETUP = "hidSetup";
     public HidSetup hidSetup = new HidSetup();
-
-
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     /**
@@ -80,23 +72,25 @@ public class FeatureConfiguration implements Serializable {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
-
     public int getNumAudioFeatures() {
-        return ((useFFT?((int)(fftSize/2)):0) + (useCentroid?1:0) + (useFlux?1:0) + (useRMS?1:0) + (useRolloff?1:0));
+        return ((useFFT ? ((int) (fftSize / 2)) : 0) + (useCentroid ? 1 : 0) + (useFlux ? 1 : 0) + (useRMS ? 1 : 0) + (useRolloff ? 1 : 0));
     }
 
     public int getNumFeatures() {
-        int s =0;
-        s+= getNumAudioFeatures();
+        int s = 0;
+        s += getNumAudioFeatures();
         if (useTrackpad) {
-               s+= 2;
+            s += 2;
         }
-        if (useMotionSensor)
-            s+= 3;
-        if (useOtherHid)
-            s+= hidSetup.getNumFeaturesUsed();
-        if (useProcessing)
-            s+= getNumProcessingFeatures();
+        if (useMotionSensor) {
+            s += 3;
+        }
+        if (useOtherHid) {
+            s += hidSetup.getNumFeaturesUsed();
+        }
+        if (useProcessing) {
+            s += getNumProcessingFeatures();
+        }
         if (useCustomChuckFeatures) {
             s += numCustomChuckFeatures;
         }
@@ -105,7 +99,7 @@ public class FeatureConfiguration implements Serializable {
         }
         return s;
     }
-    
+
     /**
      * Get the value of processingExtractorType
      *
@@ -147,7 +141,6 @@ public class FeatureConfiguration implements Serializable {
         this.audioExtractionRate = audioExtractionRate;
     }
 
-
     /**
      * Get the value of windowType
      *
@@ -181,8 +174,9 @@ public class FeatureConfiguration implements Serializable {
      * @param fftWindowSize new value of fftWindowSize
      */
     public void setFftWindowSize(int fftWindowSize) {
-        if (fftWindowSize > 0)
+        if (fftWindowSize > 0) {
             this.fftWindowSize = fftWindowSize;
+        }
     }
 
     /**
@@ -200,8 +194,9 @@ public class FeatureConfiguration implements Serializable {
      * @param numProcessingFeatures new value of numProcessingFeatures
      */
     protected void setNumProcessingFeatures(int numProcessingFeatures) {
-        if (numProcessingFeatures > 0)
+        if (numProcessingFeatures > 0) {
             this.numProcessingFeatures = numProcessingFeatures;
+        }
     }
 
     /**
@@ -255,8 +250,9 @@ public class FeatureConfiguration implements Serializable {
      * @param motionSensorExtractionRate new value of motionSensorExtractionRate
      */
     public void setMotionSensorExtractionRate(int motionSensorExtractionRate) {
-        if (motionSensorExtractionRate > 0)
+        if (motionSensorExtractionRate > 0) {
             this.motionSensorExtractionRate = motionSensorExtractionRate;
+        }
     }
 
     /**
@@ -403,7 +399,6 @@ public class FeatureConfiguration implements Serializable {
         this.useRolloff = useRolloff;
     }
 
-
     /**
      * Get the value of useRMS
      *
@@ -421,7 +416,6 @@ public class FeatureConfiguration implements Serializable {
     public void setUseRMS(boolean useRMS) {
         this.useRMS = useRMS;
     }
-
 
     /**
      * Get the value of useFlux
@@ -459,9 +453,6 @@ public class FeatureConfiguration implements Serializable {
         this.useCentroid = useCentroid;
     }
 
-
-
-    
     /**
      * Get the value of hidSetup
      *
@@ -482,12 +473,8 @@ public class FeatureConfiguration implements Serializable {
         propertyChangeSupport.firePropertyChange(PROP_HIDSETUP, oldHidSetup, hidSetup);
     }
 
-
-
-    public FeatureConfiguration () {
-
+    public FeatureConfiguration() {
     }
-
 
     /**
      * Get the value of useFFT
@@ -509,8 +496,9 @@ public class FeatureConfiguration implements Serializable {
 
     public void validate() throws Exception {
         String errorString = "";
-         if (getNumFeatures() ==0)
-             errorString += "Must have more than 0 features.\n";
+        if (getNumFeatures() == 0) {
+            errorString += "Must have more than 0 features.\n";
+        }
 
         if (useCustomChuckFeatures && numCustomChuckFeatures <= 0) {
             errorString += "If using a custom chuck feature extractor, must have more than 0 custom chuck features\n";
@@ -521,8 +509,9 @@ public class FeatureConfiguration implements Serializable {
         }
 
         if (getNumAudioFeatures() > 0) {
-            if (fftSize <= 0 || fftWindowSize <= 0 || audioExtractionRate <= 0)
-               errorString += "If using audio features, must have a valid (> 0) fft size, window size, and extraction rate\n";
+            if (fftSize <= 0 || fftWindowSize <= 0 || audioExtractionRate <= 0) {
+                errorString += "If using audio features, must have a valid (> 0) fft size, window size, and extraction rate\n";
+            }
 
             if (fftWindowSize > fftSize) {
                 errorString += "If using audio features, window size must be no greater than the FFT size\n";
@@ -540,5 +529,87 @@ public class FeatureConfiguration implements Serializable {
         if (errorString.length() > 0) {
             throw new Exception(errorString);
         }
+    }
+
+    public static FeatureConfiguration readFromFile(File f) throws Exception {
+        return (FeatureConfiguration) SerializedFileUtil.readFromFile(f);
+    }
+
+    void writeToFile(File file) throws Exception {
+        SerializedFileUtil.writeToFile(file, this);
+    }
+
+    public String[] getFeatureNames() {
+        String s[] = new String[getNumFeatures()];
+        int n = 0;
+        if (useFFT) {
+            for (int i = 0; i < (fftSize * .5); i++) {
+           //     System.out.println(i + " of " + fftSize + "; " + getNumFeatures());
+                s[n++] = "FFT_" + i;
+            }
+        }
+        if (useRMS) {
+            s[n] = "RMS";
+            n++;
+        }
+        if (useCentroid) {
+            s[n] = "Centroid";
+            n++;
+        }
+        if (useRolloff) {
+            s[n] = "Rolloff";
+            n++;
+        }
+        if (useFlux) {
+            s[n] = "Flux";
+            n++;
+        }
+
+
+        if (useTrackpad) {
+            s[n++] = "Trackpad1";
+            s[n++] = "Trackpad2";
+        }
+
+        if (useMotionSensor) {
+            s[n++] = "Motion1";
+            s[n++] = "Motion2";
+            s[n++] = "Motion3";
+        }
+
+        if (useOtherHid) {
+            for (int i = 0; i < getHidSetup().getNumFeaturesUsed(); i++) {
+                s[n++] = "Hid_" + i;
+            }
+        }
+
+        if (useProcessing) {
+            for (int i = 0; i < getNumProcessingFeatures(); i++) {
+                s[n] = "Processing_" + i;
+                n++;
+            }
+        }
+
+        if (useCustomChuckFeatures) {
+            for (int i = 0; i < numCustomChuckFeatures; i++) {
+                s[n] = "Chuck_" + i;
+                n++;
+            }
+        }
+
+        if (useCustomOscFeatures) {
+            for (int i = 0; i < numCustomOscFeatures; i++) {
+                s[n] = "OSC_" + i;
+                n++;
+            }
+
+        }
+
+        return s;
+    }
+
+    double[] process(double[] features) {
+        //TODO: Add ability to compute additional statistics here.
+        return features;
     }
 }

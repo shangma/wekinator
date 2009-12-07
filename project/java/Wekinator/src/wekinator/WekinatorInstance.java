@@ -40,50 +40,53 @@ public class WekinatorInstance {
     public static final String PROP_FEATUREMANAGER = "featureManager";
     public static final String PROP_CURRENTHIDSETUP = "currentHidSetup";
     private LinkedList<Handler> handlers;
-    protected FeatureConfiguration currentFeatureConfiguration = null;
-    public static final String PROP_CURRENTFEATURECONFIGURATION = "currentFeatureConfiguration";
-    protected LearningSystem currentLearningSystem = null;
-    public static final String PROP_CURRENTLEARNINGSYSTEM = "currentLearningSystem";
+    
+
+    //protected FeatureConfiguration currentFeatureConfiguration = null;
+    //public static final String PROP_CURRENTFEATURECONFIGURATION = "currentFeatureConfiguration";
+    //protected LearningSystem currentLearningSystem = null;
+    //public static final String PROP_CURRENTLEARNINGSYSTEM = "currentLearningSystem";
+
 
     /**
      * Get the value of currentLearningSystem
      *
      * @return the value of currentLearningSystem
      */
-    public LearningSystem getCurrentLearningSystem() {
+    /*public LearningSystem getCurrentLearningSystem() {
         return currentLearningSystem;
-    }
+    } */
 
     /**
      * Set the value of currentLearningSystem
      *
      * @param currentLearningSystem new value of currentLearningSystem
      */
-    public void setCurrentLearningSystem(LearningSystem currentLearningSystem) {
+  /*  public void setCurrentLearningSystem(LearningSystem currentLearningSystem) {
         LearningSystem oldCurrentLearningSystem = this.currentLearningSystem;
         this.currentLearningSystem = currentLearningSystem;
         propertyChangeSupport.firePropertyChange(PROP_CURRENTLEARNINGSYSTEM, oldCurrentLearningSystem, currentLearningSystem);
-    }
+    } */
 
     /**
      * Get the value of currentFeatureConfiguration
      *
      * @return the value of currentFeatureConfiguration
      */
-    public FeatureConfiguration getCurrentFeatureConfiguration() {
+  /*  public FeatureConfiguration getCurrentFeatureConfiguration() {
         return currentFeatureConfiguration;
-    }
+    } */
 
     /**
      * Set the value of currentFeatureConfiguration
      *
      * @param currentFeatureConfiguration new value of currentFeatureConfiguration
      */
-    public void setCurrentFeatureConfiguration(FeatureConfiguration currentFeatureConfiguration) {
+ /*   public void setCurrentFeatureConfiguration(FeatureConfiguration currentFeatureConfiguration) {
         FeatureConfiguration oldCurrentFeatureConfiguration = this.currentFeatureConfiguration;
         this.currentFeatureConfiguration = currentFeatureConfiguration;
         propertyChangeSupport.firePropertyChange(PROP_CURRENTFEATURECONFIGURATION, oldCurrentFeatureConfiguration, currentFeatureConfiguration);
-    }
+    } */
 
     /**
      * Get the value of featureManager
@@ -313,7 +316,7 @@ public class WekinatorInstance {
         }
     }
 
-   void removeLoggingHandler(WekinatorConsoleHandler h) {
+   void removeLoggingHandler(Handler h) {
         handlers.remove(h);
     }
 

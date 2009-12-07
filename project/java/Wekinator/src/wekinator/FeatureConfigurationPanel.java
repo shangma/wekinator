@@ -10,7 +10,6 @@
  */
 package wekinator;
 
-import java.awt.event.WindowAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -633,7 +632,8 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
 
 
         //First, prompt the user to overwrite
-        if (WekinatorInstance.getWekinatorInstance().getCurrentFeatureConfiguration() != null) {
+        if (WekinatorLearningManager.getInstance().getFeatureConfiguration() != null
+                && ChuckSystem.getChuckSystem().getState() == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID) {
             int lResponse = JOptionPane.showConfirmDialog(this, "Are you sure you want to change your feature configuration?\n" + "This could destroy your existing trained models...", "", JOptionPane.YES_NO_OPTION);
             if (lResponse != JOptionPane.YES_OPTION) {
                 return;
@@ -641,7 +641,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
         }
         //Then, set backup to the current configuration, and set the WekInst current to it as well
         backup = featureConfiguration;
-        WekinatorInstance.getWekinatorInstance().setCurrentFeatureConfiguration(featureConfiguration);
+        WekinatorLearningManager.getInstance().setFeatureConfiguration(featureConfiguration);
         labelFeatureStatus.setText("Feature configuration set; using " + featureConfiguration.getNumFeatures() + " features.");
         //Finally, set the current configuration to a deep copy of itself, so that we can edit a non-running copy
         // setFeatureConfiguration(featureConfiguration);
@@ -654,8 +654,10 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
         }
         try {
             //Now communicate features to chuck
+            ChuckSystem.getChuckSystem().waitForNewSettings();
             OscHandler.getOscHandler().sendFeatureConfiguration(featureConfiguration);
             OscHandler.getOscHandler().requestChuckSettingsArray();
+
         } catch (IOException ex) {
             Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
         }

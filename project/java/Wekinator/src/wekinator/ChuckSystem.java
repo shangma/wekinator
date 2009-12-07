@@ -16,19 +16,17 @@ import java.util.logging.Logger;
  */
 public class ChuckSystem {
     private static ChuckSystem ref = null; //singleton
-    public static final String PROP_USABLE = "usable";
 
 
-    protected boolean[] doesParamUseDistribution = null;
+    protected boolean[] doesParamUseDistribution = new boolean[0];
     protected int numParams = 0;
     public static final String PROP_NUMPARAMS = "numParams";
-    protected boolean[] isParamDiscrete = null;
-    protected int[] numSynthMaxParamVals = null;
+    protected boolean[] isParamDiscrete = new boolean[0];
+    protected int[] numSynthMaxParamVals = new int[0];
     protected boolean usingChuckFeatureExtractor = false;
     protected int numChuckCustomFeatures = 0;
-
-
-
+    protected String[] paramNames = new String[0];
+    protected String[] chuckFeatureNames;
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     public enum ChuckSystemState {
@@ -37,14 +35,47 @@ public class ChuckSystem {
         CONNECTED_AND_VALID //good to go
     };
 
+    public enum FeatureExtractionState {
+        NOT_EXTRACTING,
+        EXTRACTING
+    };
+
+    protected FeatureExtractionState featureExtractionState = FeatureExtractionState.NOT_EXTRACTING;
+    public static final String PROP_FEATUREEXTRACTIONSTATE = "featureExtractionState";
+
+    /**
+     * Get the value of featureExtractionState
+     *
+     * @return the value of featureExtractionState
+     */
+    public FeatureExtractionState getFeatureExtractionState() {
+        return featureExtractionState;
+    }
+
+    /**
+     * Set the value of featureExtractionState
+     *
+     * @param featureExtractionState new value of featureExtractionState
+     */
+    public void setFeatureExtractionState(FeatureExtractionState featureExtractionState) {
+        FeatureExtractionState oldFeatureExtractionState = this.featureExtractionState;
+        this.featureExtractionState = featureExtractionState;
+        propertyChangeSupport.firePropertyChange(PROP_FEATUREEXTRACTIONSTATE, oldFeatureExtractionState, featureExtractionState);
+    }
+
 
     protected ChuckSystemState state = ChuckSystemState.NOT_CONNECTED;
     public static final String PROP_STATE = "state";
-
+    
+    private Logger logger = Logger.getLogger(ChuckSystem.class.getName());
 
     //My private constructor
     private ChuckSystem() {
 
+    }
+
+    public void waitForNewSettings() {
+        setState(ChuckSystemState.NOT_CONNECTED);
     }
 
 
@@ -92,10 +123,11 @@ public class ChuckSystem {
      *
      * @param numParams new value of numParams
      */
-    public void setNumParams(int numParams) {
+    protected void setNumParams(int numParams) {
         int oldNumParams = this.numParams;
         this.numParams = numParams;
         propertyChangeSupport.firePropertyChange(PROP_NUMPARAMS, oldNumParams, numParams);
+        //TODO: change arrays
     }
 
     /**
@@ -290,46 +322,162 @@ public class ChuckSystem {
             int numCustom = (Integer)o[2];
             if (useCustom==1) {
                 setNumChuckCustomFeatures(numCustom);
+            } else {
+                setNumChuckCustomFeatures(0);
+                numCustom = 0;
             }
             int current = 3;
 
             boolean newDistArray[] = new boolean[p];
             boolean newDiscreteArray[] = new boolean[p];
             int newClassesArray[] = new int[p];
+            String newNamesArray[] = new String[p];
+
+
+            String newChuckFeatNamesArray[] = new String[numCustom];
 
             for (int i = 0; i < p; i++) {
-                int b = (Integer)o[current + i];
+                int b = (Integer)o[current];
                 newDistArray[i] = (b == 1);
                 current++;
             }
            for (int i = 0; i < p; i++) {
-                int b = (Integer)o[current + i];
+                int b = (Integer)o[current];
                 newDiscreteArray[i] = (b == 1);
                 current++;
             }
            for (int i = 0; i < p; i++) {
-                int b = (Integer)o[current + i];
+                int b = (Integer)o[current];
                 newClassesArray[i] = b;
                 current++;
+            }
+            for (int i = 0; i < p; i++) {
+                String s = (String)o[current];
+                newNamesArray[i] = s;
+                current++;
+            }
+            for (int i = 0; i < numCustom; i++) {
+                String s = (String)o[current];
+                newChuckFeatNamesArray[i] = s;
+                current++;  
             }
             setDoesParamUseDistribution(newDistArray);
             setIsParamDiscrete(newDiscreteArray);
             setNumSynthMaxParamVals(newClassesArray);
+            setParamNames(newNamesArray);
+            setChuckFeatureNames(newChuckFeatNamesArray);
             setState(ChuckSystemState.CONNECTED_AND_VALID);
+            logger.log(Level.INFO, "Set configuration: " + this.toString());
         } catch (Exception ex) {
-            
                 Logger.getLogger(ChuckSystem.class.getName()).log(Level.SEVERE, null, ex);
-
         }
 
 
     }
+
+        /**
+     * Get the value of paramNames
+     *
+     * @return the value of paramNames
+     */
+    public String[] getParamNames() {
+        return paramNames;
+    }
+
+    /**
+     * Set the value of paramNames
+     *
+     * @param paramNames new value of paramNames
+     */
+    public void setParamNames(String[] paramNames) {
+        this.paramNames = paramNames;
+    }
+
+    /**
+     * Get the value of paramNames at specified index
+     *
+     * @param index
+     * @return the value of paramNames at specified index
+     */
+    public String getParamNames(int index) {
+        return this.paramNames[index];
+    }
+
+    /**
+     * Set the value of paramNames at specified index.
+     *
+     * @param index
+     * @param newParamNames new value of paramNames at specified index
+     */
+    public void setParamNames(int index, String newParamNames) {
+        this.paramNames[index] = newParamNames;
+    }
+
 
 
         @Override
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
     }
+
+    public String toString() {
+            String s = numParams + " parameters\n";
+            for (int i = 0; i < numParams; i++) {
+                s += paramNames[i] + " (param" + i + "): ";
+                if (isParamDiscrete[i]) {
+                    s += "discrete, " + numSynthMaxParamVals[i] + " values, " + (doesParamUseDistribution[i] ? " " : "not ") + "using distribution\n";
+                } else {
+                    s += "real-valued\n";
+                }
+            }
+            if (usingChuckFeatureExtractor) {
+                s += "Using chuck feature extractor with " + numChuckCustomFeatures + " chuck features\n";
+            } else {
+                s += "Not using chuck feature extractor\n";
+            }
+
+            s += "State is " + state + "\n";
+            return s;
+        }
+
+        /**
+     * Get the value of chuckFeatureNames
+     *
+     * @return the value of chuckFeatureNames
+     */
+    public String[] getChuckFeatureNames() {
+        return chuckFeatureNames;
+    }
+
+    /**
+     * Set the value of chuckFeatureNames
+     *
+     * @param chuckFeatureNames new value of chuckFeatureNames
+     */
+    public void setChuckFeatureNames(String[] chuckFeatureNames) {
+        this.chuckFeatureNames = chuckFeatureNames;
+    }
+
+    /**
+     * Get the value of chuckFeatureNames at specified index
+     *
+     * @param index
+     * @return the value of chuckFeatureNames at specified index
+     */
+    public String getChuckFeatureNames(int index) {
+        return this.chuckFeatureNames[index];
+    }
+
+    /**
+     * Set the value of chuckFeatureNames at specified index.
+     *
+     * @param index
+     * @param newChuckFeatureNames new value of chuckFeatureNames at specified index
+     */
+    public void setChuckFeatureNames(int index, String newChuckFeatureNames) {
+        this.chuckFeatureNames[index] = newChuckFeatureNames;
+    }
+
 
     /**
      * Add PropertyChangeListener.

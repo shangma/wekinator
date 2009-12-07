@@ -7,7 +7,15 @@ package wekinator;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import weka.classifiers.lazy.IBk;
+import weka.core.Instance;
+import weka.core.Instances;
+import wekinator.util.DeepCopy;
+import wekinator.util.SerializedFileUtil;
 
 /**
  *
@@ -23,9 +31,7 @@ public class IbkLearningAlgorithm implements ClassifierLearningAlgorithm {
 
     public IbkLearningAlgorithm() {
         knn = new IBk();
-        //TODO: init settingsPanel?
     }
-
 
     /**
      * Get the value of trainingState
@@ -41,7 +47,7 @@ public class IbkLearningAlgorithm implements ClassifierLearningAlgorithm {
      *
      * @param trainingState new value of trainingState
      */
-    private void setTrainingState(TrainingState trainingState) {
+    protected void setTrainingState(TrainingState trainingState) {
         TrainingState oldTrainingState = this.trainingState;
         this.trainingState = trainingState;
         propertyChangeSupport.firePropertyChange(PROP_TRAININGSTATE, oldTrainingState, trainingState);
@@ -81,8 +87,15 @@ public class IbkLearningAlgorithm implements ClassifierLearningAlgorithm {
     }
 
     public IbkLearningAlgorithm copy() {
-        //TODO; see Weka's approach using serialization!
-        return null;
+        try {
+            return (IbkLearningAlgorithm) DeepCopy.copy(this);
+        } catch (IOException ex) {
+            Logger.getLogger(IbkLearningAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(IbkLearningAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
     }
 
     public void showSettingsFrame() {
@@ -98,10 +111,66 @@ public class IbkLearningAlgorithm implements ClassifierLearningAlgorithm {
     }
 
     public void setFastAccurate() {
+        throw new UnsupportedOperationException("Not supported for IbK");
+    }
+
+    public LearningAlgorithm readFromFile(File f) throws Exception {
+       return (IbkLearningAlgorithm) SerializedFileUtil.readFromFile(f);
+    }
+
+    public void saveToFile(File f) throws Exception {
+        SerializedFileUtil.writeToFile(f, this);
+    }
+
+    public boolean implementsFastAccurate() {
+        return false;
+    }
+
+    public String getName() {
+        return "K-Nearest Neighbor";
+    }
+
+    public String[] getFeatureNames() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    
+    public void setFeatureNames(String[] s) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
+    public String getFeatureName(int i) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
+    public void setFeatureName(String s, int i) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public int getNumFeatures() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void setNumFeatures() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public double classify(Instance instance) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void train(Instances instances) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void forget() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public double getLastTrainingAccuracy() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public double computeCVAccuracy(int numFolds) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

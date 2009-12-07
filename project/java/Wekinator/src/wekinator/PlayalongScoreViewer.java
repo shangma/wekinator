@@ -24,12 +24,12 @@ import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 
-
 /**
  *
  * @author rebecca
  */
 public class PlayalongScoreViewer extends javax.swing.JFrame {
+
     PlayalongScore score = null;
     MyRenderer renderer = null;
 
@@ -41,15 +41,13 @@ public class PlayalongScoreViewer extends javax.swing.JFrame {
             table.setDefaultRenderer(Class.forName("java.lang.Double"), renderer);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(PlayalongScoreViewer.class.getName()).log(Level.SEVERE, null, ex);
-        } 
+        }
         this.score = score;
         score.addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {
                 scorePropertyChange(evt);
             }
-
-
         });
         this.gui = gui;
     }
@@ -57,12 +55,12 @@ public class PlayalongScoreViewer extends javax.swing.JFrame {
     private void scorePropertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(PlayalongScore.PROP_ISPLAYING)) {
             System.out.println("received playing change event: " + score.getIsPlaying());
-           //table.setEnabled(!score.getIsPlaying());
+            //table.setEnabled(!score.getIsPlaying());
           /*  this.setEnabled(!score.getIsPlaying());
             table.setEnabled(!score.getIsPlaying());
             buttonAdd.setEnabled(!score.getIsPlaying()); */
-          //  model.colorSpecial(-1);
-            if (! score.isPlaying()) {
+            //  model.colorSpecial(-1);
+            if (!score.isPlaying()) {
                 renderer.setSpecialRow(-1);
                 table.repaint();
             }
@@ -216,17 +214,17 @@ public class PlayalongScoreViewer extends javax.swing.JFrame {
         }
         int row = table.getSelectedRow();
         model.moveUp(row);
-        table.getSelectionModel().setSelectionInterval(row-1, row-1);
+        table.getSelectionModel().setSelectionInterval(row - 1, row - 1);
 
 }//GEN-LAST:event_buttonMoveUpActionPerformed
 
     private void buttonMoveDownActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonMoveDownActionPerformed
-        if (table.getSelectedRow() == -1 || table.getSelectedRow() == model.getRowCount()-1) {
+        if (table.getSelectedRow() == -1 || table.getSelectedRow() == model.getRowCount() - 1) {
             return;
         }
         int row = table.getSelectedRow();
         model.moveDown(row);
-        table.getSelectionModel().setSelectionInterval(row+1, row+1);
+        table.getSelectionModel().setSelectionInterval(row + 1, row + 1);
     }//GEN-LAST:event_buttonMoveDownActionPerformed
 
     /**
@@ -242,11 +240,11 @@ public class PlayalongScoreViewer extends javax.swing.JFrame {
                 ps.addParams(d, 2);
                 ps.addParams(d2, 3);
                 new PlayalongScoreViewer(ps, new MainGUI()).setVisible(true);
-             /*   try {
-                  // Thread.sleep(1000);
-                    //       new DataViewer().setVisible(true);
+                /*   try {
+                // Thread.sleep(1000);
+                //       new DataViewer().setVisible(true);
                 } catch (InterruptedException ex) {
-                    Logger.getLogger(PlayalongScoreViewer.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(PlayalongScoreViewer.class.getName()).log(Level.SEVERE, null, ex);
                 } */
 
                 ps.play();
@@ -292,17 +290,14 @@ public class PlayalongScoreViewer extends javax.swing.JFrame {
 }
 
 class MyRenderer extends DefaultTableCellRenderer {
+
     int specialRow = -1;
 
     @Override
-    public Component getTableCellRendererComponent
-       (JTable table, Object value, boolean isSelected,
-       boolean hasFocus, int row, int column)
-    {
-        Component cell = super.getTableCellRendererComponent
-           (table, value, isSelected, hasFocus, row, column);
-        if( value instanceof Double )
-        {
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+            boolean hasFocus, int row, int column) {
+        Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        if (value instanceof Double) {
             if (row != specialRow) {
                 if (isSelected) {
                     cell.setBackground(Color.BLUE);
@@ -317,17 +312,17 @@ class MyRenderer extends DefaultTableCellRenderer {
 
             }
 
-/*           if (row == specialRow) {
+        /*           if (row == specialRow) {
 
-                cell.setBackground(Color.red);
+        cell.setBackground(Color.red);
 
-                
-           } else {
-                cell.setBackground(Color.white);
-                if (isSelected) {
-                    cell.setForeground(Color.black);
-                }
-           }
+
+        } else {
+        cell.setBackground(Color.white);
+        if (isSelected) {
+        cell.setForeground(Color.black);
+        }
+        }
 
         } */
         }
@@ -337,7 +332,6 @@ class MyRenderer extends DefaultTableCellRenderer {
     public void setSpecialRow(int r) {
         specialRow = r;
     }
-
 }
 
 class ScoreTableModel extends AbstractTableModel {
@@ -352,7 +346,6 @@ class ScoreTableModel extends AbstractTableModel {
     public ScoreTableModel(PlayalongScore score) {
         this.score = score;
         score.addChangeListener(new ChangeListener() {
-
             public void stateChanged(ChangeEvent e) {
                 fireTableDataChanged();
             }
@@ -474,7 +467,6 @@ class ScoreTableModel extends AbstractTableModel {
     }
 
     void colorSpecial(int playingRow) {
-        
         //throw new UnsupportedOperationException("Not yet implemented");
     }
 
@@ -498,38 +490,38 @@ class ScoreTableModel extends AbstractTableModel {
         if (row >= score.getScoreLength()) {
             return;
         }
-        swap(row, row+1);
+        swap(row, row + 1);
     }
 
     void moveUp(int row) {
         if (row <= 0) {
             return;
         }
-        swap(row, row-1);
+        swap(row, row - 1);
     }
 
     void swap(int row1, int row2) {
         double tmp1[] = score.getParamsAt(row1);
         double s = score.getSecondsAt(row1);
-      //  double d[] = new double[numParams];
-      //  for (int i = 0; i < numParams; i++) {
-      //      d[i] = tmp1[i];
-      //  }
+        //  double d[] = new double[numParams];
+        //  for (int i = 0; i < numParams; i++) {
+        //      d[i] = tmp1[i];
+        //  }
 
         double tmp2[] = score.getParamsAt(row2);
         double s2 = score.getSecondsAt(row2);
-   //     double d2[] = new double[numParams];
-   //     for (int i = 0; i < numParams; i++) {
-   //         d2[i] = tmp2[i];
-   //     }
+        //     double d2[] = new double[numParams];
+        //     for (int i = 0; i < numParams; i++) {
+        //         d2[i] = tmp2[i];
+        //     }
 
         score.setParamsAt(row1, tmp2);
         score.setSecondsAt(row1, s2);
-        fireTableRowsUpdated(row1,row1);
+        fireTableRowsUpdated(row1, row1);
 
         score.setParamsAt(row2, tmp1);
         score.setSecondsAt(row2, s);
-       
+
         fireTableRowsUpdated(row2, row2);
 
     }

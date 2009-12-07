@@ -1495,6 +1495,24 @@ public class WekaOperator implements Subject {
         }
     }
 
+    public void startInternalPlayAlong() {
+        try {
+            System.out.println("stopping playback");
+            if (handler != null) {
+                handler.startSound();
+                handler.startGettingParams();
+                hasReceivedUpdatedClasses = false;
+                startRecordFeatures();
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(WekaOperator.class.getName()).log(Level.SEVERE, null, ex);
+            myErrorString = "Error in stopping playback:" + ex.getMessage();
+            notifyErrorObservers();
+            myState = OperatorState.FAIL;
+            notifyOperatorObservers();
+        }
+    }
+
     public void startPlayAlong() {
         try {
             System.out.println("stopping playback");

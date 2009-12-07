@@ -6,15 +6,21 @@
 package wekinator;
 
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.Serializable;
-import weka.classifiers.Classifier;
+import weka.core.Instance;
+import weka.core.Instances;
 
 /**
+ * Same trained model should be able to be used
+ * when more features are added to the extracted set (ignoring new features).
+ *
+ * Store feature identities here??
  *
  * @author rebecca
  */
 public interface LearningAlgorithm extends Serializable {
-    String PROP_TRAININGSTATE = "trainingState";
+    public String PROP_TRAININGSTATE = "trainingState";
 
     public enum TrainingState {
         NOT_TRAINED, TRAINING, TRAINED
@@ -24,9 +30,13 @@ public interface LearningAlgorithm extends Serializable {
      *
      * @param listener
      */
-    void addPropertyChangeListener(PropertyChangeListener listener);
+    public void addPropertyChangeListener(PropertyChangeListener listener);
 
-    LearningAlgorithm copy();
+    public LearningAlgorithm copy();
+
+    public LearningAlgorithm readFromFile(File f) throws Exception;
+
+    public void saveToFile(File f) throws Exception;
 
    // Classifier getClassifier(); // Don't want to do this!
 
@@ -35,23 +45,42 @@ public interface LearningAlgorithm extends Serializable {
      *
      * @return the value of trainingState
      */
-    TrainingState getTrainingState();
-
-    LearningAlgorithm loadFromSerializedWekaClassifier(String filename);
+    public TrainingState getTrainingState();
 
     /**
      * Remove PropertyChangeListener.
      *
      * @param listener
      */
-    void removePropertyChangeListener(PropertyChangeListener listener);
+    public void removePropertyChangeListener(PropertyChangeListener listener);
 
-    void saveAsSerializedWekaClassifier(String filename);
+    public void showSettingsFrame();
 
-    void showSettingsFrame();
+    public void setFastAccurate();
 
-    void setFastAccurate();
+    public boolean implementsFastAccurate();
 
-    
+    public String getName();
 
+    public String[] getFeatureNames();
+
+    public void setFeatureNames(String[] s);
+
+    public String getFeatureName(int i);
+
+    public void setFeatureName(String s, int i);
+
+    public int getNumFeatures();
+
+    public void setNumFeatures(); //TODO: use in constructor?
+
+    public double classify(Instance instance);
+
+    public void train(Instances instances);
+
+    public void forget();
+
+    public double getLastTrainingAccuracy();
+
+    public double computeCVAccuracy(int numFolds);
 }

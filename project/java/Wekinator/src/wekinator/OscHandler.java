@@ -25,12 +25,9 @@ public class OscHandler {
     OSCPortOut sender;
     public OSCPortIn receiver;
     WekaOperator w;
-    //  HidSetup h = new HidSetup();
-    //  String startHandshakeString = "/hello";
     String returnHandshakeString = "/hiback";
     String featureInfoString = "/featureInfo";
     String featuresString = "/features"; //used for chuck features (not osc feats)
-    String extractString = "/extract";
     String stopString = "/stop";
     String classLabelString = "/classLabel";
     String classDistString = "/classDist";
@@ -43,11 +40,7 @@ public class OscHandler {
     String hidSetupStoppedString = "/hidSetupStopped";
     String hidInitString = "/hidInit";
     String sendHidInitValuesString = "/sendHidInitValues";
-    // String hidInitAxesString = "/hidInitAxes";
-    // String hidInitHatsString = "/hidInitHats";
     String hidInitAllString = "/hidInitAll";
-    // String hidInitButtonsString = "/hidInitButtons";
-    // String hidInitMaskString = "/hidInitMask";
     String hidSettingsRequestString = "/hidSettingsRequest";
     String hidSettingsAllString = "/hidSettingsAll";
     String hidSettingsNumsString = "/hidSettingsNums";
@@ -60,7 +53,6 @@ public class OscHandler {
     String setUseMotionFeature = "/useMotionFeature";
     String setUseOtherHidFeature = "/useOtherHidFeature";
     String setUseProcessingFeature = "/useProcessingFeature";
-    // String setUseAudioFeature = "/useAudioFeature";
     String requestNumParamsString = "/requestNumParams";
     String numParamsString = "/numParams"; //TODO TODO TODO Use this...
     String setUseAudioFeatureString = "/useAudioFeature";
@@ -594,6 +586,7 @@ public class OscHandler {
     }
 
     void requestChuckSettingsArray() {
+        logger.log(Level.INFO, "Requesting chuck settings array");
         Object[] o = new Object[2];
         o[0] = requestChuckSettingsArrayMsgString;
         o[1] = new Integer(0);

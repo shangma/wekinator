@@ -35,6 +35,8 @@ public class WekinatorSettings implements Serializable {
     protected String logFile = "wekinator.log";
     protected Level logLevel = Level.WARNING;
     public static final String PROP_LOGLEVEL = "logLevel";
+    private String lastLearnerFileLocation = null;
+    private String defaultLearnerFileLocation = null;
 
     public WekinatorSettings() {
         String currentDir;
@@ -54,7 +56,7 @@ public class WekinatorSettings implements Serializable {
         System.out.println("Set default feature location to " + defaultFeatureFileLocation);
         defaultClassifierFileLocation = projectDir + File.separator + "mySavedSettings";
         defaultHidFileLocation = projectDir + File.separator + "mySavedSettings";
-        
+        defaultLearnerFileLocation = projectDir + File.separator + "mySavedSettings";
     }
 
     public String getDefaultClassifierFileLocation() {
@@ -218,6 +220,18 @@ public class WekinatorSettings implements Serializable {
 
     public String getDefaultHidFileLocation() {
         return defaultHidFileLocation;
+    }
+
+    public void setLastLearnerFileLocation(String lastLearnerFileLocation) {
+        this.lastLearnerFileLocation = lastLearnerFileLocation;
+    }
+
+    public String getLastLearnerFileLocation() {
+        return lastLearnerFileLocation;
+    }
+
+        public String getDefaultLearnerFileLocation() {
+        return defaultLearnerFileLocation;
     }
 
 }
