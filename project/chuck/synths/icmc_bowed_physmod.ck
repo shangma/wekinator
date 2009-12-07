@@ -152,4 +152,37 @@ behavior, beyond master envelope control.*/
 	fun void setOscHostAndPort(string h, int p) {
 		//no need to do anything, unless you're using an OSC synth like Processing or Max.
 	}
+	fun int[] useDistributionArray() {
+		new int[numParams] @=> int a[];
+		for (0 => int i; i < numParams; i++) {
+			useDistribution() => a[i];
+		}
+		return a;
+	}
+
+	fun int[] isDiscreteArray() {
+		new int[numParams] @=> int a[];
+		for (0 => int i; i < numParams; i++) {
+			isDiscrete() => a[i];
+		}
+		return a;
+	}
+
+	fun int[] getNumClassesArray() {
+		new int[numParams] @=> int a[];
+		for (0 => int i; i < numParams; i++) {
+			getNumClasses() => a[i];
+		}
+		return a;
+	}
+	
+	fun string[] getParamNamesArray() {
+		new string[3] @=> string s[];
+		"BowPosition_and_VibratoGain" => s[0];
+		"VibratoFreq" => s[1];
+		"BowPressure" => s[2];
+		return s;
+	}
+
 }
+

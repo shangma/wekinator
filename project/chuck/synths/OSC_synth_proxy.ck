@@ -152,10 +152,11 @@ public class SynthClass {
 		}
 	}
 	
+/*** Copy & Paste below at end of your code to add new functions as of 12/6/09 ***/
 	fun int[] useDistributionArray() {
 		new int[numParams] @=> int a[];
 		for (0 => int i; i < numParams; i++) {
-			amIUsingDistribution => a[i];
+			useDistribution() => a[i];
 		}
 		return a;
 	}
@@ -163,7 +164,7 @@ public class SynthClass {
 	fun int[] isDiscreteArray() {
 		new int[numParams] @=> int a[];
 		for (0 => int i; i < numParams; i++) {
-			amIDiscrete => a[i];
+			isDiscrete() => a[i];
 		}
 		return a;
 	}
@@ -171,11 +172,17 @@ public class SynthClass {
 	fun int[] getNumClassesArray() {
 		new int[numParams] @=> int a[];
 		for (0 => int i; i < numParams; i++) {
-			myNumClasses => a[i];
+			getNumClasses() => a[i];
 		}
 		return a;
 	}
+	
+	fun string[] getParamNamesArray() {
+		new string[numParams] @=> string s[];
+		for (0 => int i; i < numParams; i++) {
+			"Param_" + i => s[i];
+		}
+		return s;
+	}
 
 }
-
-

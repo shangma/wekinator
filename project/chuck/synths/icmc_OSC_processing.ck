@@ -149,4 +149,36 @@ public class SynthClass {
 			<<< s>>>;
 		}
 	}
+	fun int[] useDistributionArray() {
+		new int[numParams] @=> int a[];
+		for (0 => int i; i < numParams; i++) {
+			useDistribution() => a[i];
+		}
+		return a;
+	}
+
+	fun int[] isDiscreteArray() {
+		new int[numParams] @=> int a[];
+		for (0 => int i; i < numParams; i++) {
+			isDiscrete() => a[i];
+		}
+		return a;
+	}
+
+	fun int[] getNumClassesArray() {
+		new int[numParams] @=> int a[];
+		for (0 => int i; i < numParams; i++) {
+			getNumClasses() => a[i];
+		}
+		return a;
+	}
+	
+	fun string[] getParamNamesArray() {
+		new string[numParams] @=> string s[];
+		for (0 => int i; i < numParams; i++) {
+			"Param_" + i => s[i];
+		}
+		return s;
+	}
+
 }
