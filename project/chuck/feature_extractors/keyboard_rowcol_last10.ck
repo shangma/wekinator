@@ -1,5 +1,4 @@
-/* Feature extractor for keyboard input
-   Feature 1 is row, feature 2 is col
+/* last 10 characters typed
 
  Wekinator version 0.2
  Copyright 2009 Rebecca Fiebrink
@@ -7,12 +6,14 @@
 */
 
 public class CustomFeatureExtractor {
+	40 => int returnKey;
 	0 => int isExtracting;
 	1 => int isOK;
-	2 => int numFeats;
+	20 => int numFeats;
 	0 => int numKeysDown;
 	1 => int isFirst;
 	new float[numFeats] @=> float features[]; //store computed features in this array
+	new float[numFeats] @=> float currentBuffer[];
 	50::ms => dur defaultRate => dur rate; //optionally change
 
 	fun void setup() {
@@ -21,6 +22,13 @@ public class CustomFeatureExtractor {
 		new float[numFeats] @=> float features[];
 		setFeatures(0);
 		defaultRate => rate;
+
+		spork ~getInput();
+			0 => isFirst;
+		   	while (true) {
+				rate => now;
+			}
+
 	}
 
 	fun void setup(int n) {
@@ -41,13 +49,17 @@ public class CustomFeatureExtractor {
 
 	fun void extract() {
 		1 => isExtracting;
-		if (isFirst) {
+		//Clear buffer
+		//	for (0 => int i; i < features.size(); i++) {
+		//		0 => features[i];
+		//	}
+	/*	if (isFirst) {
 			spork ~getInput();
 			0 => isFirst;
 		   	while (true) {
 				rate => now;
 			}
-		}	
+		}	*/
 	}			
 
 	fun void stop() {
@@ -209,7 +221,7 @@ public class CustomFeatureExtractor {
 	12=> cols[46];
 	13=> cols[42];
 
-	fun void setFeatures(int which) {
+	fun void setFeaturesOld(int which) {
 		if (which == 0 || which >= rows.size() || which >= cols.size()) {
 			0 => features[0] => features[1];
 		} else {
@@ -219,10 +231,47 @@ public class CustomFeatureExtractor {
 
 	}
 
+	fun void setFeatures(int which) {
+		0 => int thisrow;
+		0 => int thiscol;
+	//	<<< "Which: ", which >>>;
+		if (which == returnKey) {
+			<<< "Current buffer pushed to features">>>;
+			for (0 => int i; i < features.size(); i++) {
+				currentBuffer[i] => features[i];
+				0 => currentBuffer[i];
+			}
+		}
+		else if (which == 0 || which >= rows.size() || which >= cols.size()) {
+			//0 => features[0] => features[1];
+		} else {
+			rows[which] => thisrow;
+			cols[which] => thiscol;
+
+			//Shift feats back
+			for (features.size() => int i; i >= 4; i--) {
+				currentBuffer[i-3] => currentBuffer[i-1];
+				currentBuffer[i-4] => currentBuffer[i-2];
+			}
+			thisrow => currentBuffer[0];
+			thiscol => currentBuffer[1];
+
+	/*			for (0 => int i; i < features.size()-2; i+2 => i) {
+				<<<"f", i, "- ", i+1, ": ", features[i] + "," + features[i+1] >>>;
+			} */
+		}
+		
+		//test
+		//
+
+	}
+
 	fun string[] getFeatureNamesArray() {
-		string s[2];
-		"keyboardRow" => s[0];
-		"keyboardCol" => s[1];
+		string s[numFeats];
+		for (0 => int i; i < numFeats-1; i+2 => i) {
+			"Char_" + i*.5 + "_row" => s[i];
+			"Char+" + i*.5 + "_col" => s[i+1];
+		}
 		return s;
 	}
 

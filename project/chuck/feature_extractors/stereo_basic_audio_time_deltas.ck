@@ -19,7 +19,7 @@ public class CustomFeatureExtractor {
 	numNowFeats * numWindows => int numFeats; //4 features x 2 channels, + deltas
 	new float[numFeats] @=> float features[]; //store computed features in this array
 	new float[numNowFeats] @=> float nowFeatures[];
-	new float[nomNowFeats] @=> float lastFeatures[];
+	new float[numNowFeats] @=> float lastFeatures[];
 	
 	//TODO: Optionally change the rate at which features are extracted
 	//This may not correspond to rate at which they are polled.
@@ -130,4 +130,21 @@ public class CustomFeatureExtractor {
 	fun void stop() {
 		0 => isExtracting;
 	}
-}
+	fun string[] getFeatureNamesArray() {
+		string s[numFeats];
+		for (0 => int i; i < numFeats-1; i+2 => i) {
+			"Char_" + i*.5 + "_row" => s[i];
+			"Char+" + i*.5 + "_col" => s[i+1];
+		}
+		return s;
+	}
+
+	fun string[] getFeatureNamesArray() {
+		string s[numFeats];
+		for (0 => int i; i < numFeats; i++) {
+			"AudioDelta_" + i => s[i];
+		}
+		return s;
+	}
+
+} //end class

@@ -121,4 +121,13 @@ public class CustomFeatureExtractor {
 	fun void stop() {
 		0 => isExtracting;
 	}
-}
+
+	fun string[] getFeatureNamesArray() {
+		string s[numFeats];
+		for (0 => int i; i < numFeats; i++) {
+			"ChuckAudioFeat_" + i => s[i];
+		}
+		return s;
+	}
+
+} //end class

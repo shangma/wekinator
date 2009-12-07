@@ -78,4 +78,11 @@ public class CustomFeatureExtractor {
 	fun void stop() {
 		0 => isExtracting;
 	}
+
+/** added 12/6/09 **/
+	fun string[] getFeatureNamesArray() {
+		string s[1];
+		"Centroid" => s[0];
+		return s;
+	}
 }

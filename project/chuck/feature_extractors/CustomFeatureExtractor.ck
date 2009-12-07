@@ -61,4 +61,14 @@ public class CustomFeatureExtractor {
 	fun void stop() {
 		0 => isExtracting;
 	}
-}
+
+	//TODO: return an array of your feature names
+	fun string[] getFeatureNamesArray() {
+		string s[numFeats];
+		for (0 => int i; i < numFeats; i++) {
+			"Feature_" + i => s[i];
+		}
+		return s;
+	}
+
+} //end class
