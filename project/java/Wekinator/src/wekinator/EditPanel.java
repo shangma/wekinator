@@ -11,6 +11,8 @@
 
 package wekinator;
 
+import wekinator.LearningSystem;
+
 /**
  *
  * @author rebecca
@@ -54,6 +56,7 @@ public class EditPanel extends javax.swing.JPanel {
         jLabel9 = new javax.swing.JLabel();
         jButton18 = new javax.swing.JButton();
         jButton19 = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
         jPanel13 = new javax.swing.JPanel();
         jRadioButton7 = new javax.swing.JRadioButton();
         folds1 = new javax.swing.JComboBox();
@@ -109,13 +112,10 @@ public class EditPanel extends javax.swing.JPanel {
                 .add(jPanel11Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jButton20)
                     .add(jPanel11Layout.createSequentialGroup()
+                        .addContainerGap()
                         .add(jPanel11Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jPanel11Layout.createSequentialGroup()
-                                .addContainerGap()
-                                .add(jRadioButton3))
-                            .add(jPanel11Layout.createSequentialGroup()
-                                .addContainerGap()
-                                .add(jRadioButton4)))
+                            .add(jRadioButton3)
+                            .add(jRadioButton4))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(folds, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .add(93, 93, 93))
@@ -175,6 +175,8 @@ public class EditPanel extends javax.swing.JPanel {
             }
         });
 
+        jButton1.setText("Reset");
+
         org.jdesktop.layout.GroupLayout jPanel9Layout = new org.jdesktop.layout.GroupLayout(jPanel9);
         jPanel9.setLayout(jPanel9Layout);
         jPanel9Layout.setHorizontalGroup(
@@ -182,7 +184,10 @@ public class EditPanel extends javax.swing.JPanel {
             .add(jPanel9Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jButton18)
+                    .add(jPanel9Layout.createSequentialGroup()
+                        .add(jButton18)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(jButton1))
                     .add(jLabel7)
                     .add(jPanel9Layout.createSequentialGroup()
                         .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -190,7 +195,7 @@ public class EditPanel extends javax.swing.JPanel {
                         .add(jLabel9))
                     .add(jButton19)
                     .add(jButton15))
-                .addContainerGap(256, Short.MAX_VALUE))
+                .addContainerGap(183, Short.MAX_VALUE))
         );
         jPanel9Layout.setVerticalGroup(
             jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -205,7 +210,9 @@ public class EditPanel extends javax.swing.JPanel {
                     .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel9))
                 .add(34, 34, 34)
-                .add(jButton18))
+                .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jButton18)
+                    .add(jButton1)))
         );
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
@@ -264,13 +271,10 @@ public class EditPanel extends javax.swing.JPanel {
                 .add(jPanel13Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jButton22)
                     .add(jPanel13Layout.createSequentialGroup()
+                        .addContainerGap()
                         .add(jPanel13Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jPanel13Layout.createSequentialGroup()
-                                .addContainerGap()
-                                .add(jRadioButton7))
-                            .add(jPanel13Layout.createSequentialGroup()
-                                .addContainerGap()
-                                .add(jRadioButton8)))
+                            .add(jRadioButton7)
+                            .add(jRadioButton8))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(folds1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .add(158, 158, 158))
@@ -324,13 +328,11 @@ public class EditPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 513, Short.MAX_VALUE)
             .add(jComboBox2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
             .add(panelDrilldown, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 513, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 517, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(jComboBox2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -371,6 +373,7 @@ public class EditPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox folds;
     private javax.swing.JComboBox folds1;
+    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton15;
     private javax.swing.JButton jButton18;
     private javax.swing.JButton jButton19;

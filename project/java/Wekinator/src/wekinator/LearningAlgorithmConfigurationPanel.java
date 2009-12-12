@@ -10,6 +10,13 @@
  */
 package wekinator;
 
+import wekinator.LearningAlgorithms.NNLearningAlgorithm;
+import wekinator.LearningAlgorithms.ClassifierLearningAlgorithm;
+import wekinator.LearningAlgorithms.AdaboostM1LearningAlgorithm;
+import wekinator.LearningAlgorithms.J48LearningAlgorithm;
+import wekinator.LearningAlgorithms.IbkLearningAlgorithm;
+import wekinator.LearningAlgorithms.LearningAlgorithm;
+import wekinator.LearningAlgorithms.SMOLearningAlgorithm;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;

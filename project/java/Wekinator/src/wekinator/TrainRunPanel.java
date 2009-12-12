@@ -14,10 +14,8 @@ import java.awt.CardLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JFrame;
-import wekinator.LearningSystem.DatasetState;
-import wekinator.LearningSystem.LearningAlgorithmsInitializationState;
-import wekinator.LearningSystem.LearningAlgorithmsTrainingState;
-
+import wekinator.LearningAlgorithms.*;
+import wekinator.LearningSystem.*;
 /**
  *
  * @author rebecca

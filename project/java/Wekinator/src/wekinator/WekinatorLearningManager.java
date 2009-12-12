@@ -5,6 +5,9 @@
 
 package wekinator;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import wekinator.LearningSystem;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -203,8 +206,12 @@ public class WekinatorLearningManager {
         if (mode == Mode.DATASET_CREATION) {
             learningSystem.addToTraining(features, params);
         } else if (mode == Mode.RUNNING) {
-            //classify these features
-            setOutputs(learningSystem.classify(featureConfiguration.process(features)));
+            try {
+                //classify these features
+                setOutputs(learningSystem.classify(featureConfiguration.process(features)));
+            } catch (Exception ex) {
+                Logger.getLogger(WekinatorLearningManager.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 

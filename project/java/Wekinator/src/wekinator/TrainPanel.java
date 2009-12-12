@@ -11,6 +11,8 @@
 
 package wekinator;
 
+import wekinator.LearningSystem;
+
 /**
  *
  * @author rebecca

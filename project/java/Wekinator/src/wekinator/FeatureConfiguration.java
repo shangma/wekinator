@@ -16,8 +16,6 @@ import wekinator.util.SerializedFileUtil;
  */
 public class FeatureConfiguration implements Serializable {
 
-
-
     public enum WindowType {
 
         HAMMING,

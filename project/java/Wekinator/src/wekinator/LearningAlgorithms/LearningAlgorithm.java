@@ -3,11 +3,12 @@
  * and open the template in the editor.
  */
 
-package wekinator;
+package wekinator.LearningAlgorithms;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.Serializable;
+import javax.swing.JPanel;
 import weka.core.Instance;
 import weka.core.Instances;
 
@@ -34,12 +35,6 @@ public interface LearningAlgorithm extends Serializable {
 
     public LearningAlgorithm copy();
 
-    public LearningAlgorithm readFromFile(File f) throws Exception;
-
-    public void saveToFile(File f) throws Exception;
-
-   // Classifier getClassifier(); // Don't want to do this!
-
     /**
      * Get the value of trainingState
      *
@@ -54,33 +49,23 @@ public interface LearningAlgorithm extends Serializable {
      */
     public void removePropertyChangeListener(PropertyChangeListener listener);
 
-    public void showSettingsFrame();
+    public JPanel getSettingsPanel();
 
-    public void setFastAccurate();
+    public void setFastAccurate(double value);
 
     public boolean implementsFastAccurate();
 
     public String getName();
 
-    public String[] getFeatureNames();
+    public double classify(Instance instance) throws Exception;
 
-    public void setFeatureNames(String[] s);
+    public double[] distributionForInstance(Instance instance) throws Exception;
 
-    public String getFeatureName(int i);
-
-    public void setFeatureName(String s, int i);
-
-    public int getNumFeatures();
-
-    public void setNumFeatures(); //TODO: use in constructor?
-
-    public double classify(Instance instance);
-
-    public void train(Instances instances);
+    public void train(Instances instances) throws Exception;
 
     public void forget();
 
-    public double getLastTrainingAccuracy();
+    public double computeAccuracy(Instances instances) throws Exception;
 
-    public double computeCVAccuracy(int numFolds);
+    public double computeCVAccuracy(int numFolds, Instances instances) throws Exception;
 }

@@ -10,6 +10,8 @@
  */
 package wekinator;
 
+import wekinator.LearningSystem;
+import wekinator.LearningAlgorithms.LearningAlgorithm;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.io.File;

@@ -5,6 +5,8 @@
  */
 package wekinator;
 
+import wekinator.LearningAlgorithms.IbkLearningAlgorithm;
+
 /**
  *
  * @author  rebecca

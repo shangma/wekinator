@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package wekinator;
+package wekinator.LearningAlgorithms;
 
 import weka.classifiers.Classifier;
 
@@ -13,8 +13,5 @@ import weka.classifiers.Classifier;
  */
 public interface ClassifierLearningAlgorithm extends LearningAlgorithm {
     public Classifier getClassifier();
-    void saveAsSerializedWekaClassifier(String filename);
-    LearningAlgorithm loadFromSerializedWekaClassifier(String filename);
-
-
+    
 }

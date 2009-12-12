@@ -10,6 +10,7 @@
  */
 package wekinator;
 
+import wekinator.LearningSystem;
 import java.awt.Color;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;

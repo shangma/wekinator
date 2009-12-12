@@ -4,6 +4,9 @@
  */
 package wekinator;
 
+import wekinator.LearningAlgorithms.*;
+import wekinator.*;
+import wekinator.LearningAlgorithms.LearningAlgorithm;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -78,7 +81,7 @@ public class LearningSystem implements Serializable {
         dataset.addInstance(features, params, paramMask, new Date());
     }
 
-    double[] classify(double[] features) {
+    double[] classify(double[] features) throws Exception {
         double[] outputs = new double[numParams];
         Instance[] instances = dataset.convertToClassifiableInstances(features);
         for (int i = 0; i < numParams; i++) {
@@ -89,7 +92,23 @@ public class LearningSystem implements Serializable {
         return outputs;
     }
 
-    public void train() {
+    //TODO: handle case where *distribution* is wanted!
+     /* double[] c(double[] features) throws Exception {
+        double[] outputs = new double[outputLength];
+        Instance[] instances = dataset.convertToClassifiableInstances(features);
+        int next = 0;
+        for (int i = 0; i < numParams; i++) {
+            if (learners[i] != null && learnerEnabled[i]) {
+                if (learners[i].
+            } else {
+                //Update next!
+                next += numOutputsForLearner(i);
+            }
+        }
+
+    } */
+
+    public void train() throws Exception {
         setSystemTrainingState(LearningSystemTrainingState.TRAINING);
 
         for (int i = 0; i < numParams; i++) {
@@ -469,21 +488,21 @@ public class LearningSystem implements Serializable {
         this.dataset = dataset;
     }
 
-    public double[] getLastTrainingAccuracy() {
+    public double[] getLastTrainingAccuracy() throws Exception {
         double[] a = new double[numParams];
         for (int i= 0; i < numParams; i++) {
             if (learners[i] != null) {
-                a[i] = learners[i].getLastTrainingAccuracy();
+                a[i] = learners[i].computeAccuracy(dataset.getClassifiableInstances(i));
             }
         }
         return a;
     }
 
-    public double[] computeCVAccuracy(int numFolds) {
+    public double[] computeCVAccuracy(int numFolds) throws Exception {
         double[] a = new double[numParams];
         for (int i= 0; i < numParams; i++) {
             if (learners[i] != null) {
-                a[i] = learners[i].computeCVAccuracy(numFolds);
+                a[i] = learners[i].computeCVAccuracy(numFolds, dataset.getClassifiableInstances(i));
             }
         }
         return a;
