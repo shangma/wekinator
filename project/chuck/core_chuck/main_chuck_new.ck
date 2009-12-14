@@ -92,7 +92,9 @@ recv.event("/useAudioFeature", "i i i i i i i i i i") @=> OscEvent oscUseAudio;
 recv.event("/useFeatureMessage", "s i") @=> OscEvent oscUseFeatureMessage;
 recv.event("/useFeatureList", "i i i i i i i i i i i i i i i i") @=> OscEvent oscUseFeatureList;
 
-OscEvent oscDist, oscLabel;
+OscEvent oscDist, oscLabel, oscParams;
+
+//TODO: update this to not break
 if (isDiscrete && wantDist) {
 	"f" => string s;
 	for (1 => int i; i < numClasses * numParams; i++) {
@@ -100,16 +102,41 @@ if (isDiscrete && wantDist) {
 	}
 	//<<< "My string is " + s >>>;
 	recv.event("/classDist", s) @=> oscDist;
-	spork ~oscDistWait();
+	//spork ~oscDistWait();
 } else {
 	"f" => string ss;
 	for (1 => int i; i < numParams; i++) {
 		ss + " f" =>ss;
 	}
 	recv.event("/realLabel", ss) @=> oscLabel;
-	spork ~oscLabelWait();
+	//spork ~oscLabelWait();
 }
 
+
+0 => int paramArraySize;
+"" => string s2;
+for (0 => int i; i < numParams; i++) {
+	if (isDiscreteArray[i] && wantDistArray[i]) {
+		paramArraySize + numClassesArray[i] => paramArraySize;
+		for (0 => int j; j < numClassesArray[i]; j++) {
+			s2 + "f" => s2;
+			if (j != numClassesArray[j] - 1) {
+				s2 + " " => s2;
+			}
+		}
+	} else {
+		s2 + "f" => s2;
+		paramArraySize++;
+	}
+
+	if (i != numParams-1) {
+		s2 + " " => s2;
+	}
+}
+<<< "My param wait array is: ", s2>>>;
+<<< "And wanting ", paramArraySize, " size array">>>;
+recv.event("/params", s2) @=> oscParams;
+spork ~oscParamsWait();
 
 //Will get set automatically later on
 int numFeats;
@@ -676,6 +703,19 @@ fun void oscLabelWait() {
 		while (oscLabel.nextMsg() != 0) {
 			for (0 => int i; i < numParams; i++) {
 				oscLabel.getFloat() => vals[i];
+			}
+			mc.setParams(vals);
+		}
+	}
+}
+
+fun void oscParamsWait() {
+	float vals[paramArraySize];
+	while (true) {
+		oscParams => now;
+		while (oscParams.nextMsg() != 0) {
+			for (0 => int i; i < paramArraySize; i++) {
+				oscParams.getFloat() => vals[i];
 			}
 			mc.setParams(vals);
 		}
