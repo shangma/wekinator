@@ -20,11 +20,16 @@ import wekinator.FeatureManager.*;
 public class OscHandler {
 
     private static OscHandler ref = null;
+
+
+
+    private BuildPanel bp = null;
     public int receivePort = 6448;
     public int sendPort = 6453;
     OSCPortOut sender;
     public OSCPortIn receiver;
     WekaOperator w;
+    String paramSendString = "/params";
     String returnHandshakeString = "/hiback";
     String featureInfoString = "/featureInfo";
     String featuresString = "/features"; //used for chuck features (not osc feats)
@@ -82,6 +87,8 @@ public class OscHandler {
     String playAlongMessage = "/playAlongMessage";
     String chuckSettingsArrayString = "/chuckSettingsArrays";
     Logger logger = Logger.getLogger(OscHandler.class.getName());
+
+  
 
     public enum ConnectionState {
 
@@ -202,7 +209,7 @@ public class OscHandler {
         receiver.addListener(returnHandshakeString, listener);
         addFeatureInfoListener();
         addFeatureListener();
-        addRealValueListener();
+        addParamFromSynthListener();
         addHidSetupBegunListener();
         addHidSetupStoppedListener();
         addSendHidInitValuesListener();
@@ -245,49 +252,78 @@ public class OscHandler {
         sender.send(msg);
     }
 
-    public void stopSound() throws IOException {
-        Object[] o = new Object[2];
+    public void stopSound() {
+        try {
+            Object[] o = new Object[2];
         o[0] = stopSoundMessageString;
         o[1] = new Integer(0);
         OSCMessage msg = new OSCMessage(sendControlMessageString, o);
         sender.send(msg);
+         } catch (IOException ex) {
+            Logger.getLogger(OscHandler.class.getName()).log(Level.SEVERE, null, ex);
+            errorHappened(ex);
+        }
     }
 
-    public void startSound() throws IOException {
-        Object[] o = new Object[2];
-        o[0] = startSoundMessageString;
-        o[1] = new Integer(0);
-        OSCMessage msg = new OSCMessage(sendControlMessageString, o);
-        sender.send(msg);
+    public void startSound() {
+        try {
+            Object[] o = new Object[2];
+            o[0] = startSoundMessageString;
+            o[1] = new Integer(0);
+            OSCMessage msg = new OSCMessage(sendControlMessageString, o);
+            sender.send(msg);
+        } catch (IOException ex) {
+            Logger.getLogger(OscHandler.class.getName()).log(Level.SEVERE, null, ex);
+            errorHappened(ex);
+        }
     }
 
-    void askForCurrentValue() throws IOException {
-        Object[] o = new Object[2];
+    private void errorHappened(Exception ex) {
+        //TODO: Action to advertise that OSC connection is having problems
+        System.out.println("OSC connection problem");
+    }
+
+    void askForCurrentValue() {
+        try {
+            Object[] o = new Object[2];
         o[0] = realValueRequestMessageString;
         o[1] = new Integer(0);
         OSCMessage msg = new OSCMessage(sendControlMessageString, o);
         sender.send(msg);
         System.out.println("Asked for current value");
+         } catch (IOException ex) {
+            Logger.getLogger(OscHandler.class.getName()).log(Level.SEVERE, null, ex);
+            errorHappened(ex);
+        }
     }
 
-    void startGettingParams() throws IOException {
+    //Start getting params from the synth
+    void startGettingParams() {
         Object[] o = new Object[2];
         o[0] = startGettingParamsMessageString;
         o[1] = new Integer(0);
         OSCMessage msg = new OSCMessage(sendControlMessageString, o);
-        sender.send(msg);
-        System.out.println("Asked for start getting params");
+        try {
+            sender.send(msg);
+        } catch (IOException ex) {
+            Logger.getLogger(OscHandler.class.getName()).log(Level.SEVERE, null, ex);
+            errorHappened(ex);
+        }
 
     }
 
-    void stopGettingParams() throws IOException {
+    //Stop getting params from the synth
+    void stopGettingParams()  {
         Object[] o = new Object[2];
         o[0] = stopGettingParamsMessageString;
         o[1] = new Integer(0);
         OSCMessage msg = new OSCMessage(sendControlMessageString, o);
-        sender.send(msg);
-        System.out.println("Asked for stop getting params");
-
+        try {
+            sender.send(msg);
+        } catch (IOException ex) {
+            Logger.getLogger(OscHandler.class.getName()).log(Level.SEVERE, null, ex);
+            errorHappened(ex);
+        }
     }
 
     void requestHidSetup() throws IOException {
@@ -499,25 +535,39 @@ public class OscHandler {
 
     }
 
-    public void initiateRecord() throws IOException {
+    //Initiates extraction of features by chuck, so that chuck will start sending us features*/
+    public void initiateRecord() {
+
         Object[] o = new Object[2];
         o[0] = extractMessageString;
         o[1] = new Integer(0);
         OSCMessage msg = new OSCMessage(sendControlMessageString, o);
-        sender.send(msg);
+        try {
+            sender.send(msg);
+        } catch (IOException ex) {
+            Logger.getLogger(OscHandler.class.getName()).log(Level.SEVERE, null, ex);
+            errorHappened(ex);
+        }
     }
 
     public void initiateClassify() throws IOException {
         initiateRecord();
     }
 
-    public void stopTrainTest() throws IOException {
+    //Stop extracting features
+    public void stopExtractingFeatures()  {
         Object[] o = new Object[2];
         o[0] = stopMessageString;
         o[1] = new Integer(0);
         OSCMessage msg = new OSCMessage(sendControlMessageString, o);
-        sender.send(msg);
-        System.out.println("h sent stop " + sendControlMessageString + " " + stopMessageString);
+        try {
+            sender.send(msg);
+            //   System.out.println("h sent stop " + sendControlMessageString + " " + stopMessageString);
+        } catch (IOException ex) {
+            Logger.getLogger(OscHandler.class.getName()).log(Level.SEVERE, null, ex);
+            errorHappened(ex);
+        }
+     //   System.out.println("h sent stop " + sendControlMessageString + " " + stopMessageString);
     }
 
     public void sendClass(int c) {
@@ -599,6 +649,23 @@ public class OscHandler {
             System.out.println("123");
             Logger.getLogger(OscHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    void sendParamsToSynth(double[] params) {
+        Object[] o = new Object[params.length];
+        try {
+
+            for (int i = 0; i < params.length; i++) {
+                o[i] = new Float(params[i]);
+            }
+
+            OSCMessage msg = new OSCMessage(paramSendString, o);
+            sender.send(msg);
+        } catch (IOException ex) {
+            Logger.getLogger(OscHandler.class.getName()).log(Level.SEVERE, null, ex);
+            errorHappened(ex);
+        }
+
     }
 
     void sendRealValueMulti(float[] realVals) {
@@ -720,7 +787,9 @@ public class OscHandler {
                 System.out.println("playalong message received!"); //only gets here after "Play along" executed-- because xmit not ready yet!!
                 Object[] o = message.getArguments();
                 w.receivedPlayalongUpdate((String) o[0]);
-
+                if (bp != null) {
+                    bp.updatePlayalongMessage((String) o[0]);
+                }
             }
         };
         receiver.addListener(playAlongMessage, listener);
@@ -762,17 +831,29 @@ public class OscHandler {
         OSCListener listener = new OSCListener() {
 
             public void acceptMessage(java.util.Date time, OSCMessage message) {
-                // System.out.println("Feature received!");
+                 System.out.println("Feature received!");
                 Object[] o = message.getArguments();
 
+                //Old way
                 w.receivedFeature(o);
+
+
+                double d[]  = new double[o.length];
+                for (int i = 0; i < o.length; i++) {
+                    if (o[i] instanceof Float) {
+                        d[i] = ((Float) o[i]).floatValue();
+                    } else {
+                        Logger.getLogger(OscHandler.class.getName()).log(Level.WARNING, "Received feature is not a float");
+                    }
+                }
+                WekinatorLearningManager.getInstance().updateFeatures(d); //may have to decouple this if want to view features too
 
             }
         };
         receiver.addListener(featuresString, listener);
     }
 
-    private void addRealValueListener() {
+    private void addParamFromSynthListener() {
         OSCListener listener = new OSCListener() {
 
             public void acceptMessage(java.util.Date time, OSCMessage message) {
@@ -785,7 +866,23 @@ public class OscHandler {
                     // } catch (InterruptedException ex) {
                     //    Logger.getLogger(OscHandler.class.getName()).log(Level.SEVERE, null, ex);
                     // }
-                    w.receivedRealValue(o);
+                   
+                    
+                    // w.receivedRealValue(o);
+
+                    //Received params from synth:
+                   double d[]  = new double[o.length];
+                    for (int i = 0; i < o.length; i++) {
+                    if (o[i] instanceof Float) {
+                        d[i] = ((Float) o[i]).floatValue();
+                    } else {
+                        Logger.getLogger(OscHandler.class.getName()).log(Level.WARNING, "Received feature is not a float");
+                    }
+                    }
+
+                    System.out.println("received params from synth");
+                    WekinatorLearningManager.getInstance().setParams(d);
+
                 } catch (Exception ex) {
                     Logger.getLogger(OscHandler.class.getName()).log(Level.WARNING, null, ex);
                 }
@@ -942,22 +1039,32 @@ public class OscHandler {
     receiver.addListener(hidSettingsMaskString, listener);
 
     } */
-    public void playScore() throws IOException {
+    public void playScore() {
         Object[] o = new Object[2];
         o[0] = startPlaybackMessageString;
         o[1] = new Integer(0);
         OSCMessage msg = new OSCMessage(sendControlMessageString, o);
-        sender.send(msg);
+        try {
+            sender.send(msg);
+        } catch (IOException ex) {
+            Logger.getLogger(OscHandler.class.getName()).log(Level.SEVERE, null, ex);
+            errorHappened(ex);
+        }
         System.out.println("Asked for start playback");
 
     }
 
-    public void stopPlayback() throws IOException {
+    public void stopPlayback() {
         Object[] o = new Object[2];
         o[0] = stopPlaybackMessageString;
         o[1] = new Integer(0);
         OSCMessage msg = new OSCMessage(sendControlMessageString, o);
-        sender.send(msg);
+        try {
+            sender.send(msg);
+        } catch (IOException ex) {
+            Logger.getLogger(OscHandler.class.getName()).log(Level.SEVERE, null, ex);
+            errorHappened(ex);
+        }
         System.out.println("Asked for start playback");
     }
 
@@ -1019,5 +1126,8 @@ public class OscHandler {
         OSCMessage msg = new OSCMessage(setUseAllFeatureString, o);
         sender.send(msg);
 
+    }
+      public void setBuildPanel(BuildPanel aThis) {
+        bp = aThis;
     }
 }

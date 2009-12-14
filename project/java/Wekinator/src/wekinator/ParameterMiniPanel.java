@@ -72,6 +72,11 @@ public class ParameterMiniPanel extends javax.swing.JPanel {
                 textValueActionPerformed(evt);
             }
         });
+        textValue.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                textValueFocusLost(evt);
+            }
+        });
         textValue.addInputMethodListener(new java.awt.event.InputMethodListener() {
             public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
                 textValueInputMethodTextChanged(evt);
@@ -98,15 +103,16 @@ public class ParameterMiniPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(checkUse, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(checkUse, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 204, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(panelValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 128, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(panelValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(74, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(panelValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
             .add(checkUse)
+            .add(panelValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -118,16 +124,34 @@ public class ParameterMiniPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_textValueInputMethodTextChanged
 
     private void textValueKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_textValueKeyTyped
-        fireStateChanged();
+        
+
+      //  fireStateChanged();
     }//GEN-LAST:event_textValueKeyTyped
 
     private void textValueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textValueActionPerformed
-        // TODO add your handling code here:
+        try {
+                double v = Double.parseDouble(textValue.getText());
+                value = v;
+            } catch (NumberFormatException ex) {
+                 textValue.setText(Integer.toString((int) value));
+            }
+        fireStateChanged();
     }//GEN-LAST:event_textValueActionPerformed
 
     private void comboIntActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboIntActionPerformed
         fireStateChanged();
 }//GEN-LAST:event_comboIntActionPerformed
+
+    private void textValueFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_textValueFocusLost
+        try {
+                double v = Double.parseDouble(textValue.getText());
+                value = v;
+            } catch (NumberFormatException ex) {
+                 textValue.setText(Integer.toString((int) value));
+            }
+        fireStateChanged();
+    }//GEN-LAST:event_textValueFocusLost
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox checkUse;
@@ -174,18 +198,13 @@ public class ParameterMiniPanel extends javax.swing.JPanel {
         if (isDiscrete) {
             return ((Integer) comboInt.getSelectedItem());
         } else {
-            try {
-                value = Double.parseDouble(textValue.getText());
-            } catch (NumberFormatException ex) {
-                 textValue.setText(Integer.toString((int) value));
-            }
+            return value;
         }
-        return value;
     }
 
     public static void main(String[] args) {
         JFrame f = new JFrame();
-        ParameterMiniPanel p = new ParameterMiniPanel("Param1", 0.0, 5, true, true);
+        ParameterMiniPanel p = new ParameterMiniPanel("Param1", 0.0, 5, false, true);
         p.addChangeListener(new ChangeListener() {
 
             public void stateChanged(ChangeEvent e) {

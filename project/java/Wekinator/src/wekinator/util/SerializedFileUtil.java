@@ -64,6 +64,7 @@ public class SerializedFileUtil {
             success = true;
         } catch (Exception ex) {
             success = false;
+            myEx = new Exception(ex.getMessage());
             Logger.getLogger(SerializedFileUtil.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
@@ -74,6 +75,7 @@ public class SerializedFileUtil {
                     outstream.close();
                 }
             } catch (IOException ex) {
+
                 Logger.getLogger(SerializedFileUtil.class.getName()).log(Level.SEVERE, null, ex);
             }
         }

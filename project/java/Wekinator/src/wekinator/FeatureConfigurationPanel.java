@@ -130,6 +130,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
         textMotionExtractionRate = new javax.swing.JFormattedTextField();
         jLabel1 = new javax.swing.JLabel();
         labelFeatureStatus = new javax.swing.JLabel();
+        jButton2 = new javax.swing.JButton();
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Chuck audio input features"));
 
@@ -338,14 +339,14 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
         buttonGroup1.add(radioWebcamColor);
         radioWebcamColor.setText("Color tracking");
 
-        buttonLoad.setText("Load from file...");
+        buttonLoad.setText("Load settings from file...");
         buttonLoad.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonLoadActionPerformed(evt);
             }
         });
 
-        buttonSave.setText("Save to file...");
+        buttonSave.setText("Save settings to file...");
         buttonSave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonSaveActionPerformed(evt);
@@ -381,6 +382,14 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
         jLabel1.setText("ms");
 
         labelFeatureStatus.setText("No feature configuration set.");
+
+        jButton2.setText("Add meta-features from these features...");
+        jButton2.setEnabled(false);
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -426,23 +435,27 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .addContainerGap()
+                .add(buttonGo)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(labelFeatureStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 379, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(72, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(buttonLoad)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(buttonSave)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(buttonUndo)
-                .addContainerGap(127, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(buttonGo)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(labelFeatureStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 379, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(72, Short.MAX_VALUE))
+                .add(jButton2)
+                .addContainerGap(233, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(17, 17, 17)
+                .add(20, 20, 20)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createSequentialGroup()
                         .add(checkTrackpad)
@@ -474,7 +487,9 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
                     .add(radioWebcamColor))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jButton2)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 52, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(buttonLoad)
                     .add(buttonSave)
@@ -483,7 +498,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(buttonGo)
                     .add(labelFeatureStatus))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -664,6 +679,10 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
         
     }//GEN-LAST:event_buttonGoActionPerformed
 
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jButton2ActionPerformed
+
     private File findFeatureSetupFile() {
         JFileChooser fc = new JFileChooser();
         String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastFeatureFileLocation();
@@ -709,6 +728,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox checkWebcam;
     private javax.swing.JComboBox comboWindowType;
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

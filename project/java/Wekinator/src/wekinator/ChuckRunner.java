@@ -348,6 +348,7 @@ public class ChuckRunner {
         throw new CloneNotSupportedException();
     }
 }
+
 class LoggerThread implements Runnable {
 
     Thread t;

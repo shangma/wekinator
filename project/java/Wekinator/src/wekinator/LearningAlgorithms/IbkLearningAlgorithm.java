@@ -23,7 +23,7 @@ import weka.classifiers.lazy.IBk;
 public class IbkLearningAlgorithm implements ClassifierLearningAlgorithm {
     protected IBk classifier = null;
     protected TrainingState trainingState = TrainingState.NOT_TRAINED;
-    protected IbkSettingsPanel myPanel = null;
+    protected transient IbkSettingsPanel myPanel = null;
     protected int defaultNumNeighbors = 10;
 
     public IbkLearningAlgorithm() {
@@ -115,11 +115,18 @@ public class IbkLearningAlgorithm implements ClassifierLearningAlgorithm {
         setTrainingState(trainingState.NOT_TRAINED);
     }
 
-    public JPanel getSettingsPanel() {
-        return myPanel;
+    public IbkSettingsPanel getSettingsPanel() {
+
+            if (myPanel == null) {
+            myPanel = new IbkSettingsPanel(this);
+        }
+            return myPanel;
     }
 
     public void train(Instances instances) throws Exception {
+        if (instances.numInstances() == 0) {
+            return;
+        }
         setTrainingState(TrainingState.TRAINING);
         try {
             ClassifierLearningAlgorithmUtil.train(this, instances);

@@ -7,10 +7,12 @@ package wekinator;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import wekinator.LearningSystem;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.EventListenerList;
 
 /**
  * Controls wekinator instance (state)
@@ -18,6 +20,11 @@ import java.beans.PropertyChangeSupport;
  * @author rebecca
  */
 public class WekinatorLearningManager {
+
+
+    private ChangeEvent changeEvent = null;
+    protected FeatureViewer featureViewer = null;
+
 
     private static WekinatorLearningManager ref = null;
     protected double[] params;
@@ -28,85 +35,27 @@ public class WekinatorLearningManager {
     protected FeatureConfiguration featureConfiguration = null;
     public static final String PROP_FEATURECONFIGURATION = "featureConfiguration";
 
-    protected double[] p2 = null;
     public static final String PROP_PARAMS = "params";
 
-
-
-    /**
-     * Set the value of p2
-     *
-     * @param p2 new value of p2
-     */
-    public void setParams(double[] params) {
-        double[] oldparams = this.params;
-        this.params = params;
-        propertyChangeSupport.firePropertyChange(PROP_PARAMS, oldparams, p2);
-    }
-
-    /**
-     * Get the value of p2 at specified index
-     *
-     * @param index
-     * @return the value of p2 at specified index
-     */
-    public double getP2(int index) {
-        return this.p2[index];
-    }
-
-  
-
-
-    protected PropertyChangeListener learningSystemPropertyChange = new PropertyChangeListener() {
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            learningSystemPropertyChanged(evt);
+    public void showFeatureViewer() {
+        if (featureViewer == null) {
+            featureViewer = new FeatureViewer();
+            featureViewer.setNames(featureConfiguration.getFeatureNames());
         }
-    };
+        featureViewer.setVisible(true);
+        featureViewer.toFront();
+    }
 
-    public enum InitializationState {
-        NOT_INITIALIZED,
-        INITIALIZED
-    };
-    protected InitializationState initState = InitializationState.NOT_INITIALIZED;
-    public static final String PROP_INITSTATE = "initState";
-
-    public enum Mode {
-        DATASET_CREATION,
-        TRAINING,
-        RUNNING,
-        NONE
-    };
-
-    protected Mode mode = Mode.NONE;
-    public static final String PROP_MODE = "mode";
     protected double[] outputs = null;
-    public static final String PROP_OUTPUTS = "outputs";
 
-
-    /**
-     * Get the value of params
-     *
-     * @return the value of params
-     */
-    public double[] getParams() {
-        return params;
+       protected EventListenerList listenerList = new EventListenerList();
+       public void addOutputChangeListener(ChangeListener l) {
+        listenerList.add(ChangeListener.class, l);
     }
 
-    public void setParamsAndMask(double[] params, boolean[] mask) {
-        setParams(params);
-        this.mask = mask;
+    public void removeOutputChangeListener(ChangeListener l) {
+        listenerList.remove(ChangeListener.class, l);
     }
-    /**
-     * Get the value of params at specified index
-     *
-     * @param index
-     * @return the value of params at specified index
-     */
-    public double getParams(int index) {
-        return this.params[index];
-    }
-
 
     /**
      * Get the value of outputs
@@ -122,10 +71,9 @@ public class WekinatorLearningManager {
      *
      * @param outputs new value of outputs
      */
-    protected void setOutputs(double[] outputs) {
-        double[] oldOutputs = this.outputs;
+    public void setOutputs(double[] outputs) {
         this.outputs = outputs;
-        propertyChangeSupport.firePropertyChange(PROP_OUTPUTS, oldOutputs, outputs);
+       fireOutputChanged();
     }
 
     /**
@@ -144,11 +92,127 @@ public class WekinatorLearningManager {
      * @param index
      * @param newOutputs new value of outputs at specified index
      */
-    protected void setOutputs(int index, double newOutputs) {
+    public void setOutputs(int index, double newOutputs) {
+        this.outputs[index] = newOutputs;
+        fireOutputChanged();
+    }
+
+
+    /**
+     * Set the value of p2
+     *
+     * @param p2 new value of p2
+     */
+    public void setParams(double[] params) {
+        double[] oldparams = this.params;
+        this.params = params;
+        propertyChangeSupport.firePropertyChange(PROP_PARAMS, oldparams, params);
+    }
+
+    protected PropertyChangeListener learningSystemPropertyChange = new PropertyChangeListener() {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            learningSystemPropertyChanged(evt);
+        }
+    };
+
+
+
+    public enum InitializationState {
+        NOT_INITIALIZED,
+        INITIALIZED
+    };
+    protected InitializationState initState = InitializationState.NOT_INITIALIZED;
+    public static final String PROP_INITSTATE = "initState";
+
+    public enum Mode {
+        DATASET_CREATION,
+        TRAINING,
+        RUNNING,
+        NONE
+    };
+
+    protected Mode mode = Mode.NONE;
+    public static final String PROP_MODE = "mode";
+  //  protected double[] outputs = null;
+  //  public static final String PROP_OUTPUTS = "outputs";
+
+
+    /**
+     * Get the value of params
+     *
+     * @return the value of params
+     */
+    public double[] getParams() {
+        return params;
+    }
+
+    public void setParamsAndMask(double[] params, boolean[] mask) {
+        setParams(params);
+        learningSystem.setParamMask(mask);
+        this.mask = mask;
+    }
+    /**
+     * Get the value of params at specified index
+     *
+     * @param index
+     * @return the value of params at specified index
+     */
+    public double getParams(int index) {
+        return this.params[index];
+    }
+
+
+    /**
+     * Get the value of outputs
+     *
+     * @return the value of outputs
+     */
+    /*public double[] getOutputs() {
+        return outputs;
+    } */
+
+    /**
+     * Set the value of outputs
+     *
+     * @param outputs new value of outputs
+     */
+/*    public void setOutputs(double[] outputs) {
+        synchronized(this) {
+            double[] oldparams = this.outputs;
+            this.outputs = outputs;
+            for (int i = 0; i < outputs.length; i++) {
+                System.out.print(outputs[i] + " ");
+            }
+            System.out.println("");
+            double[] newValue = outputs;
+            System.out.println("Test: " + (oldparams != null && newValue != null && oldparams.equals(newValue)));
+            propertyChangeSupport.firePropertyChange(PROP_OUTPUTS, oldparams, outputs);
+          //  propertyChangeSupport.fire
+        }
+    } */
+
+    /**
+     * Get the value of outputs at specified index
+     *
+     * @param index
+     * @return the value of outputs at specified index
+     */
+  /*  public double getOutputs(int index) {
+        return this.outputs[index];
+    } */
+
+    /**
+     * Set the value of outputs at specified index.
+     *
+     * @param index
+     * @param newOutputs new value of outputs at specified index
+     */
+  /*  protected void setOutputs(int index, double newOutputs) {
         double oldOutputs = this.outputs[index];
         this.outputs[index] = newOutputs;
         propertyChangeSupport.fireIndexedPropertyChange(PROP_OUTPUTS, index, oldOutputs, newOutputs);
-    }
+    } */
 
     /**
      * Get the value of mode
@@ -171,29 +235,39 @@ public class WekinatorLearningManager {
     }
 
     public void startDatasetCreation() {
-        if (mode == Mode.RUNNING) {
-            stopRunning();
-        } if (mode == Mode.TRAINING) {
+        if (mode == Mode.DATASET_CREATION)
+            return;
+
+        if (mode == Mode.TRAINING) {
             stopTraining();
         }
-        setMode(Mode.DATASET_CREATION);
+        //if mode = running, don't stop extracting features, just change what I do with them
+        
+        OscHandler.getOscHandler().initiateRecord();
+        setMode(Mode.DATASET_CREATION);      
     }
 
     public void stopRunning() {
+        OscHandler.getOscHandler().stopExtractingFeatures();
         setMode(Mode.NONE);
     }
 
-    public void startRunning() {
+    public void startRunning()  {
         if (mode == Mode.TRAINING) {
             return;
         }
         if (mode == Mode.DATASET_CREATION) {
             stopDatasetCreation();
         }
+        OscHandler.getOscHandler().initiateRecord();
         setMode(Mode.RUNNING);
     }
 
-    public void stopDatasetCreation() {
+    public void stopDatasetCreation()  {
+        if (mode != Mode.DATASET_CREATION)
+            return;
+
+        OscHandler.getOscHandler().stopExtractingFeatures();
         setMode(Mode.NONE);
     }
 
@@ -202,13 +276,42 @@ public class WekinatorLearningManager {
         setMode(Mode.NONE);
     }
 
+    public void startTraining() {
+        setMode(Mode.TRAINING);
+        learningSystem.trainInBackground();
+    }
+
+    public void startTraining(int paramNum) {
+        setMode(Mode.TRAINING);
+        learningSystem.trainInBackground(paramNum);
+    }
+
+
+ //   public void stopEvaluating()
+
+
     public void updateFeatures(double[] features) {
+        System.out.println("java received feature");
         if (mode == Mode.DATASET_CREATION) {
-            learningSystem.addToTraining(features, params);
+           // learningSystem.addToTraining(features, params);
+              double[] fs = featureConfiguration.process(features);
+              learningSystem.addToTraining(fs, params);
+               if (featureViewer != null) {
+                    featureViewer.updateFeatures(fs);
+               }
+
         } else if (mode == Mode.RUNNING) {
+            System.out.println("in run mode");
             try {
                 //classify these features
-                setOutputs(learningSystem.classify(featureConfiguration.process(features)));
+                double[] fs = featureConfiguration.process(features);
+               setOutputs(learningSystem.classify(fs));
+               if (featureViewer != null) {
+                    featureViewer.updateFeatures(fs);
+               }
+                //TODO RAF important TODO TODO TODO: issue of displaying output for dist features
+               OscHandler.getOscHandler().sendParamsToSynth(outputs);
+                
             } catch (Exception ex) {
                 Logger.getLogger(WekinatorLearningManager.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -255,7 +358,7 @@ public class WekinatorLearningManager {
         FeatureConfiguration oldFeatureConfiguration = this.featureConfiguration;
         this.featureConfiguration = featureConfiguration;
         propertyChangeSupport.firePropertyChange(PROP_FEATURECONFIGURATION, oldFeatureConfiguration, featureConfiguration);
-        updateMyState();
+        updateMyInitState();
     }
 
     /**
@@ -281,6 +384,7 @@ public class WekinatorLearningManager {
         this.learningSystem = learningSystem;
         if (learningSystem != null) {
             learningSystem.addPropertyChangeListener(learningSystemPropertyChange);
+            
         }
         propertyChangeSupport.firePropertyChange(PROP_LEARNINGSYSTEM, oldLearningSystem, learningSystem);
     }
@@ -326,10 +430,18 @@ public class WekinatorLearningManager {
     }
 
     private void learningSystemPropertyChanged(PropertyChangeEvent evt) {
-        updateMyState();
+        if (evt.getPropertyName().equals(LearningSystem.PROP_INITIALIZATIONSTATE)) {
+            updateMyInitState();
+        } else if (evt.getPropertyName().equals(LearningSystem.PROP_SYSTEMTRAININGSTATE)) {
+                   LearningSystem.LearningSystemTrainingState ts = learningSystem.getSystemTrainingState();
+            if (mode == Mode.TRAINING && ts != LearningSystem.LearningSystemTrainingState.TRAINING) {
+                setMode(Mode.NONE);
+            }
+        }
+
     }
 
-    protected void updateMyState() {
+    protected void updateMyInitState() {
         if (learningSystem != null && featureConfiguration != null
                 && learningSystem.getInitializationState() == LearningSystem.LearningAlgorithmsInitializationState.ALL_INITIALIZED) {
             setInitState(InitializationState.NOT_INITIALIZED);
@@ -337,6 +449,19 @@ public class WekinatorLearningManager {
             setInitState(InitializationState.INITIALIZED);
         }
                 
+    }
+
+ 
+    protected void fireOutputChanged() {
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = listeners.length - 2; i >= 0; i -=2 ) {
+            if (listeners[i] == ChangeListener.class) {
+                if (changeEvent == null) {
+                    changeEvent = new ChangeEvent(this);
+                }
+                ((ChangeListener)listeners[i+1]).stateChanged(changeEvent);
+            }
+        }
     }
 
 }

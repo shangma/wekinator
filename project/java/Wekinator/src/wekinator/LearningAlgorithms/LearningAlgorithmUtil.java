@@ -14,7 +14,7 @@ import wekinator.util.SerializedFileUtil;
  */
 public class LearningAlgorithmUtil {
 
-    public LearningAlgorithm readFromFile(File f) throws ClassCastException, Exception {
+    public static LearningAlgorithm readFromFile(File f) throws ClassCastException, Exception {
         Object o = SerializedFileUtil.readFromFile(f);
         LearningAlgorithm la = null;
        
@@ -26,7 +26,7 @@ public class LearningAlgorithmUtil {
         return la;
     }
 
-    public void writeToFile(LearningAlgorithm la, File f) throws Exception {
+    public static void writeToFile(LearningAlgorithm la, File f) throws Exception {
          SerializedFileUtil.writeToFile(f, la);
     }
 

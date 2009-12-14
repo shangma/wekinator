@@ -392,7 +392,6 @@ public class WekaOperator implements Subject {
 
     void startRecordFeatures() {
         System.out.println("Start record features!");
-        try {
             if (myState == OperatorState.READY && myProblemType == ProblemType.CONTINUOUS) {
                 handler.initiateRecord();
                 myState = OperatorState.RECORD;
@@ -407,40 +406,35 @@ public class WekaOperator implements Subject {
 
 
 
-        } catch (IOException ex) {
-            Logger.getLogger(WekaOperator.class.getName()).log(Level.SEVERE, null, ex);
-            myErrorString = "Could not record: " + ex.getMessage();
-            notifyErrorObservers();
-        }
-
+      
 
     }
 
     void startSound() {
-        try {
+        //try {
             if (handler != null) {
                 handler.startSound();
             }
-        } catch (IOException ex) {
+       /* } catch (IOException ex) {
             Logger.getLogger(WekaOperator.class.getName()).log(Level.SEVERE, null, ex);
             myErrorString = "Error in starting sound:" + ex.getMessage();
             notifyErrorObservers();
             notifyOperatorObservers();
-        }
+        } */
 
     }
 
     void stopSound() {
-        try {
+      //  try {
             if (handler != null) {
                 handler.stopSound();
             }
-        } catch (IOException ex) {
+     /*   } catch (IOException ex) {
             Logger.getLogger(WekaOperator.class.getName()).log(Level.SEVERE, null, ex);
             myErrorString = "Error in stopping sound:" + ex.getMessage();
             notifyErrorObservers();
             notifyOperatorObservers();
-        }
+        } */
 
     }
 
@@ -968,12 +962,10 @@ public class WekaOperator implements Subject {
     //disconnects, but does not quit. Use if changing ports.
     public void disconnectOSC() {
         if (myState == OperatorState.RUN || myState == OperatorState.RECORD) {
-            try {
+         
                 //Tell chuck to stop extracting features
-                handler.stopTrainTest();
-            } catch (IOException ex) {
-                Logger.getLogger(WekaOperator.class.getName()).log(Level.SEVERE, null, ex);
-            }
+                handler.stopExtractingFeatures();
+           
         }
 
         if (myState != OperatorState.BEGIN && myState != OperatorState.END) {
@@ -988,12 +980,9 @@ public class WekaOperator implements Subject {
 
     public void quit() {
         if (myState == OperatorState.RUN || myState == OperatorState.RECORD) {
-            try {
-                //Tell chuck to stop extracting features
-                handler.stopTrainTest();
-            } catch (IOException ex) {
-                Logger.getLogger(WekaOperator.class.getName()).log(Level.SEVERE, null, ex);
-            }
+          
+                handler.stopExtractingFeatures();
+           
         }
 
         if (myState != OperatorState.BEGIN && myState != OperatorState.END) {
@@ -1008,7 +997,7 @@ public class WekaOperator implements Subject {
 
     public void startRecordFeatures(int i) {
         //todo: check oldState
-        try {
+     
             if (myState == OperatorState.READY) {
                 handler.initiateRecord();
                 myState =
@@ -1024,12 +1013,7 @@ public class WekaOperator implements Subject {
 
 
 
-        } catch (IOException ex) {
-            Logger.getLogger(WekaOperator.class.getName()).log(Level.SEVERE, null, ex);
-            myErrorString = "Could not record: " + ex.getMessage();
-            notifyErrorObservers();
-        }
-
+        
     //now when features come in I should record them with the appropriate class!
     }
 
@@ -1222,21 +1206,15 @@ public class WekaOperator implements Subject {
     }
 
     public void stopRecording() {
-        try {
+      
             System.out.println("stopping recording");
             if (handler != null) {
-                handler.stopTrainTest();
+                handler.stopExtractingFeatures();
                 // handler.stopSound();
                 myState = OperatorState.READY;
                 notifyOperatorObservers();
             }
-        } catch (IOException ex) {
-            Logger.getLogger(WekaOperator.class.getName()).log(Level.SEVERE, null, ex);
-            myErrorString = "Error in stopping features:" + ex.getMessage();
-            notifyErrorObservers();
-            myState = OperatorState.FAIL;
-            notifyOperatorObservers();
-        }
+      
     }
 
     public void resetClassifiers() {
@@ -1254,11 +1232,10 @@ public class WekaOperator implements Subject {
      * Doesn't reset data like # feats, # params, etc.
      */
     public void clear() {
-        try {
             System.out.println("Clearing");
             //Forget everything!
             //TODO: check if train/test first??
-            handler.stopTrainTest();
+            handler.stopExtractingFeatures();
             myFeatureState =
                     FeatureState.WAITING;
             myClassifierState =
@@ -1275,13 +1252,7 @@ public class WekaOperator implements Subject {
         //   c.
         //  sc.giveUpdate("Training set cleared.");
 
-        } catch (IOException ex) {
-            Logger.getLogger(WekaOperator.class.getName()).log(Level.SEVERE, null, ex);
-            myErrorString = "Error in clearing:" + ex.getMessage();
-            notifyErrorObservers();
-            myState = OperatorState.FAIL;
-            notifyOperatorObservers();
-        }
+       
 
     }
 
@@ -1462,41 +1433,29 @@ public class WekaOperator implements Subject {
     }
 
     public void playScore() {
-        try {
+       
             System.out.println("starting playback");
             if (handler != null) {
                 handler.playScore();
             // myState = OperatorState.READY;
             // notifyOperatorObservers();
             }
-        } catch (IOException ex) {
-            Logger.getLogger(WekaOperator.class.getName()).log(Level.SEVERE, null, ex);
-            myErrorString = "Error in starting playback:" + ex.getMessage();
-            notifyErrorObservers();
-            myState = OperatorState.FAIL;
-            notifyOperatorObservers();
-        }
+     
     }
 
     public void stopPlaying() {
-        try {
+    
             System.out.println("stopping playback");
             if (handler != null) {
                 handler.stopPlayback();
             // myState = OperatorState.READY;
             // notifyOperatorObservers();
             }
-        } catch (IOException ex) {
-            Logger.getLogger(WekaOperator.class.getName()).log(Level.SEVERE, null, ex);
-            myErrorString = "Error in stopping playback:" + ex.getMessage();
-            notifyErrorObservers();
-            myState = OperatorState.FAIL;
-            notifyOperatorObservers();
-        }
+     
     }
 
     public void startInternalPlayAlong() {
-        try {
+      
             System.out.println("stopping playback");
             if (handler != null) {
                 handler.startSound();
@@ -1504,17 +1463,11 @@ public class WekaOperator implements Subject {
                 hasReceivedUpdatedClasses = false;
                 startRecordFeatures();
             }
-        } catch (IOException ex) {
-            Logger.getLogger(WekaOperator.class.getName()).log(Level.SEVERE, null, ex);
-            myErrorString = "Error in stopping playback:" + ex.getMessage();
-            notifyErrorObservers();
-            myState = OperatorState.FAIL;
-            notifyOperatorObservers();
-        }
+        
     }
 
     public void startPlayAlong() {
-        try {
+      
             System.out.println("stopping playback");
             if (handler != null) {
                 handler.startSound();
@@ -1522,35 +1475,23 @@ public class WekaOperator implements Subject {
                 hasReceivedUpdatedClasses = false;
                 startRecordFeatures();
             }
-        } catch (IOException ex) {
-            Logger.getLogger(WekaOperator.class.getName()).log(Level.SEVERE, null, ex);
-            myErrorString = "Error in stopping playback:" + ex.getMessage();
-            notifyErrorObservers();
-            myState = OperatorState.FAIL;
-            notifyOperatorObservers();
-        }
+     
     }
 
     public void stopPlayAlong() {
 
 
-        try {
+   
             System.out.println("stopping playback");
             if (handler != null) {
                 handler.stopGettingParams();                   // myState = OperatorState.READY;
                 //Stop getting features!!
-                //  handler.stopTrainTest(); //I hope this works?
+                //  handler.stopExtractingFeatures(); //I hope this works?
                 this.stopRecording();
             // notifyOperatorObservers();
             }
             hasReceivedUpdatedClasses = false;
-        } catch (IOException ex) {
-            Logger.getLogger(WekaOperator.class.getName()).log(Level.SEVERE, null, ex);
-            myErrorString = "Error in stopping playback:" + ex.getMessage();
-            notifyErrorObservers();
-            myState = OperatorState.FAIL;
-            notifyOperatorObservers();
-        }
+    
     }
 
         private void handlerPropertyChange(PropertyChangeEvent evt) {

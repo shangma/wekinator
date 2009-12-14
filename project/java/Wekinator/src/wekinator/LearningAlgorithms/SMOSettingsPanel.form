@@ -63,7 +63,7 @@
         <Container class="javax.swing.JPanel" name="panelPolyKernel">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
-              <CardConstraints cardName="linear"/>
+              <CardConstraints cardName="polynomial"/>
             </Constraint>
           </Constraints>
 
@@ -116,7 +116,7 @@
         <Container class="javax.swing.JPanel" name="panelLinearKernel">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
-              <CardConstraints cardName="polynomial"/>
+              <CardConstraints cardName="linear"/>
             </Constraint>
           </Constraints>
 

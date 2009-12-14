@@ -38,12 +38,11 @@ public class PlayalongScore {
 
     public void view() {
         if (myViewer == null) {
-            myViewer = new PlayalongScoreViewer(this, null);
+            myViewer = new PlayalongScoreViewer(this);
             myViewer.setVisible(true);
         } 
         myViewer.setVisible(true);
         myViewer.toFront();
-
     }
 
         /**
@@ -191,6 +190,7 @@ public class PlayalongScore {
 
     private class ScorePlayer implements Runnable {
         public void run() {
+            OscHandler.getOscHandler().startSound();
             try {
                 int i = 0;
                 while (true) {
@@ -213,6 +213,10 @@ public class PlayalongScore {
                                     f[j] = (float) next[j];
                                 }
                                 oldGui.listenToValues(f);
+                            } else {
+                                //float f[] = new float[numParams];
+                                WekinatorLearningManager.getInstance().setParams(next);
+                                OscHandler.getOscHandler().sendParamsToSynth(next); //TODO: hack: get out of here!
                             }
 
                             mySleep = (long) (secondLists.get(i) * 1000);

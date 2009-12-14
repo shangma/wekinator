@@ -10,7 +10,6 @@
  */
 package wekinator;
 
-import wekinator.LearningSystem;
 import wekinator.LearningAlgorithms.LearningAlgorithm;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
@@ -106,28 +105,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
         return file;
     }
 
-    private File findLearningSystemFileToSave() {
-        JFileChooser fc = new OverwritePromptingFileChooser();
-        fc.setDialogType(JFileChooser.SAVE_DIALOG);
-        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastFeatureFileLocation();
-        if (location == null || location.equals("")) {
-            location = WekinatorInstance.getWekinatorInstance().getSettings().getDefaultFeatureFileLocation();
-        }
-        fc.setCurrentDirectory(new File(location));
 
-        File file = null;
-
-        int returnVal = fc.showSaveDialog(this);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-
-            file = fc.getSelectedFile();
-            WekinatorInstance.getWekinatorInstance().getSettings().setLastClassifierFileLocation(Util.getCanonicalPath(file));
-
-        }
-        return file;
-
-    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -148,7 +126,6 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
         learningAlgorithmConfigurationPanel2 = new wekinator.LearningAlgorithmConfigurationPanel();
         learningAlgorithmConfigurationPanel1 = new wekinator.LearningAlgorithmConfigurationPanel();
         buttonLoad = new javax.swing.JButton();
-        buttonSave = new javax.swing.JButton();
         buttonUndo = new javax.swing.JButton();
         buttonGo = new javax.swing.JButton();
         labelLearningSystemStatus = new javax.swing.JLabel();
@@ -204,17 +181,10 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
 
         paneTabSimpleAdvanced.addTab("Advanced", panelAdvancedTab);
 
-        buttonLoad.setText("Load from file...");
+        buttonLoad.setText("Load model file");
         buttonLoad.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonLoadActionPerformed(evt);
-            }
-        });
-
-        buttonSave.setText("Save to file...");
-        buttonSave.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonSaveActionPerformed(evt);
             }
         });
 
@@ -246,15 +216,13 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
                                 .add(buttonLoad)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(buttonSave)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 229, Short.MAX_VALUE)
                                 .add(buttonUndo))
                             .add(layout.createSequentialGroup()
                                 .add(buttonGo)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(labelLearningSystemStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 379, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                        .addContainerGap(57, Short.MAX_VALUE))))
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -264,7 +232,6 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(buttonLoad)
-                    .add(buttonSave)
                     .add(buttonUndo))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -281,9 +248,10 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
             LearningSystem newS = null;
             try {
                 // newS = LearningSystem.readFromFile(f);
-                newS = (LearningSystem) SerializedFileUtil.readFromFile(f);
+                newS = LearningSystem.readFromFile(f);
             } catch (Exception ex) {
                 System.out.println("Unable to load from file"); //TODO: nicer message
+
                 Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
             }
             if (newS != null) {
@@ -294,6 +262,9 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
                 //check newS feature names & param names (warn if disagree)
 
                 setLearningSystem(newS); //TODO: Problematic: What do we do w/ backup?; make usre to deal with hid there
+                WekinatorLearningManager.getInstance().setLearningSystem(newS);
+                labelLearningSystemStatus.setText("Learning system loaded successfully.");
+
                 System.out.println("Sanity check:");
                 for (int i = 0; i < newS.getNumParams(); i++) {
                         int[] mapping = newS.getDataset().getFeatureLearnerConfiguration().getFeatureMappingForLearner(i);
@@ -307,18 +278,6 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
             }
         }
 }//GEN-LAST:event_buttonLoadActionPerformed
-
-    private void buttonSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSaveActionPerformed
-        try {
-            LearningSystem ls = getLearningSystemFromFormToSave();
-            File file = findLearningSystemFileToSave();
-            if (file != null) {
-                SerializedFileUtil.writeToFile(file, ls);
-            }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid attempt to write to file", JOptionPane.ERROR_MESSAGE);
-        }
-}//GEN-LAST:event_buttonSaveActionPerformed
 //TODO: enable GO button depending on init state.
 
     private void buttonUndoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonUndoActionPerformed
@@ -378,7 +337,6 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonGo;
     private javax.swing.JButton buttonLoad;
-    private javax.swing.JButton buttonSave;
     private javax.swing.JButton buttonUndo;
     private wekinator.DatasetLoadingPanel datasetLoadingPanel1;
     private javax.swing.JLabel jLabel1;
@@ -394,6 +352,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
 
     private void setFormFromLearningSystem() {
         //TODO: Don't erase every time!!! TODO TODO TODO
+        //RAF: When responding to change fire & new learning system is same last, just look for learners that have changed
 
         if (learningSystem == null) {
             panelAdvancedParent.removeAll();
@@ -452,7 +411,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
                     } else {
                         myAlgorithmPanels[i].setNewLearningAlgorithmSelected();
                     }
-                    myAlgorithmPanels[i].setDisabled(!learningSystem.getLearnerEnabled(i));
+                 //   myAlgorithmPanels[i].setDisabled(!learningSystem.getLearnerEnabled(i));
                 }
 
             }

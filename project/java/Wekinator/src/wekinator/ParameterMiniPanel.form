@@ -16,17 +16,18 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="1" attributes="0">
-              <Component id="checkUse" pref="209" max="32767" attributes="0"/>
+          <Group type="102" alignment="0" attributes="0">
+              <Component id="checkUse" min="-2" pref="204" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="panelValue" min="-2" pref="128" max="-2" attributes="0"/>
+              <Component id="panelValue" min="-2" pref="119" max="-2" attributes="0"/>
+              <EmptySpace pref="74" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="panelValue" min="-2" max="-2" attributes="0"/>
-          <Component id="checkUse" alignment="0" min="-2" max="-2" attributes="0"/>
+          <Component id="checkUse" min="-2" max="-2" attributes="0"/>
+          <Component id="panelValue" alignment="0" min="-2" max="-2" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
@@ -51,6 +52,7 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="textValueActionPerformed"/>
+            <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="textValueFocusLost"/>
             <EventHandler event="inputMethodTextChanged" listener="java.awt.event.InputMethodListener" parameters="java.awt.event.InputMethodEvent" handler="textValueInputMethodTextChanged"/>
             <EventHandler event="keyTyped" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="textValueKeyTyped"/>
           </Events>

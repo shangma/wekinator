@@ -8,10 +8,16 @@
  *
  * Created on Dec 6, 2009, 9:55:51 PM
  */
-
 package wekinator;
 
-import wekinator.LearningSystem;
+import java.awt.CardLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.DefaultComboBoxModel;
+import wekinator.LearningSystem.EvaluationState;
+import wekinator.LearningSystem.LearningAlgorithmsInitializationState;
+        //TODO TODO TODO: If learning algorithm changed, or re-trained, clear records of previous evaluations
+
 
 /**
  *
@@ -19,13 +25,68 @@ import wekinator.LearningSystem;
  */
 public class EditPanel extends javax.swing.JPanel {
 
+    protected LearningSystem learningSystem = null;
+    protected int numParams = 0;
+    protected LearnerEditPanel[] learnerPanels = null;
+    protected PropertyChangeListener lsPropListener = new PropertyChangeListener() {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            learningSystemPropertyChanged(evt);
+        }
+    };
+
+    // protected allAccurac
     /** Creates new form EditPanel */
     public EditPanel() {
         initComponents();
     }
 
     void setLearningSystem(LearningSystem ls) {
-        //TODO
+        if (learningSystem == ls) {
+            return;
+        }
+
+        if (learningSystem != null) {
+            //TODO: remove listeners, learnerEditPanels
+            learningSystem.removePropertyChangeListener(lsPropListener);
+        }
+
+        learningSystem = ls;
+        numParams = ls.getNumParams();
+        learningSystem.addPropertyChangeListener(lsPropListener);
+
+        panelDrilldown.removeAll();
+        learnerPanels = new LearnerEditPanel[numParams];
+        CardLayout c = (CardLayout) panelDrilldown.getLayout();
+        panelAllAccuracy = new AllAccuracy();
+        panelAllAccuracy.setLearningSystem(ls);
+
+       // c.addLayoutComponent(panelAllAccuracy, "all");
+        panelDrilldown.add(panelAllAccuracy, "all");
+
+        comboEditSelection.removeAllItems();
+        Object[] items = new Object[numParams + 1];
+       items[0] = makeObj("All models");
+         
+
+       // comboEditSelection.addI
+
+        SimpleDataset d = learningSystem.getDataset();
+
+        for (int i = 0; i < numParams; i++) {
+            learnerPanels[i] = new LearnerEditPanel(ls, i);
+           // c.addLayoutComponent(learnerPanels[i], Integer.toString(i));
+            panelDrilldown.add(learnerPanels[i], Integer.toString(i));
+            items[i + 1] = makeObj(d.getParameterName(i));
+        }
+        comboEditSelection.setModel(new DefaultComboBoxModel(items));
+        comboEditSelection.setModel(new DefaultComboBoxModel(items));
+        c.show(panelDrilldown, "all");
+
+        panelDrilldown.repaint();
+
+        setButtonsEnabled();
+        
     }
 
     /** This method is called from within the constructor to
@@ -37,18 +98,11 @@ public class EditPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jComboBox2 = new javax.swing.JComboBox();
+        comboEditSelection = new javax.swing.JComboBox();
         panelDrilldown = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
-        jPanel11 = new javax.swing.JPanel();
-        jRadioButton3 = new javax.swing.JRadioButton();
-        folds = new javax.swing.JComboBox();
-        jRadioButton4 = new javax.swing.JRadioButton();
-        jButton20 = new javax.swing.JButton();
-        jButton21 = new javax.swing.JButton();
-        jProgressBar1 = new javax.swing.JProgressBar();
-        jButton24 = new javax.swing.JButton();
-        jLabel10 = new javax.swing.JLabel();
+        allAccuracy1 = new wekinator.AllAccuracy();
+        panelAllAccuracy = new wekinator.AllAccuracy();
         jPanel9 = new javax.swing.JPanel();
         jLabel7 = new javax.swing.JLabel();
         jButton15 = new javax.swing.JButton();
@@ -57,99 +111,31 @@ public class EditPanel extends javax.swing.JPanel {
         jButton18 = new javax.swing.JButton();
         jButton19 = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
-        jPanel13 = new javax.swing.JPanel();
-        jRadioButton7 = new javax.swing.JRadioButton();
-        folds1 = new javax.swing.JComboBox();
-        jRadioButton8 = new javax.swing.JRadioButton();
-        jButton22 = new javax.swing.JButton();
-        jButton23 = new javax.swing.JButton();
-        jProgressBar2 = new javax.swing.JProgressBar();
-        jLabel11 = new javax.swing.JLabel();
-        jLabel12 = new javax.swing.JLabel();
-        jLabel13 = new javax.swing.JLabel();
-        jLabel14 = new javax.swing.JLabel();
 
-        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "All models", "Model for Parameter 0 - Bow position", "Model for Parameter 1 - Pow tension", "Modle for Parameter 2 - Panning" }));
+        comboEditSelection.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "All models", "Model for Parameter 0 - Bow position", "Model for Parameter 1 - Pow tension", "Modle for Parameter 2 - Panning" }));
+        comboEditSelection.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                comboEditSelectionActionPerformed(evt);
+            }
+        });
 
         panelDrilldown.setLayout(new java.awt.CardLayout());
 
-        jPanel11.setBorder(javax.swing.BorderFactory.createTitledBorder("Accuracy"));
-
-        jRadioButton3.setText("Cross-validation using ");
-
-        folds.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "10 folds", "leave-one-out" }));
-
-        jRadioButton4.setText("Training accuracy");
-
-        jButton20.setText("Compute");
-        jButton20.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton20ActionPerformed(evt);
-            }
-        });
-
-        jButton21.setText("Cancel");
-        jButton21.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton21ActionPerformed(evt);
-            }
-        });
-
-        jButton24.setText("More info");
-        jButton24.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton24ActionPerformed(evt);
-            }
-        });
-
-        jLabel10.setText("Accuracy computed as .89");
-
-        org.jdesktop.layout.GroupLayout jPanel11Layout = new org.jdesktop.layout.GroupLayout(jPanel11);
-        jPanel11.setLayout(jPanel11Layout);
-        jPanel11Layout.setHorizontalGroup(
-            jPanel11Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel11Layout.createSequentialGroup()
-                .add(jPanel11Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jButton20)
-                    .add(jPanel11Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jPanel11Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jRadioButton3)
-                            .add(jRadioButton4))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(folds, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .add(93, 93, 93))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel11Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jPanel11Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel10)
-                    .add(jProgressBar1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 181, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel11Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jButton21)
-                    .add(jButton24))
-                .add(173, 173, 173))
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, allAccuracy1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
         );
-        jPanel11Layout.setVerticalGroup(
-            jPanel11Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel11Layout.createSequentialGroup()
-                .add(jButton20)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel11Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jRadioButton3)
-                    .add(folds, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel11Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(jPanel11Layout.createSequentialGroup()
-                        .add(jRadioButton4)
-                        .add(13, 13, 13)
-                        .add(jProgressBar1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(jButton21))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 41, Short.MAX_VALUE)
-                .add(jPanel11Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel10)
-                    .add(jButton24)))
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(allAccuracy1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(128, Short.MAX_VALUE))
         );
+
+        panelDrilldown.add(jPanel1, "card4");
+        panelDrilldown.add(panelAllAccuracy, "card3");
 
         jPanel9.setBorder(javax.swing.BorderFactory.createTitledBorder("Model settings"));
 
@@ -215,143 +201,27 @@ public class EditPanel extends javax.swing.JPanel {
                     .add(jButton1)))
         );
 
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel11, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
-            .add(jPanel9, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(jPanel9, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel11, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        panelDrilldown.add(jPanel1, "card4");
-
-        jPanel13.setBorder(javax.swing.BorderFactory.createTitledBorder("Accuracy"));
-
-        jRadioButton7.setText("Cross-validation using ");
-
-        folds1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "10 folds", "leave-one-out" }));
-
-        jRadioButton8.setText("Training accuracy");
-
-        jButton22.setText("Compute");
-        jButton22.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton22ActionPerformed(evt);
-            }
-        });
-
-        jButton23.setText("Cancel");
-        jButton23.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton23ActionPerformed(evt);
-            }
-        });
-
-        jLabel11.setText("Accuracy computed as");
-
-        jLabel12.setText("Parameter 0: .99");
-
-        jLabel13.setText("Parameter 0: .99");
-
-        jLabel14.setText("Computing Fold 2 of 10, model 1 of 15");
-
-        org.jdesktop.layout.GroupLayout jPanel13Layout = new org.jdesktop.layout.GroupLayout(jPanel13);
-        jPanel13.setLayout(jPanel13Layout);
-        jPanel13Layout.setHorizontalGroup(
-            jPanel13Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel13Layout.createSequentialGroup()
-                .add(jPanel13Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jButton22)
-                    .add(jPanel13Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jPanel13Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jRadioButton7)
-                            .add(jRadioButton8))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(folds1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .add(158, 158, 158))
-            .add(jPanel13Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jPanel13Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel13Layout.createSequentialGroup()
-                        .add(jLabel14)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jButton23))
-                    .add(jProgressBar2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE))
-                .add(140, 140, 140))
-            .add(jPanel13Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jPanel13Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel11)
-                    .add(jPanel13Layout.createSequentialGroup()
-                        .add(24, 24, 24)
-                        .add(jPanel13Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel13)
-                            .add(jLabel12))))
-                .addContainerGap(339, Short.MAX_VALUE))
-        );
-        jPanel13Layout.setVerticalGroup(
-            jPanel13Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel13Layout.createSequentialGroup()
-                .add(jButton22)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel13Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jRadioButton7)
-                    .add(folds1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jRadioButton8)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel13Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel14)
-                    .add(jButton23))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jProgressBar2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(21, 21, 21)
-                .add(jLabel11)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel12)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel13))
-        );
-
-        panelDrilldown.add(jPanel13, "card3");
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jComboBox2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(panelDrilldown, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 513, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(comboEditSelection, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(panelDrilldown, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 513, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jPanel9, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(jComboBox2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(comboEditSelection, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel9, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(panelDrilldown, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .add(panelDrilldown, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 484, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void jButton20ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton20ActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_jButton20ActionPerformed
-
-    private void jButton21ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton21ActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_jButton21ActionPerformed
-
-    private void jButton24ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton24ActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_jButton24ActionPerformed
 
     private void jButton18ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton18ActionPerformed
         // TODO add your handling code here:
@@ -361,47 +231,92 @@ public class EditPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
 }//GEN-LAST:event_jButton19ActionPerformed
 
-    private void jButton22ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton22ActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_jButton22ActionPerformed
-
-    private void jButton23ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton23ActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_jButton23ActionPerformed
-
-
+    private void comboEditSelectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboEditSelectionActionPerformed
+        CardLayout c = (CardLayout) panelDrilldown.getLayout();
+        int i = comboEditSelection.getSelectedIndex();
+        if (i == 0) {
+            c.show(panelDrilldown, "all");
+        } else {
+            c.show(panelDrilldown, Integer.toString(i-1));
+        }
+}//GEN-LAST:event_comboEditSelectionActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox folds;
-    private javax.swing.JComboBox folds1;
+    private wekinator.AllAccuracy allAccuracy1;
+    private javax.swing.JComboBox comboEditSelection;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton15;
     private javax.swing.JButton jButton18;
     private javax.swing.JButton jButton19;
-    private javax.swing.JButton jButton20;
-    private javax.swing.JButton jButton21;
-    private javax.swing.JButton jButton22;
-    private javax.swing.JButton jButton23;
-    private javax.swing.JButton jButton24;
-    private javax.swing.JComboBox jComboBox2;
-    private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel13;
-    private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel11;
-    private javax.swing.JPanel jPanel13;
     private javax.swing.JPanel jPanel9;
-    private javax.swing.JProgressBar jProgressBar1;
-    private javax.swing.JProgressBar jProgressBar2;
-    private javax.swing.JRadioButton jRadioButton3;
-    private javax.swing.JRadioButton jRadioButton4;
-    private javax.swing.JRadioButton jRadioButton7;
-    private javax.swing.JRadioButton jRadioButton8;
     private javax.swing.JTextField jTextField1;
+    private wekinator.AllAccuracy panelAllAccuracy;
     private javax.swing.JPanel panelDrilldown;
     // End of variables declaration//GEN-END:variables
 
+    private Object makeObj(final String item) {
+        return new Object() {
+
+            @Override
+            public String toString() {
+                return item;
+            }
+        };
+    }
+
+    private void learningSystemPropertyChanged(PropertyChangeEvent evt) {
+        String s = evt.getPropertyName();
+        if (s.equals(LearningSystem.PROP_CVRESULTS)) {
+            double[] results = learningSystem.getCvResults();
+            panelAllAccuracy.updateResults(results, true);
+            for (int i = 0; i < numParams; i++) {
+                learnerPanels[i].getAccuracyPanel().updateResults(results, true);
+            }
+        } else if (s.equals(LearningSystem.PROP_TRAINRESULTS)) {
+            double[] results = learningSystem.getCvResults();
+            panelAllAccuracy.updateResults(results, false);
+            for (int i = 0; i < numParams; i++) {
+                learnerPanels[i].getAccuracyPanel().updateResults(results, false);
+            }
+        } else if (s.equals(LearningSystem.PROP_EVALUATIONSTATE)) {
+            EvaluationState es = learningSystem.getEvaluationState();
+            if (es == EvaluationState.DONE_EVALUATING) {
+                panelAllAccuracy.evaluationFinished();
+                for (int i = 0; i < numParams; i++) {
+                    learnerPanels[i].getAccuracyPanel().evaluationFinished();
+                }
+            }
+
+            panelAllAccuracy.setEvaluationEnabled(es != EvaluationState.EVALUTATING);
+            for (int i = 0; i < numParams; i++) {
+                learnerPanels[i].getAccuracyPanel().setEvaluationEnabled(es != EvaluationState.EVALUTATING);
+            }
+        }
+        setButtonsEnabled();
+    }
+
+    protected void setButtonsEnabled() {
+        LearningSystem.LearningSystemTrainingState lsts = learningSystem.getSystemTrainingState();
+        LearningSystem.DatasetState dbs = learningSystem.getDatasetState();
+        LearningSystem.EvaluationState es = learningSystem.getEvaluationState();
+        LearningSystem.LearningAlgorithmsInitializationState lais = learningSystem.getInitializationState();
+        boolean enable = false;
+        if (dbs == learningSystem.datasetState.HAS_DATA 
+                && es != LearningSystem.EvaluationState.EVALUTATING
+                && lais == LearningAlgorithmsInitializationState.ALL_INITIALIZED
+                && lsts != LearningSystem.LearningSystemTrainingState.TRAINING) {
+            
+
+                    enable = true;
+
+
+        } 
+        panelAllAccuracy.setEvaluationEnabled(enable);
+            for (int i = 0; i < numParams; i++) {
+                learnerPanels[i].getAccuracyPanel().setEvaluationEnabled(enable);
+            }
+
+    }
 }

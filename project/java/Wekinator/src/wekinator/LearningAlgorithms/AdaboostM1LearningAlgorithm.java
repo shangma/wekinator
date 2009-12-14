@@ -7,17 +7,14 @@ package wekinator.LearningAlgorithms;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JPanel;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import weka.classifiers.Classifier;
-import weka.classifiers.Evaluation;
 import weka.core.Instance;
 import weka.core.Instances;
 import wekinator.LearningAlgorithms.LearningAlgorithm.TrainingState;
 import weka.classifiers.meta.AdaBoostM1;
 import weka.classifiers.trees.DecisionStump;
-import weka.classifiers.trees.j48.ClassifierTree;
 
 /**
  *
@@ -26,18 +23,16 @@ import weka.classifiers.trees.j48.ClassifierTree;
 public class AdaboostM1LearningAlgorithm implements ClassifierLearningAlgorithm {
     protected AdaBoostM1 classifier = null;
     protected TrainingState trainingState = TrainingState.NOT_TRAINED;
-    protected AdaboostM1SettingsPanel myPanel = null;
+    protected transient AdaboostM1SettingsPanel myPanel = null;
     protected int defaultNumRounds = 100;
 
     public AdaboostM1LearningAlgorithm() {
         initClassifier();
-        myPanel = new AdaboostM1SettingsPanel(this);
     }
 
     protected AdaboostM1LearningAlgorithm(AdaBoostM1 adaBoostM1) {
         classifier = adaBoostM1;
         setTrainingState(TrainingState.TRAINED);
-        myPanel = new AdaboostM1SettingsPanel(this);
     }
 
     protected void initClassifier() {
@@ -120,17 +115,23 @@ public class AdaboostM1LearningAlgorithm implements ClassifierLearningAlgorithm 
         setTrainingState(trainingState.NOT_TRAINED);
     }
 
-    public JPanel getSettingsPanel() {
+    public AdaboostM1SettingsPanel getSettingsPanel() {
+        if (myPanel == null) {
+            myPanel = new AdaboostM1SettingsPanel(this);
+        }
         return myPanel;
     }
 
     public void train(Instances instances) throws Exception {
+        if (instances.numInstances() == 0) {
+            return;
+        }
         setTrainingState(TrainingState.TRAINING);
         try {
             ClassifierLearningAlgorithmUtil.train(this, instances);
         } catch (Exception ex) {
             Logger.getLogger(AdaboostM1LearningAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
-            setTrainingState(trainingState.NOT_TRAINED);
+            setTrainingState(trainingState.ERROR); //TODO: fix everywhere
             throw new Exception(ex);
         }
         setTrainingState(TrainingState.TRAINED);

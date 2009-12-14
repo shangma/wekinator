@@ -16,8 +16,6 @@ import java.util.logging.Logger;
  */
 public class ChuckSystem {
     private static ChuckSystem ref = null; //singleton
-
-
     protected boolean[] doesParamUseDistribution = new boolean[0];
     protected int numParams = 0;
     public static final String PROP_NUMPARAMS = "numParams";

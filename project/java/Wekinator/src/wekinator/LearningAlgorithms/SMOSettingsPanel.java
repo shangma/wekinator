@@ -102,7 +102,7 @@ public class SMOSettingsPanel extends javax.swing.JPanel implements LearningAlgo
                 .add(checkPolyLower))
         );
 
-        panelKernelParent.add(panelPolyKernel, "linear");
+        panelKernelParent.add(panelPolyKernel, "polynomial");
 
         org.jdesktop.layout.GroupLayout panelLinearKernelLayout = new org.jdesktop.layout.GroupLayout(panelLinearKernel);
         panelLinearKernel.setLayout(panelLinearKernelLayout);
@@ -115,7 +115,7 @@ public class SMOSettingsPanel extends javax.swing.JPanel implements LearningAlgo
             .add(0, 55, Short.MAX_VALUE)
         );
 
-        panelKernelParent.add(panelLinearKernel, "polynomial");
+        panelKernelParent.add(panelLinearKernel, "linear");
 
         jLabel2.setText("Gamma:");
 
@@ -321,7 +321,7 @@ public class SMOSettingsPanel extends javax.swing.JPanel implements LearningAlgo
         } else {
             if (comboKernel.getItemCount() == 3) {
                 //add a new one
-                comboKernel.addItem("Original other kernel");
+                comboKernel.addItem("Original other kernel"); //TODO: test this
                 oldOtherKernel = k;
             }
             comboKernel.setSelectedIndex(3);

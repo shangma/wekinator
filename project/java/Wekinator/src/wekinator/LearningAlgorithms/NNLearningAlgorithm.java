@@ -10,7 +10,9 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Random;
 import weka.classifiers.Classifier;
+import weka.classifiers.Evaluation;
 import weka.classifiers.functions.MultilayerPerceptron;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -23,7 +25,7 @@ import wekinator.LearningAlgorithms.LearningAlgorithm.TrainingState;
 public class NNLearningAlgorithm implements ClassifierLearningAlgorithm {
     protected MultilayerPerceptron classifier = null;
     protected TrainingState trainingState = TrainingState.NOT_TRAINED;
-    protected NNSettingsPanel myPanel = null;
+    protected transient NNSettingsPanel myPanel = null;
     protected int defaultNumNeighbors = 10;
 
     public NNLearningAlgorithm() {
@@ -40,6 +42,10 @@ public class NNLearningAlgorithm implements ClassifierLearningAlgorithm {
     protected void initClassifier() {
         classifier = new MultilayerPerceptron();
             //TODO: settings
+    }
+
+    public void setUseGui(boolean use) {
+        classifier.setGUI(use);
     }
 
     /**
@@ -99,7 +105,7 @@ public class NNLearningAlgorithm implements ClassifierLearningAlgorithm {
     }
 
     public String getName() {
-        return "k-nearest neighbor";
+        return "Neural Network";
     }
 
     public void setFastAccurate(double value) {
@@ -115,17 +121,23 @@ public class NNLearningAlgorithm implements ClassifierLearningAlgorithm {
         setTrainingState(trainingState.NOT_TRAINED);
     }
 
-    public JPanel getSettingsPanel() {
+    public NNSettingsPanel getSettingsPanel() {
+                if (myPanel == null) {
+            myPanel = new NNSettingsPanel(this);
+        }
         return myPanel;
     }
 
     public void train(Instances instances) throws Exception {
+        if (instances.numInstances() == 0) {
+            return;
+        }
         setTrainingState(TrainingState.TRAINING);
         try {
             ClassifierLearningAlgorithmUtil.train(this, instances);
         } catch (Exception ex) {
             Logger.getLogger(NNLearningAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
-            setTrainingState(trainingState.NOT_TRAINED);
+            setTrainingState(trainingState.ERROR);
             throw new Exception(ex);
         }
         setTrainingState(TrainingState.TRAINED);
@@ -136,11 +148,52 @@ public class NNLearningAlgorithm implements ClassifierLearningAlgorithm {
     }
 
     public double computeAccuracy(Instances instances) throws Exception {
-        return ClassifierLearningAlgorithmUtil.computeAccuracy(this, instances);
+         boolean oldUseGui = classifier.getGUI();
+            classifier.setGUI(false);
+       double accuracy =  ClassifierLearningAlgorithmUtil.computeAccuracy(this, instances);
+        classifier.setGUI(oldUseGui);
+       return accuracy;
     }
 
     public double computeCVAccuracy(int numFolds, Instances instances) throws Exception {
-        return ClassifierLearningAlgorithmUtil.computeCVAccuracy(this, numFolds, instances);
+      //  return ClassifierLearningAlgorithmUtil.computeCVAccuracy(this, numFolds, instances);
+        double results;
+        Random r = new Random();
+        //Instances randData = new Instances(instances);
+       // randData.randomize(r);
+       // randData.stratify(numFolds);
+       // double sum = 0;
+            Evaluation eval = new Evaluation(instances);
+
+            boolean oldUseGui = classifier.getGUI();
+            classifier.setGUI(false);
+            eval.crossValidateModel(classifier, instances, numFolds, r);
+
+            classifier.setGUI(oldUseGui);
+            return eval.errorRate();
+     /*   for (int j = 0; j < numFolds; j++) {
+
+
+
+            Instances train = randData.trainCV(numFolds, j);
+            Instances test = randData.testCV(numFolds, j);
+            Classifier clsCopy = Classifier.makeCopy(c[classifierNum]);
+            clsCopy.buildClassifier(train);
+            eval.evaluateModel(clsCopy, test);
+            // double a = eval.correct();
+            double a = eval.errorRate();
+            System.out.println("err rate is " + a);
+
+
+            double b = (double) test.numInstances() / randData.numInstances(); //weight here
+            sum += a * b;
+        }
+        results = sum;
+        //}
+
+        return results;
+
+ */
     }
 
     public double[] distributionForInstance(Instance instance) throws Exception {

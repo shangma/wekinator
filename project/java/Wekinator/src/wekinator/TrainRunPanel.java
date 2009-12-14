@@ -13,9 +13,15 @@ package wekinator;
 import java.awt.CardLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import wekinator.LearningAlgorithms.*;
 import wekinator.LearningSystem.*;
+import wekinator.util.OverwritePromptingFileChooser;
+import wekinator.util.SerializedFileUtil;
+import wekinator.util.Util;
 /**
  *
  * @author rebecca
@@ -53,32 +59,46 @@ public class TrainRunPanel extends javax.swing.JPanel {
         this.ls = ls;
         if (this.ls != null) {
             ls.addPropertyChangeListener(learningSystemChangeListener);
+            setButtonsEnabled();
+        } else {
+            //TOOD: disable all
         }
         buildPanel.setLearningSystem(ls);
         trainPanel.setLearningSystem(ls);
         runPanel.setLearningSystem(ls);
         editPanel.setLearningSystem(ls);
+        CardLayout c = (CardLayout) layoutPanel.getLayout();
+        c.show(layoutPanel, "cardBuild");
+    }
+
+
+
+    private void setButtonsEnabled() {
+        LearningSystemTrainingState t = ls.getSystemTrainingState();
+        EvaluationState e = ls.getEvaluationState();
+        DatasetState d = ls.getDatasetState();
+        LearningAlgorithmsInitializationState i = ls.getInitializationState();
+
+        boolean enableRun = (t == LearningSystemTrainingState.TRAINED
+                 && e != EvaluationState.EVALUTATING
+                 && i == LearningAlgorithmsInitializationState.ALL_INITIALIZED );
+
+        boolean enableTrain = (d == DatasetState.HAS_DATA
+                 && i == LearningAlgorithmsInitializationState.ALL_INITIALIZED);
+
+        boolean enableCollect = (i == LearningAlgorithmsInitializationState.ALL_INITIALIZED);
+        boolean enableConfigure = (i == LearningAlgorithmsInitializationState.ALL_INITIALIZED);
+
+        buttonRun.setEnabled(enableRun);
+        buttonTrain.setEnabled(enableTrain);
+        buttonCollect.setEnabled(enableCollect);
+        buttonConfigure.setEnabled(enableConfigure);
+
+        //TODO: Also go back to another pane if current is bogus?
     }
 
     private void learningSystemChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(LearningSystem.PROP_INITIALIZATIONSTATE)) {
-            LearningAlgorithmsInitializationState s = ls.getInitializationState();
-            if (s != LearningAlgorithmsInitializationState.ALL_INITIALIZED) {
-                buttonCollect.setEnabled(false);
-                buttonTrain.setEnabled(false);
-                buttonRun.setEnabled(false);
-                buttonConfigure.setEnabled(false);
-            } else {
-                buttonCollect.setEnabled(true);
-                buttonConfigure.setEnabled(true);
-            }
-        } else if (evt.getPropertyName().equals(LearningSystem.PROP_DATASETSTATE)) {
-            DatasetState s = ls.getDatasetState();
-            buttonTrain.setEnabled(s == DatasetState.HAS_DATA);
-        } else if (evt.getPropertyName().equals(LearningSystem.PROP_TRAININGSTATE)) {
-            LearningAlgorithmsTrainingState s = ls.getTrainingState();
-            buttonRun.setEnabled(s != LearningAlgorithmsTrainingState.NOT_TRAINED);
-        }
+        setButtonsEnabled();
     }
 
     /** This method is called from within the constructor to
@@ -104,6 +124,7 @@ public class TrainRunPanel extends javax.swing.JPanel {
         buttonRun = new javax.swing.JButton();
         buttonConfigure = new javax.swing.JButton();
         buttonShh = new javax.swing.JButton();
+        buttonSave = new javax.swing.JButton();
 
         jLabel3.setText("jLabel3");
 
@@ -120,7 +141,7 @@ public class TrainRunPanel extends javax.swing.JPanel {
             }
         });
 
-        buttonTrain.setText("TRAIN & CONFIGURE");
+        buttonTrain.setText("TRAIN");
         buttonTrain.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonTrainActionPerformed(evt);
@@ -174,6 +195,13 @@ public class TrainRunPanel extends javax.swing.JPanel {
             }
         });
 
+        buttonSave.setText("Save model file");
+        buttonSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonSaveActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -183,7 +211,9 @@ public class TrainRunPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(buttonShh)
                     .add(layout.createSequentialGroup()
-                        .add(menuPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(menuPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(buttonSave))
                         .add(26, 26, 26)
                         .add(layoutPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -193,19 +223,19 @@ public class TrainRunPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layoutPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())
+                    .add(layoutPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(layout.createSequentialGroup()
                         .add(menuPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(buttonShh)
-                        .add(276, 276, 276))))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(buttonSave)))
+                .add(114, 114, 114))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void buttonShhActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonShhActionPerformed
-        // TODO add your handling code here:
+        OscHandler.getOscHandler().stopSound();
 }//GEN-LAST:event_buttonShhActionPerformed
 
     private void buttonConfigureActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonConfigureActionPerformed
@@ -227,6 +257,41 @@ public class TrainRunPanel extends javax.swing.JPanel {
         CardLayout c = (CardLayout) layoutPanel.getLayout();
         c.show(layoutPanel, "cardRun");
 }//GEN-LAST:event_buttonRunActionPerformed
+
+    private void buttonSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSaveActionPerformed
+    try {
+            File file = findLearningSystemFileToSave();
+            if (file != null) {
+                ls.writeToFile(file);
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid attempt to write to file", JOptionPane.ERROR_MESSAGE);
+        }
+}//GEN-LAST:event_buttonSaveActionPerformed
+
+        private File findLearningSystemFileToSave() {
+        JFileChooser fc = new OverwritePromptingFileChooser();
+        fc.setDialogType(JFileChooser.SAVE_DIALOG);
+        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastFeatureFileLocation();
+        if (location == null || location.equals("")) {
+            location = WekinatorInstance.getWekinatorInstance().getSettings().getDefaultFeatureFileLocation();
+        }
+        fc.setCurrentDirectory(new File(location));
+
+        File file = null;
+
+        int returnVal = fc.showSaveDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+
+            file = fc.getSelectedFile();
+            WekinatorInstance.getWekinatorInstance().getSettings().setLastClassifierFileLocation(Util.getCanonicalPath(file));
+
+        }
+        return file;
+
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private wekinator.BuildPanel buildPanel;
     private javax.swing.JButton buttonCollect;
@@ -234,6 +299,7 @@ public class TrainRunPanel extends javax.swing.JPanel {
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
     private javax.swing.JButton buttonRun;
+    private javax.swing.JButton buttonSave;
     private javax.swing.JButton buttonShh;
     private javax.swing.JButton buttonTrain;
     private wekinator.EditPanel editPanel;

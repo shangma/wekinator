@@ -34,7 +34,7 @@ public class PlayalongScoreViewer extends javax.swing.JFrame {
     PlayalongScore score = null;
     MyRenderer renderer = null;
 
-    public PlayalongScoreViewer(PlayalongScore score, MainGUI gui) {
+    public PlayalongScoreViewer(PlayalongScore score) {
         initComponents();
         renderer = new MyRenderer();
         populateTable(score);
@@ -50,7 +50,7 @@ public class PlayalongScoreViewer extends javax.swing.JFrame {
                 scorePropertyChange(evt);
             }
         });
-        this.gui = gui;
+      //  this.gui = gui;
     }
 
     private void scorePropertyChange(PropertyChangeEvent evt) {
@@ -198,15 +198,21 @@ public class PlayalongScoreViewer extends javax.swing.JFrame {
         for (int i = 0; i < d.length; i++) {
             Double dd = new Double(d[i]);
             if (dd.isNaN()) {
-                d[i] = gui.getCurrentParamValue(i);
+               // d[i] = gui.getCurrentParamValue(i);
+                d[i] = WekinatorLearningManager.getInstance().getParams(i);
             }
         }
         //hack for now
-        float[] f = new float[d.length];
+     /*   float[] f = new float[d.length];
         for (int i = 0; i < d.length; i++) {
             f[i] = (float) d[i];
-        }
-        gui.listenToValues(f);
+        } */
+        //gui.listenToValues(f);
+        WekinatorLearningManager.getInstance().setParams(d);
+                //And play:
+        OscHandler.getOscHandler().startSound();
+        OscHandler.getOscHandler().sendParamsToSynth(d);
+
 }//GEN-LAST:event_buttonListenActionPerformed
 
     private void buttonMoveUpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonMoveUpActionPerformed
@@ -240,7 +246,7 @@ public class PlayalongScoreViewer extends javax.swing.JFrame {
                 double[] d2 = {2, 3, 4};
                 ps.addParams(d, 2);
                 ps.addParams(d2, 3);
-                new PlayalongScoreViewer(ps, new MainGUI()).setVisible(true);
+                new PlayalongScoreViewer(ps).setVisible(true);
                 /*   try {
                 // Thread.sleep(1000);
                 //       new DataViewer().setVisible(true);
@@ -267,7 +273,7 @@ public class PlayalongScoreViewer extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
     private javax.swing.JTable table;
     private ScoreTableModel model;
-    private MainGUI gui;
+  //  private MainGUI gui;
 
     private void populateTable(PlayalongScore score) {
         model = new ScoreTableModel(score);

@@ -24,7 +24,7 @@ import wekinator.LearningAlgorithms.LearningAlgorithm.TrainingState;
 public class J48LearningAlgorithm implements ClassifierLearningAlgorithm {
     protected J48 classifier = null;
     protected TrainingState trainingState = TrainingState.NOT_TRAINED;
-    protected J48SettingsPanel myPanel = null;
+    protected transient J48SettingsPanel myPanel = null;
 //    protected int defaultNumRounds = 100; Any default params?
 
     public J48LearningAlgorithm() {
@@ -100,7 +100,7 @@ public class J48LearningAlgorithm implements ClassifierLearningAlgorithm {
     }
 
     public String getName() {
-        return "AdaboostM.1";
+        return "J48 Decision Tree";
     }
 
     public void setFastAccurate(double value) {
@@ -116,11 +116,17 @@ public class J48LearningAlgorithm implements ClassifierLearningAlgorithm {
         setTrainingState(trainingState.NOT_TRAINED);
     }
 
-    public JPanel getSettingsPanel() {
+    public J48SettingsPanel getSettingsPanel() {
+                if (myPanel == null) {
+            myPanel = new J48SettingsPanel(this);
+        }
         return myPanel;
     }
 
     public void train(Instances instances) throws Exception {
+        if (instances.numInstances() == 0) {
+            return;
+        }
         setTrainingState(TrainingState.TRAINING);
         try {
             ClassifierLearningAlgorithmUtil.train(this, instances);

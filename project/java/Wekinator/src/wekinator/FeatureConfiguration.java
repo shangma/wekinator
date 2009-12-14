@@ -52,6 +52,25 @@ public class FeatureConfiguration implements Serializable {
     public HidSetup hidSetup = new HidSetup();
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
+    protected int[] delta1Features = new int[0];
+
+
+
+    public void setDelta1s(int[] numsToUse) {
+        //TODO: better error checking
+        int myBaseNum = getNumBaseFeatures();
+        if (numsToUse != null) {
+            for (int i = 0; i < numsToUse.length; i++) {
+                if (numsToUse[i] >= myBaseNum)  {
+                    System.out.println("Invalid meta feature request");
+                    return;
+                }
+            }
+            delta1Features = numsToUse;
+        }
+    }
+    
+
     /**
      * Add PropertyChangeListener.
      *
@@ -74,7 +93,7 @@ public class FeatureConfiguration implements Serializable {
         return ((useFFT ? ((int) (fftSize / 2)) : 0) + (useCentroid ? 1 : 0) + (useFlux ? 1 : 0) + (useRMS ? 1 : 0) + (useRolloff ? 1 : 0));
     }
 
-    public int getNumFeatures() {
+    public int getNumBaseFeatures() {
         int s = 0;
         s += getNumAudioFeatures();
         if (useTrackpad) {
@@ -94,6 +113,18 @@ public class FeatureConfiguration implements Serializable {
         }
         if (useCustomOscFeatures) {
             s += numCustomOscFeatures;
+        }
+        return s;
+    }
+
+    public int getNumFeatures() {
+        return getNumBaseFeatures() + getNumMetaFeatures();
+    }
+
+    public int getNumMetaFeatures() {
+        int s= 0;
+        if (delta1Features != null) {
+            s += delta1Features.length;
         }
         return s;
     }
@@ -537,8 +568,8 @@ public class FeatureConfiguration implements Serializable {
         SerializedFileUtil.writeToFile(file, this);
     }
 
-    public String[] getFeatureNames() {
-        String s[] = new String[getNumFeatures()];
+    public String[] getBaseFeatureNames() {
+ String s[] = new String[getNumFeatures()];
         int n = 0;
         if (useFFT) {
             for (int i = 0; i < (fftSize * .5); i++) {
@@ -606,8 +637,36 @@ public class FeatureConfiguration implements Serializable {
         return s;
     }
 
+    public String[] getFeatureNames() {
+        String[] b = getBaseFeatureNames();
+        String[] m = getMetaFeatureNames();
+        if (m == null) {
+            return b;
+        }
+
+        String[] all = new String[b.length + m.length];
+        for (int i= 0; i < b.length; i++) {
+            all[i] = b[i];
+        }
+        for (int i = 0; i < m.length; i++) {
+            all[i + b.length] = m[i];
+        }
+       return all;
+    }
+
+    public String[] getMetaFeatureNames() {
+        String[] s = new String[getNumMetaFeatures()];
+       //TODO TODO TODO: fill in these names!!
+        
+
+        return s;
+    }
+
     double[] process(double[] features) {
         //TODO: Add ability to compute additional statistics here.
         return features;
     }
+
+
+
 }

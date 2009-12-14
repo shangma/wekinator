@@ -57,6 +57,16 @@ public class SimpleDataset implements Serializable {
     protected FeatureLearnerConfiguration featureLearnerConfiguration = null;
     private ChangeEvent changeEvent = null;
 
+    private transient DataViewer viewer =null;
+
+    public void showViewer() {
+        if (viewer == null) {
+            viewer= new DataViewer(this);
+        }
+        viewer.setVisible(true);
+        viewer.toFront();
+    }
+
     /**
      * Get the value of featureLearnerConfiguration
      *
@@ -101,6 +111,7 @@ public class SimpleDataset implements Serializable {
      * @param hasInstances new value of hasInstances
      */
     protected void setHasInstances(boolean hasInstances) {
+        System.out.println("has instances set to " + hasInstances);
         boolean oldHasInstances = this.hasInstances;
         this.hasInstances = hasInstances;
         propertyChangeSupport.firePropertyChange(PROP_HASINSTANCES, oldHasInstances, hasInstances);
@@ -629,7 +640,7 @@ public class SimpleDataset implements Serializable {
         in.setDataset(allInstances);
         allInstances.add(in);
         setHasInstances(true);
-    fireStateChanged();
+     fireStateChanged();
 
 
     // idMap.put(thisId, in);
@@ -825,7 +836,7 @@ public class SimpleDataset implements Serializable {
 
         } catch (ParseException ex) {
             Logger.getLogger(SimpleDataset.class.getName()).log(Level.WARNING, "bad date", ex);
-            System.out.println("Here");
+          //  System.out.println("Here");
             return "";
         }
     }

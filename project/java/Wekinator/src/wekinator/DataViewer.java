@@ -15,6 +15,8 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTable;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
 
 /**
@@ -35,10 +37,10 @@ public class DataViewer extends javax.swing.JFrame {
         this.gui = gui;
     }*/
 
-    public DataViewer(SimpleDataset dataset, MainGUI gui) {
+    public DataViewer(SimpleDataset dataset) {
         initComponents();
         populateTable(dataset);
-        this.gui = gui;
+       // this.gui = gui;
     }
 
     /** This method is called from within the constructor to
@@ -136,15 +138,18 @@ public class DataViewer extends javax.swing.JFrame {
 
 
         int row = table.getSelectedRow();
-        float f[] = model.getSelectedParams(row);
-        for (int i= 0; i < f.length; i++) {
-            Double d= new Double(f[i]);
-            if (d.isNaN()) {
-                f[i] = gui.getCurrentParamValue(i);
+        double d[] = model.getSelectedParams(row);
+        for (int i= 0; i < d.length; i++) {
+            Double dd= new Double(d[i]);
+            if (dd.isNaN()) {
+                d[i] = WekinatorLearningManager.getInstance().getParams(i);
             }
         }
-        gui.listenToValues(f);
+        //gui.listenToValues(f);
+        WekinatorLearningManager.getInstance().setParams(d);
 
+        OscHandler.getOscHandler().startSound();
+        OscHandler.getOscHandler().sendParamsToSynth(d);
 }//GEN-LAST:event_buttonListenActionPerformed
 
     /**
@@ -168,7 +173,7 @@ public class DataViewer extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
     private javax.swing.JTable table;
     private DataTableModel model;
-    private MainGUI gui;
+  //  private MainGUI gui;
 
     /*
     private void populateTable() {
@@ -251,7 +256,12 @@ class DataTableModel extends AbstractTableModel {
       /*  for (int i = 0; i < ii.length; i++) {
     setParamsAll(i, ii[i].attributeToDoubleArray(ii[i].classIndex()));
     } */
+        dataset.addChangeListener(new ChangeListener() {
 
+            public void stateChanged(ChangeEvent e) {
+                fireTableDataChanged(); //TODO for efficiency, update this... 
+            }
+        });
 
     }
 
@@ -451,12 +461,12 @@ class DataTableModel extends AbstractTableModel {
 
     }
 
-    float[] getSelectedParams(int row) {
+    double[] getSelectedParams(int row) {
         System.out.println("made it here");
-        float f[] = new float[numParams];
+        double f[] = new double[numParams];
         for (int i = 0; i < numParams; i++) {
            // f[i] = (float) instances[i].instance(row).classValue();
-            f[i] = (float)dataset.getParam(row, i);
+            f[i] = dataset.getParam(row, i);
             Double d= new Double(f[i]);
             if (d.isNaN()) {
                 System.out.println("AHFALJFLSDJGSDFDLFJDFDJ NaN here");

@@ -24,9 +24,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="buttonLoad" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="buttonSave" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <EmptySpace pref="229" max="32767" attributes="0"/>
                               <Component id="buttonUndo" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
@@ -35,7 +33,7 @@
                               <Component id="labelLearningSystemStatus" min="-2" pref="379" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace pref="57" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -49,7 +47,6 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="buttonLoad" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="buttonSave" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="buttonUndo" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -180,18 +177,10 @@
     </Container>
     <Component class="javax.swing.JButton" name="buttonLoad">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Load from file..."/>
+        <Property name="text" type="java.lang.String" value="Load model file"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonLoadActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JButton" name="buttonSave">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Save to file..."/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonSaveActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JButton" name="buttonUndo">

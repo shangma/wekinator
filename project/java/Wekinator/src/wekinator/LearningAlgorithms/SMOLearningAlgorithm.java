@@ -7,7 +7,6 @@ package wekinator.LearningAlgorithms;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JPanel;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import weka.classifiers.Classifier;
@@ -27,7 +26,7 @@ import wekinator.LearningAlgorithms.LearningAlgorithm.TrainingState;
 public class SMOLearningAlgorithm implements ClassifierLearningAlgorithm {
     protected SMO classifier = null;
     protected TrainingState trainingState = TrainingState.NOT_TRAINED;
-    protected SMOSettingsPanel myPanel = null;
+    protected transient SMOSettingsPanel myPanel = null;
 //    protected int defaultNumRounds = 100; Any default params?
 
     public SMOLearningAlgorithm() {
@@ -121,11 +120,17 @@ public class SMOLearningAlgorithm implements ClassifierLearningAlgorithm {
         setTrainingState(trainingState.NOT_TRAINED);
     }
 
-    public JPanel getSettingsPanel() {
+    public SMOSettingsPanel getSettingsPanel() {
+                if (myPanel == null) {
+            myPanel = new SMOSettingsPanel(this);
+        }
         return myPanel;
     }
 
     public void train(Instances instances) throws Exception {
+        if (instances.numInstances() == 0) {
+            return;
+        }
         setTrainingState(TrainingState.TRAINING);
         try {
             ClassifierLearningAlgorithmUtil.train(this, instances);

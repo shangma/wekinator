@@ -7,6 +7,7 @@ package wekinator.LearningAlgorithms;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import javax.swing.JPanel;
 import weka.core.Instance;
@@ -24,7 +25,7 @@ public interface LearningAlgorithm extends Serializable {
     public String PROP_TRAININGSTATE = "trainingState";
 
     public enum TrainingState {
-        NOT_TRAINED, TRAINING, TRAINED
+        NOT_TRAINED, TRAINING, TRAINED, ERROR
     };
     /**
      * Add PropertyChangeListener.
@@ -49,7 +50,7 @@ public interface LearningAlgorithm extends Serializable {
      */
     public void removePropertyChangeListener(PropertyChangeListener listener);
 
-    public JPanel getSettingsPanel();
+    public LearningAlgorithmSettingsPanel getSettingsPanel();
 
     public void setFastAccurate(double value);
 
@@ -68,4 +69,5 @@ public interface LearningAlgorithm extends Serializable {
     public double computeAccuracy(Instances instances) throws Exception;
 
     public double computeCVAccuracy(int numFolds, Instances instances) throws Exception;
+
 }

@@ -22,7 +22,7 @@ import wekinator.LearningAlgorithms.LearningAlgorithm.TrainingState;
 public class OtherClassifierLearningAlgorithm implements ClassifierLearningAlgorithm {
     protected Classifier classifier = null;
     protected TrainingState trainingState = TrainingState.NOT_TRAINED;
-    protected OtherClassifierSettingsPanel myPanel = null;
+    protected transient OtherClassifierSettingsPanel myPanel = null;
 
     protected OtherClassifierLearningAlgorithm(Classifier c) {
         classifier = c;
@@ -101,11 +101,17 @@ public class OtherClassifierLearningAlgorithm implements ClassifierLearningAlgor
         setTrainingState(trainingState.NOT_TRAINED); //better than disallowing this
     }
 
-    public JPanel getSettingsPanel() {
+    public OtherClassifierSettingsPanel getSettingsPanel() {
+                if (myPanel == null) {
+            myPanel = new OtherClassifierSettingsPanel(this);
+        }
         return myPanel;
     }
 
     public void train(Instances instances) throws Exception {
+        if (instances.numInstances() == 0) {
+            return;
+        }
         setTrainingState(TrainingState.TRAINING);
         try {
             ClassifierLearningAlgorithmUtil.train(this, instances);
