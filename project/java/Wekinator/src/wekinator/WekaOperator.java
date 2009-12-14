@@ -546,7 +546,7 @@ public class WekaOperator implements Subject {
 
     public void receivedPlayalongUpdate(String s) {
         //   gui.displayPlayalongUpdate(string);
-        gui.displayPlayalongUpdate(s);
+      //rf  gui.displayPlayalongUpdate(s);
     // System.out.println("RECEIVED PLAYALONG ");
     }
 

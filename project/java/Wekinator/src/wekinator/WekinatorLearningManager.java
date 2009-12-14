@@ -5,6 +5,9 @@
 
 package wekinator;
 
+import java.awt.KeyEventPostProcessor;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.KeyEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.beans.PropertyChangeEvent;
@@ -235,6 +238,7 @@ public class WekinatorLearningManager {
     }
 
     public void startDatasetCreation() {
+        if (initState == InitializationState.INITIALIZED) {
         if (mode == Mode.DATASET_CREATION)
             return;
 
@@ -242,9 +246,14 @@ public class WekinatorLearningManager {
             stopTraining();
         }
         //if mode = running, don't stop extracting features, just change what I do with them
-        
+
+        if (params == null) {
+            params = new double[learningSystem.getNumParams()];
+        }
+
         OscHandler.getOscHandler().initiateRecord();
-        setMode(Mode.DATASET_CREATION);      
+        setMode(Mode.DATASET_CREATION);
+        }
     }
 
     public void stopRunning() {
@@ -386,6 +395,7 @@ public class WekinatorLearningManager {
             learningSystem.addPropertyChangeListener(learningSystemPropertyChange);
             
         }
+        updateMyInitState();
         propertyChangeSupport.firePropertyChange(PROP_LEARNINGSYSTEM, oldLearningSystem, learningSystem);
     }
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
@@ -417,7 +427,28 @@ public class WekinatorLearningManager {
     }
 
     private WekinatorLearningManager() {
-        
+        KeyEventPostProcessor processor = new KeyEventPostProcessor() {
+            public boolean postProcessKeyEvent(KeyEvent e) {
+                if (e.getID() == KeyEvent.KEY_PRESSED) {
+                    if (e.getKeyCode() == KeyEvent.VK_PAGE_DOWN) {
+                        //Start recording
+                        System.out.println("pg down start");
+                        startDatasetCreation();
+                    } else if (e.getKeyCode() == KeyEvent.VK_PAGE_UP) {
+                         //TODO in future: integrate playalong here.
+
+                    }
+                } else if (e.getID() == KeyEvent.KEY_RELEASED) {
+                    if (e.getKeyCode() == KeyEvent.VK_PAGE_DOWN) {
+                                                System.out.println("pg down stop");
+
+                       stopDatasetCreation();
+                    }
+                }
+                return true;
+            }
+        };
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventPostProcessor(processor);
     }
 
     static Object getWekinatorManager() {
@@ -443,7 +474,7 @@ public class WekinatorLearningManager {
 
     protected void updateMyInitState() {
         if (learningSystem != null && featureConfiguration != null
-                && learningSystem.getInitializationState() == LearningSystem.LearningAlgorithmsInitializationState.ALL_INITIALIZED) {
+                && learningSystem.getInitializationState() != LearningSystem.LearningAlgorithmsInitializationState.ALL_INITIALIZED) {
             setInitState(InitializationState.NOT_INITIALIZED);
         } else {
             setInitState(InitializationState.INITIALIZED);
