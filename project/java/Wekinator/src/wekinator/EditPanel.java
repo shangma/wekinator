@@ -100,17 +100,8 @@ public class EditPanel extends javax.swing.JPanel {
 
         comboEditSelection = new javax.swing.JComboBox();
         panelDrilldown = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
-        allAccuracy1 = new wekinator.AllAccuracy();
         panelAllAccuracy = new wekinator.AllAccuracy();
-        jPanel9 = new javax.swing.JPanel();
-        jLabel7 = new javax.swing.JLabel();
-        jButton15 = new javax.swing.JButton();
-        jTextField1 = new javax.swing.JTextField();
-        jLabel9 = new javax.swing.JLabel();
-        jButton18 = new javax.swing.JButton();
-        jButton19 = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
+        learnerEditPanel1 = new wekinator.LearnerEditPanel();
 
         comboEditSelection.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "All models", "Model for Parameter 0 - Bow position", "Model for Parameter 1 - Pow tension", "Modle for Parameter 2 - Panning" }));
         comboEditSelection.addActionListener(new java.awt.event.ActionListener() {
@@ -120,86 +111,8 @@ public class EditPanel extends javax.swing.JPanel {
         });
 
         panelDrilldown.setLayout(new java.awt.CardLayout());
-
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, allAccuracy1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(allAccuracy1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(128, Short.MAX_VALUE))
-        );
-
-        panelDrilldown.add(jPanel1, "card4");
         panelDrilldown.add(panelAllAccuracy, "card3");
-
-        jPanel9.setBorder(javax.swing.BorderFactory.createTitledBorder("Model settings"));
-
-        jLabel7.setText("Using kNN, 3 features");
-
-        jButton15.setText("Change model type or load...");
-
-        jTextField1.setText("10");
-
-        jLabel9.setText("neighbors");
-
-        jButton18.setText("Retrain using these settings");
-        jButton18.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton18ActionPerformed(evt);
-            }
-        });
-
-        jButton19.setText("Save to file...");
-        jButton19.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton19ActionPerformed(evt);
-            }
-        });
-
-        jButton1.setText("Reset");
-
-        org.jdesktop.layout.GroupLayout jPanel9Layout = new org.jdesktop.layout.GroupLayout(jPanel9);
-        jPanel9.setLayout(jPanel9Layout);
-        jPanel9Layout.setHorizontalGroup(
-            jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel9Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel9Layout.createSequentialGroup()
-                        .add(jButton18)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(jButton1))
-                    .add(jLabel7)
-                    .add(jPanel9Layout.createSequentialGroup()
-                        .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabel9))
-                    .add(jButton19)
-                    .add(jButton15))
-                .addContainerGap(183, Short.MAX_VALUE))
-        );
-        jPanel9Layout.setVerticalGroup(
-            jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel9Layout.createSequentialGroup()
-                .add(jLabel7)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jButton19)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jButton15)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 23, Short.MAX_VALUE)
-                .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel9))
-                .add(34, 34, 34)
-                .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jButton18)
-                    .add(jButton1)))
-        );
+        panelDrilldown.add(learnerEditPanel1, "card4");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -208,8 +121,7 @@ public class EditPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(comboEditSelection, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(panelDrilldown, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 513, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jPanel9, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(panelDrilldown, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 513, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -217,19 +129,9 @@ public class EditPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(comboEditSelection, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel9, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(panelDrilldown, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 484, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(panelDrilldown, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 679, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void jButton18ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton18ActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_jButton18ActionPerformed
-
-    private void jButton19ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton19ActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_jButton19ActionPerformed
 
     private void comboEditSelectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboEditSelectionActionPerformed
         CardLayout c = (CardLayout) panelDrilldown.getLayout();
@@ -240,18 +142,10 @@ public class EditPanel extends javax.swing.JPanel {
             c.show(panelDrilldown, Integer.toString(i-1));
         }
 }//GEN-LAST:event_comboEditSelectionActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private wekinator.AllAccuracy allAccuracy1;
     private javax.swing.JComboBox comboEditSelection;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton15;
-    private javax.swing.JButton jButton18;
-    private javax.swing.JButton jButton19;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel9;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel9;
-    private javax.swing.JTextField jTextField1;
+    private wekinator.LearnerEditPanel learnerEditPanel1;
     private wekinator.AllAccuracy panelAllAccuracy;
     private javax.swing.JPanel panelDrilldown;
     // End of variables declaration//GEN-END:variables
