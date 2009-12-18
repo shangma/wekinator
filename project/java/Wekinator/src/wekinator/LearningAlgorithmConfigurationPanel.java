@@ -1276,7 +1276,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
         panelFeatures.removeAll();
 //        FeatureConfiguration fc = WekinatorLearningManager.getInstance().getFeatureConfiguration();
         if (featureConfiguration != null) {
-            String[] featureNames = featureConfiguration.getFeatureNames();
+            String[] featureNames = featureConfiguration.getAllEnabledFeatureNames();
             if (featureSelected == null || featureSelected.length != featureNames.length) {
                 featureSelected = new boolean[featureNames.length];
                 featureBoxes = new JCheckBox[featureNames.length];

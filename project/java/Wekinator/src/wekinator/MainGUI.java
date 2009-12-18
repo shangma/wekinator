@@ -1393,7 +1393,7 @@ private void menuItemOtfScoreActionPerformed(java.awt.event.ActionEvent evt) {//
 }//GEN-LAST:event_menuItemOtfScoreActionPerformed
 
 private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemViewFeaturesActionPerformed
-    WekinatorLearningManager.getInstance().showFeatureViewer();
+    FeatureExtractorProxy.get().showFeatureViewer();
 }//GEN-LAST:event_menuItemViewFeaturesActionPerformed
 
     private File findHidSetupFileToSave() {
@@ -1793,7 +1793,7 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
            // labelParameterValues.setText("Enter parameter values (any real numbers)");
         }
 
-        FeatureToParameterMapping newMapping = new FeatureToParameterMapping(fm, nParam);
+      //  FeatureToParameterMapping newMapping = new FeatureToParameterMapping(fm, nParam);
       //  featureParameterMaskEditor.setMapping(newMapping);
         areChuckSettingsReceived = true;
         enableClassifierPanel();

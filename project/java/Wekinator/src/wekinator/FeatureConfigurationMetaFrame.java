@@ -8,24 +8,31 @@
  *
  * Created on Dec 14, 2009, 12:17:25 AM
  */
-
 package wekinator;
 
 import java.awt.GridLayout;
-import javax.swing.BoxLayout;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import wekinator.FeatureConfiguration.Feature;
 
 /**
  *
  * @author rebecca
  */
 public class FeatureConfigurationMetaFrame extends javax.swing.JFrame {
-    FeatureConfiguration fc = null;
-    JCheckBox[] d1Boxes = null;
-    JCheckBox[] d2Boxes = null;
 
+    FeatureConfiguration fc = null;
+    String[] baseFeatureClassNames = null;
+    // JCheckBox[][] parentBoxArray; //index by feat #, meta #
+    JCheckBox[][][] childBoxArray; //index by feat #, dimension #, meta #
+    LinkedList<Feature> featuresInOrder = null;
+    // List<JCheckBox
 
     /** Creates new form FeatureConfigurationMetaFrame */
     public FeatureConfigurationMetaFrame() {
@@ -34,27 +41,51 @@ public class FeatureConfigurationMetaFrame extends javax.swing.JFrame {
 
     public FeatureConfigurationMetaFrame(FeatureConfiguration fc) {
         initComponents();
-        int numBase = fc.getNumBaseFeatures();
+        this.fc = fc;
+        featuresInOrder = fc.featuresInOrder;
+        baseFeatureClassNames = fc.getEnabledBaseFeatureClassNames();
+        int numBaseEnabled = fc.getNumBaseFeaturesEnabled();
+        int numMeta = MetaFeature.Type.values().length;
+        String[] names = fc.getBaseEnabledFeatureNames();
+
+        //    parentBoxArray = new JCheckBox[numBaseEnabled][numMeta];
+        childBoxArray = new JCheckBox[numBaseEnabled][][]; //indexed by feature#, dim#, meta#
 
         JPanel test1 = new JPanel();
-        test1.setLayout(new GridLayout(numBase, 2));
-        d1Boxes = new JCheckBox[numBase];
-        d2Boxes = new JCheckBox[numBase];
-        String[] names = fc.getBaseFeatureNames();
+        test1.setLayout(new GridLayout(numBaseEnabled, 1 + numMeta));
+        //  int fNum = 0;
+        int nameNum = 0;
+        int featNum = 0;
+        MetaFeature.Type[] mfTypes = MetaFeature.Type.values();
 
-        for (int i = 0; i < numBase; i++) {
-            d1Boxes[i] = new JCheckBox("delta1", false);
-        }
-        for (int i = 0 ; i < numBase; i++) {
-            d2Boxes[i] = new JCheckBox("delta2", false);
+        for (int h = 0; h < featuresInOrder.size(); h++) {
+            Feature f = featuresInOrder.get(h);
+            if (f.enabled) {
+                ArrayList<LinkedList<MetaFeature>> fExistingMeta = f.metaFeatures;
+
+                //Add parent row
+                childBoxArray[featNum] = new JCheckBox[f.dimensionality][numMeta];
+                for (int i = 0; i < f.dimensionality; i++) {
+                    test1.add(new JLabel(names[nameNum++]));
+                    for (int j = 0; j < mfTypes.length; j++) {
+                        JCheckBox b = new JCheckBox(MetaFeature.nameForType(mfTypes[j]));
+                        childBoxArray[featNum][i][j] = b;
+                        //Is checked?
+                        for (MetaFeature mf : f.metaFeatures.get(i)) {
+                            if (mf.myName.equals(MetaFeature.nameForType(mfTypes[j]))) {
+                                b.setSelected(true);
+                                break;
+                            }
+                        }
+                        test1.add(b);
+                    }
+                }
+                featNum++;
+            }
         }
 
-        for (int i= 0; i < numBase; i++) {
-            test1.add(new JLabel(names[i]));
-            test1.add(d1Boxes[i]);
-            test1.add(d2Boxes[i]);
-        }
-        
+        panelFeatures.add(test1);
+        panelFeatures.repaint();
     }
 
     /** This method is called from within the constructor to
@@ -72,6 +103,8 @@ public class FeatureConfigurationMetaFrame extends javax.swing.JFrame {
         jButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setAlwaysOnTop(true);
+        setForeground(java.awt.Color.white);
 
         panelFeatures.setLayout(new javax.swing.BoxLayout(panelFeatures, javax.swing.BoxLayout.Y_AXIS));
         scrollFeaturePanel.setViewportView(panelFeatures);
@@ -119,55 +152,87 @@ public class FeatureConfigurationMetaFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        addMetaFeatures();
+        commit();
         this.dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    protected void addMetaFeatures() {
-       // LinkedList<Integer>m //Problem: current method of doing things will break
-        // if # of base features changes.... !
-        //Need notion of Feature, MetaFeature.
-        
+    protected void commit() {
+        HashMap<String, ArrayList<LinkedList<MetaFeature>>> allMetaFeatures = new HashMap<String, ArrayList<LinkedList<MetaFeature>>>();
 
+        MetaFeature.Type[] mfTypes = MetaFeature.Type.values();
+        int i = 0;
+        for (Feature f : featuresInOrder) {
+            if (f.enabled) {
+                System.out.println("i = " + i);
+                ArrayList<LinkedList<MetaFeature>> flist = new ArrayList<LinkedList<MetaFeature>>(childBoxArray[i].length);
+                allMetaFeatures.put(baseFeatureClassNames[i], flist);
+                for (int j = 0; j < childBoxArray[i].length; j++) {
+                    LinkedList<MetaFeature> mflist = new LinkedList<MetaFeature>();
+                    flist.add(mflist);
+                    for (int k = 0; k < childBoxArray[i][j].length; k++) {
+                        if (childBoxArray[i][j][k].isSelected()) {
+                            mflist.add(MetaFeature.createForType(mfTypes[k], f));
+                        }
+                    }
+                }
+                f.metaFeatures = flist;
+            i++;
+            }
+          
+        }
+
+        fc.setMetaFeaturesFromMatrix(allMetaFeatures);
     }
 
     private void addTestFeatures() {
-           /* JPanel test1 = new JPanel();
-            test1.setLayout(new BoxLayout(test1, BoxLayout.X_AXIS));
-            test1.add(new JLabel("My name 1"));
-            test1.add(new JCheckBox("d0"));
-            test1.add(new JCheckBox("d1"));
-            
-                        JPanel test2 = new JPanel();
-            test2.setLayout(new BoxLayout(test2, BoxLayout.X_AXIS));
-            test2.add(new JLabel("My nameasdfadfadsf 1"));
-            test2.add(new JCheckBox("d0"));
-            test2.add(new JCheckBox("d1")); */
+        /* JPanel test1 = new JPanel();
+        test1.setLayout(new BoxLayout(test1, BoxLayout.X_AXIS));
+        test1.add(new JLabel("My name 1"));
+        test1.add(new JCheckBox("d0"));
+        test1.add(new JCheckBox("d1"));
+
+        JPanel test2 = new JPanel();
+        test2.setLayout(new BoxLayout(test2, BoxLayout.X_AXIS));
+        test2.add(new JLabel("My nameasdfadfadsf 1"));
+        test2.add(new JCheckBox("d0"));
+        test2.add(new JCheckBox("d1")); */
         JPanel test1 = new JPanel();
         test1.setLayout(new GridLayout(2, 3));
-         test1.add(new JLabel("My name 1"));
-            test1.add(new JCheckBox("d0"));
-            test1.add(new JCheckBox("d1"));
+        test1.add(new JLabel("My name 1"));
+        test1.add(new JCheckBox("d0"));
+        test1.add(new JCheckBox("d1"));
 
-             test1.add(new JLabel("My name 22"));
-            test1.add(new JCheckBox("d0"));
-            test1.add(new JCheckBox("d1"));
-            
+        test1.add(new JLabel("My name 22"));
+        test1.add(new JCheckBox("d0"));
+        test1.add(new JCheckBox("d1"));
 
-            panelFeatures.add(test1);
-           // panelFeatures.add(test2);
-            panelFeatures.repaint();
+
+        panelFeatures.add(test1);
+        // panelFeatures.add(test2);
+        panelFeatures.repaint();
     }
 
     /**
-    * @param args the command line arguments
-    */
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
-               FeatureConfigurationMetaFrame f = new FeatureConfigurationMetaFrame();
-               f.setVisible(true);
-               f.addTestFeatures();
+                FeatureConfiguration fc = new FeatureConfiguration();
+                fc.setUseMotionSensor(true);
+             //   fc.setUseFFT(true);
+                fc.addMetaFeature(FeatureConfiguration.MOTION, MetaFeature.Type.DELTA_1s, 0);
+                try {
+                    fc.validate();
+                    FeatureConfigurationMetaFrame f = new FeatureConfigurationMetaFrame(fc);
+                    f.setVisible(true);
+                } catch (Exception ex) {
+                    Logger.getLogger(FeatureConfigurationMetaFrame.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+
+            // f.addTestFeatures();
             }
         });
     }
@@ -178,5 +243,4 @@ public class FeatureConfigurationMetaFrame extends javax.swing.JFrame {
     private javax.swing.JPanel panelFeatures;
     private javax.swing.JScrollPane scrollFeaturePanel;
     // End of variables declaration//GEN-END:variables
-
 }

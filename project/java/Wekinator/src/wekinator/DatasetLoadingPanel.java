@@ -49,11 +49,11 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
             } else {
                 //Create one!
                 s = new SimpleDataset(
-                        WekinatorLearningManager.getInstance().getFeatureConfiguration().getNumFeatures(),
+                        WekinatorLearningManager.getInstance().getFeatureConfiguration().getNumFeaturesEnabled(),
                         ChuckSystem.getChuckSystem().getNumParams(),
                         ChuckSystem.getChuckSystem().isParamDiscrete,
                         ChuckSystem.getChuckSystem().getNumSynthMaxParamVals(),
-                        WekinatorLearningManager.getInstance().getFeatureConfiguration().getFeatureNames(),
+                        WekinatorLearningManager.getInstance().getFeatureConfiguration().getAllEnabledFeatureNames(),
                         ChuckSystem.getChuckSystem().getParamNames());
 
             }
@@ -71,11 +71,11 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
             } else {
                 //Create one!
                 SimpleDataset s = new SimpleDataset(
-                        WekinatorLearningManager.getInstance().getFeatureConfiguration().getNumFeatures(),
+                        WekinatorLearningManager.getInstance().getFeatureConfiguration().getNumFeaturesEnabled(),
                         ChuckSystem.getChuckSystem().getNumParams(),
                         ChuckSystem.getChuckSystem().isParamDiscrete,
                         ChuckSystem.getChuckSystem().getNumSynthMaxParamVals(),
-                        WekinatorLearningManager.getInstance().getFeatureConfiguration().getFeatureNames(),
+                        WekinatorLearningManager.getInstance().getFeatureConfiguration().getAllEnabledFeatureNames(),
                         ChuckSystem.getChuckSystem().getParamNames());
                 setCurrentDataset(s);
             }
@@ -250,7 +250,7 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
         }
         if (s != null) {
             //TODO: Ultimately ensure no null problems here! (e.g. null featureconfiguration)
-            if (s.getNumFeatures() != WekinatorLearningManager.getInstance().getFeatureConfiguration().getNumFeatures()) {
+            if (s.getNumFeatures() != WekinatorLearningManager.getInstance().getFeatureConfiguration().getNumFeaturesEnabled()) {
                 JOptionPane.showMessageDialog(this, "The number of features of this dataset does not match the number of features currently being extracted.", "Dataset not usable", JOptionPane.ERROR_MESSAGE);
                 return; 
             }
@@ -277,7 +277,7 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
                 }
             }
 
-            String[] currentFeats = WekinatorLearningManager.getInstance().getFeatureConfiguration().getFeatureNames();
+            String[] currentFeats = WekinatorLearningManager.getInstance().getFeatureConfiguration().getAllEnabledFeatureNames();
             String[] dbFeats = s.getFeatureNames();
             String warning = "There is a mismatch between the following features being extracted and the features stored in the dataset:\n";
             int numMismatch = 0;

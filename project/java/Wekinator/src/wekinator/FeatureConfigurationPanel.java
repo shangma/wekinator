@@ -31,6 +31,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
 
     FeatureConfiguration featureConfiguration = null;
     FeatureConfiguration backup = null;
+    FeatureConfigurationMetaFrame mf = null;
     protected HidSetup newHidSetup = null;
 
     /**
@@ -384,7 +385,6 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
         labelFeatureStatus.setText("No feature configuration set.");
 
         jButton2.setText("Add meta-features from these features...");
-        jButton2.setEnabled(false);
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
@@ -657,7 +657,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
         //Then, set backup to the current configuration, and set the WekInst current to it as well
         backup = featureConfiguration;
         WekinatorLearningManager.getInstance().setFeatureConfiguration(featureConfiguration);
-        labelFeatureStatus.setText("Feature configuration set; using " + featureConfiguration.getNumFeatures() + " features.");
+        labelFeatureStatus.setText("Feature configuration set; using " + featureConfiguration.getNumFeaturesEnabled() + " features.");
         //Finally, set the current configuration to a deep copy of itself, so that we can edit a non-running copy
         // setFeatureConfiguration(featureConfiguration);
         try {
@@ -680,7 +680,19 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_buttonGoActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
+        try {
+            //Zeroth, check this is valid
+            setConfigurationFromForm();
+            featureConfiguration.validate();
+                    mf = new FeatureConfigurationMetaFrame(featureConfiguration);
+        mf.setVisible(true);
+
+        } catch (Exception ex) {
+            Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.INFO, null, ex);
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid feature configuration", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private File findFeatureSetupFile() {

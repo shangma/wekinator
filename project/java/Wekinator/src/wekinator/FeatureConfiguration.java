@@ -8,6 +8,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import wekinator.util.SerializedFileUtil;
 
 /**
@@ -28,22 +32,20 @@ public class FeatureConfiguration implements Serializable {
         DOWNSAMPLED_100,
         COLOR_6
     };
-    protected boolean useFFT = false;
-    protected boolean useCentroid = false;
-    protected boolean useFlux = false;
-    protected boolean useRMS = false;
-    protected boolean useRolloff = false;
-    protected int fftSize = 512;
-    protected boolean useCustomChuckFeatures = false;
-    protected int numCustomChuckFeatures = 0;
-    protected boolean useCustomOscFeatures = false;
-    protected int numCustomOscFeatures = 0;
-    protected boolean useTrackpad = false;
-    protected boolean useMotionSensor = false;
+
+    //TODO: add support for multiple channels!
+    public static final String FFT = "FFT";
+    public static final String CENTROID = "Centroid";
+    public static final String FLUX = "Flux";
+    public static final String RMS = "RMS";
+    public static final String ROLLOFF = "Rolloff";
+    public static final String CUSTOMCHUCK = "CustomChuck";
+    public static final String CUSTOMOSC = "CustomOsc";
+    public static final String TRACKPAD = "Trackpad";
+    public static final String MOTION = "Motion";
+    public static final String PROCESSING = "Processing";
+    public static final String HID = "Hid";
     protected int motionSensorExtractionRate = 100;
-    protected boolean useOtherHid = false;
-    protected boolean useProcessing = false;
-    protected int numProcessingFeatures = 0;
     protected int fftWindowSize = 256;
     protected WindowType windowType = WindowType.HAMMING;
     protected int audioExtractionRate = 100;
@@ -51,25 +53,34 @@ public class FeatureConfiguration implements Serializable {
     public static final String PROP_HIDSETUP = "hidSetup";
     public HidSetup hidSetup = new HidSetup();
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    protected int committedNumTotalFeatures = 0;
+    protected int committedNumBaseFeatures = 0;
 
-    protected int[] delta1Features = new int[0];
-
-
-
-    public void setDelta1s(int[] numsToUse) {
-        //TODO: better error checking
-        int myBaseNum = getNumBaseFeatures();
-        if (numsToUse != null) {
-            for (int i = 0; i < numsToUse.length; i++) {
-                if (numsToUse[i] >= myBaseNum)  {
-                    System.out.println("Invalid meta feature request");
-                    return;
-                }
-            }
-            delta1Features = numsToUse;
-        }
+    protected void populateFeatureList() {
+        featuresInOrder = new LinkedList<Feature>();
+        features = new HashMap<String, Feature>();
+        addFeature(FFT, 512);
+        addFeature(RMS, 1);
+        addFeature(CENTROID, 1);
+        addFeature(ROLLOFF, 1);
+        addFeature(FLUX, 1);
+        addFeature(TRACKPAD, 2);
+        addFeature(MOTION, 3);
+        Feature f = new HidFeature(HID, 0);
+        features.put(HID, f);
+        featuresInOrder.add(f);
+        addFeature(PROCESSING, 100);
+        addFeature(CUSTOMCHUCK, 0);
+        addFeature(CUSTOMOSC, 0);
     }
-    
+
+    protected void addFeature(String name, int dim) {
+        Feature f = new Feature(name, dim);
+        features.put(name, f);
+        featuresInOrder.add(f);
+    }
+    protected HashMap<String, Feature> features;
+    protected LinkedList<Feature> featuresInOrder;
 
     /**
      * Add PropertyChangeListener.
@@ -90,41 +101,48 @@ public class FeatureConfiguration implements Serializable {
     }
 
     public int getNumAudioFeatures() {
-        return ((useFFT ? ((int) (fftSize / 2)) : 0) + (useCentroid ? 1 : 0) + (useFlux ? 1 : 0) + (useRMS ? 1 : 0) + (useRolloff ? 1 : 0));
+        Feature fft = features.get(FFT);
+        Feature centroid = features.get(CENTROID);
+        Feature flux = features.get(FLUX);
+        Feature rms = features.get(RMS);
+        Feature rolloff = features.get(ROLLOFF);
+        return ((fft.enabled ? ((int) (fft.dimensionality / 2)) : 0) + (centroid.enabled ? 1 : 0) + (flux.enabled ? 1 : 0) + (rms.enabled ? 1 : 0) + (rolloff.enabled ? 1 : 0));
     }
 
-    public int getNumBaseFeatures() {
+    public int getNumBaseFeatureClassesEnabled() {
         int s = 0;
-        s += getNumAudioFeatures();
-        if (useTrackpad) {
-            s += 2;
-        }
-        if (useMotionSensor) {
-            s += 3;
-        }
-        if (useOtherHid) {
-            s += hidSetup.getNumFeaturesUsed();
-        }
-        if (useProcessing) {
-            s += getNumProcessingFeatures();
-        }
-        if (useCustomChuckFeatures) {
-            s += numCustomChuckFeatures;
-        }
-        if (useCustomOscFeatures) {
-            s += numCustomOscFeatures;
+        for (Feature f : features.values()) {
+            if (f.enabled) {
+                s++;
+            }
         }
         return s;
     }
 
-    public int getNumFeatures() {
-        return getNumBaseFeatures() + getNumMetaFeatures();
+    public int getNumBaseFeaturesEnabled() {
+        int s = 0;
+        for (Feature f : features.values()) {
+            if (f.enabled) {
+                s += f.dimensionality;
+            }
+        }
+        return s;
     }
 
-    public int getNumMetaFeatures() {
-        int s= 0;
-        if (delta1Features != null) {
-            s += delta1Features.length;
+    public int getNumFeaturesEnabled() {
+        return getNumBaseFeaturesEnabled() + getNumMetaFeaturesEnabled();
+    }
+
+    public int getNumMetaFeaturesEnabled() {
+        int s = 0;
+        for (Feature f : features.values()) {
+            if (f.enabled) {
+                for (List<MetaFeature> l : f.metaFeatures) {
+                    if (l != null) {
+                        s += l.size();
+                    }
+                }
+            }
         }
         return s;
     }
@@ -214,7 +232,7 @@ public class FeatureConfiguration implements Serializable {
      * @return the value of numProcessingFeatures
      */
     public int getNumProcessingFeatures() {
-        return numProcessingFeatures;
+        return features.get(PROCESSING).dimensionality;
     }
 
     /**
@@ -224,7 +242,7 @@ public class FeatureConfiguration implements Serializable {
      */
     protected void setNumProcessingFeatures(int numProcessingFeatures) {
         if (numProcessingFeatures > 0) {
-            this.numProcessingFeatures = numProcessingFeatures;
+            features.get(PROCESSING).setDimensionality(numProcessingFeatures);
         }
     }
 
@@ -234,7 +252,8 @@ public class FeatureConfiguration implements Serializable {
      * @return the value of useProcessing
      */
     public boolean isUseProcessing() {
-        return useProcessing;
+        return features.get(PROCESSING).enabled;
+
     }
 
     /**
@@ -243,7 +262,7 @@ public class FeatureConfiguration implements Serializable {
      * @param useProcessing new value of useProcessing
      */
     public void setUseProcessing(boolean useProcessing) {
-        this.useProcessing = useProcessing;
+        features.get(PROCESSING).enabled = useProcessing;
     }
 
     /**
@@ -252,7 +271,7 @@ public class FeatureConfiguration implements Serializable {
      * @return the value of useOtherHid
      */
     public boolean isUseOtherHid() {
-        return useOtherHid;
+        return features.get(HID).enabled;
     }
 
     /**
@@ -261,7 +280,7 @@ public class FeatureConfiguration implements Serializable {
      * @param useOtherHid new value of useOtherHid
      */
     public void setUseOtherHid(boolean useOtherHid) {
-        this.useOtherHid = useOtherHid;
+        features.get(HID).enabled = useOtherHid;
     }
 
     /**
@@ -290,7 +309,7 @@ public class FeatureConfiguration implements Serializable {
      * @return the value of useMotionSensor
      */
     public boolean isUseMotionSensor() {
-        return useMotionSensor;
+        return features.get(MOTION).enabled;
     }
 
     /**
@@ -299,7 +318,7 @@ public class FeatureConfiguration implements Serializable {
      * @param useMotionSensor new value of useMotionSensor
      */
     public void setUseMotionSensor(boolean useMotionSensor) {
-        this.useMotionSensor = useMotionSensor;
+        features.get(MOTION).enabled = useMotionSensor;
     }
 
     /**
@@ -308,7 +327,7 @@ public class FeatureConfiguration implements Serializable {
      * @return the value of useTrackpad
      */
     public boolean isUseTrackpad() {
-        return useTrackpad;
+        return features.get(TRACKPAD).enabled;
     }
 
     /**
@@ -317,7 +336,7 @@ public class FeatureConfiguration implements Serializable {
      * @param useTrackpad new value of useTrackpad
      */
     public void setUseTrackpad(boolean useTrackpad) {
-        this.useTrackpad = useTrackpad;
+        features.get(TRACKPAD).enabled = useTrackpad;
     }
 
     /**
@@ -326,7 +345,7 @@ public class FeatureConfiguration implements Serializable {
      * @return the value of numCustomOscFeatures
      */
     public int getNumCustomOscFeatures() {
-        return numCustomOscFeatures;
+        return (features.get(CUSTOMOSC).dimensionality);
     }
 
     /**
@@ -335,7 +354,7 @@ public class FeatureConfiguration implements Serializable {
      * @param numCustomOscFeatures new value of numCustomOscFeatures
      */
     public void setNumCustomOscFeatures(int numCustomOscFeatures) { //TODO: more error checking >0?
-        this.numCustomOscFeatures = numCustomOscFeatures;
+        features.get(CUSTOMOSC).setDimensionality(numCustomOscFeatures);
     }
 
     /**
@@ -344,7 +363,7 @@ public class FeatureConfiguration implements Serializable {
      * @return the value of useCustomOscFeatures
      */
     public boolean isUseCustomOscFeatures() {
-        return useCustomOscFeatures;
+        return features.get(CUSTOMOSC).enabled;
     }
 
     /**
@@ -353,7 +372,7 @@ public class FeatureConfiguration implements Serializable {
      * @param useCustomOscFeatures new value of useCustomOscFeatures
      */
     public void setUseCustomOscFeatures(boolean useCustomOscFeatures) {
-        this.useCustomOscFeatures = useCustomOscFeatures;
+        features.get(CUSTOMOSC).enabled = useCustomOscFeatures;
     }
 
     /**
@@ -362,7 +381,7 @@ public class FeatureConfiguration implements Serializable {
      * @return the value of numCustomChuckFeatures
      */
     public int getNumCustomChuckFeatures() {
-        return numCustomChuckFeatures;
+        return features.get(CUSTOMCHUCK).dimensionality;
     }
 
     /**
@@ -371,7 +390,7 @@ public class FeatureConfiguration implements Serializable {
      * @param numCustomChuckFeatures new value of numCustomChuckFeatures
      */
     public void setNumCustomChuckFeatures(int numCustomChuckFeatures) {
-        this.numCustomChuckFeatures = numCustomChuckFeatures;
+        features.get(CUSTOMCHUCK).setDimensionality(numCustomChuckFeatures);
     }
 
     /**
@@ -380,7 +399,7 @@ public class FeatureConfiguration implements Serializable {
      * @return the value of useCustomChuckFeatures
      */
     public boolean isUseCustomChuckFeatures() {
-        return useCustomChuckFeatures;
+        return features.get(CUSTOMCHUCK).enabled;
     }
 
     /**
@@ -389,7 +408,7 @@ public class FeatureConfiguration implements Serializable {
      * @param useCustomChuckFeatures new value of useCustomChuckFeatures
      */
     public void setUseCustomChuckFeatures(boolean useCustomChuckFeatures) {
-        this.useCustomChuckFeatures = useCustomChuckFeatures;
+        features.get(CUSTOMCHUCK).enabled = useCustomChuckFeatures;
     }
 
     /**
@@ -398,7 +417,7 @@ public class FeatureConfiguration implements Serializable {
      * @return the value of fftSize
      */
     public int getFftSize() {
-        return fftSize;
+        return features.get(FFT).dimensionality*2;
     }
 
     /**
@@ -407,7 +426,7 @@ public class FeatureConfiguration implements Serializable {
      * @param fftSize new value of fftSize
      */
     public void setFftSize(int fftSize) {
-        this.fftSize = fftSize;
+        features.get(FFT).setDimensionality(fftSize/2);
     }
 
     /**
@@ -416,7 +435,7 @@ public class FeatureConfiguration implements Serializable {
      * @return the value of useRolloff
      */
     public boolean isUseRolloff() {
-        return useRolloff;
+        return features.get(ROLLOFF).enabled;
     }
 
     /**
@@ -425,7 +444,7 @@ public class FeatureConfiguration implements Serializable {
      * @param useRolloff new value of useRolloff
      */
     public void setUseRolloff(boolean useRolloff) {
-        this.useRolloff = useRolloff;
+        features.get(ROLLOFF).enabled = useRolloff;
     }
 
     /**
@@ -434,7 +453,7 @@ public class FeatureConfiguration implements Serializable {
      * @return the value of useRMS
      */
     public boolean isUseRMS() {
-        return useRMS;
+        return features.get(RMS).enabled;
     }
 
     /**
@@ -443,7 +462,7 @@ public class FeatureConfiguration implements Serializable {
      * @param useRMS new value of useRMS
      */
     public void setUseRMS(boolean useRMS) {
-        this.useRMS = useRMS;
+        features.get(RMS).enabled = useRMS;
     }
 
     /**
@@ -452,7 +471,7 @@ public class FeatureConfiguration implements Serializable {
      * @return the value of useFlux
      */
     public boolean isUseFlux() {
-        return useFlux;
+        return features.get(FLUX).enabled;
     }
 
     /**
@@ -461,7 +480,7 @@ public class FeatureConfiguration implements Serializable {
      * @param useFlux new value of useFlux
      */
     public void setUseFlux(boolean useFlux) {
-        this.useFlux = useFlux;
+        features.get(FLUX).enabled = useFlux;
     }
 
     /**
@@ -470,7 +489,7 @@ public class FeatureConfiguration implements Serializable {
      * @return the value of useCentroid
      */
     public boolean isUseCentroid() {
-        return useCentroid;
+        return features.get(CENTROID).enabled;
     }
 
     /**
@@ -479,7 +498,7 @@ public class FeatureConfiguration implements Serializable {
      * @param useCentroid new value of useCentroid
      */
     public void setUseCentroid(boolean useCentroid) {
-        this.useCentroid = useCentroid;
+        features.get(CENTROID).enabled = useCentroid;
     }
 
     /**
@@ -503,6 +522,7 @@ public class FeatureConfiguration implements Serializable {
     }
 
     public FeatureConfiguration() {
+        populateFeatureList();
     }
 
     /**
@@ -511,7 +531,7 @@ public class FeatureConfiguration implements Serializable {
      * @return the value of useFFT
      */
     public boolean isUseFFT() {
-        return useFFT;
+        return features.get(FFT).enabled;
     }
 
     /**
@@ -520,153 +540,229 @@ public class FeatureConfiguration implements Serializable {
      * @param useFFT new value of useFFT
      */
     public void setUseFFT(boolean useFFT) {
-        this.useFFT = useFFT;
+        features.get(FFT).enabled = useFFT;
     }
 
     public void validate() throws Exception {
         String errorString = "";
-        if (getNumFeatures() == 0) {
+        if (getNumFeaturesEnabled() == 0) {
             errorString += "Must have more than 0 features.\n";
         }
 
-        if (useCustomChuckFeatures && numCustomChuckFeatures <= 0) {
+        if (isUseCustomChuckFeatures() && getNumCustomChuckFeatures() <= 0) {
             errorString += "If using a custom chuck feature extractor, must have more than 0 custom chuck features\n";
         }
 
-        if (useCustomOscFeatures && numCustomOscFeatures <= 0) {
+        if (isUseCustomOscFeatures() && getNumCustomOscFeatures() <= 0) {
             errorString += "If using a custom OSC feature extractor, must have more than 0 custom OSC features\n";
         }
 
         if (getNumAudioFeatures() > 0) {
-            if (fftSize <= 0 || fftWindowSize <= 0 || audioExtractionRate <= 0) {
+            if (getFftSize() <= 0 || fftWindowSize <= 0 || audioExtractionRate <= 0) {
                 errorString += "If using audio features, must have a valid (> 0) fft size, window size, and extraction rate\n";
             }
 
-            if (fftWindowSize > fftSize) {
+            if (fftWindowSize > getFftSize()) {
                 errorString += "If using audio features, window size must be no greater than the FFT size\n";
             }
         }
 
-        if (useMotionSensor && motionSensorExtractionRate <= 0) {
+        if (isUseMotionSensor() && motionSensorExtractionRate <= 0) {
             errorString += "Invalid motion sensor extraction rate\n";
         }
 
-        if (useOtherHid && (hidSetup == null || !hidSetup.isUsable())) {
+        if (isUseOtherHid() && (hidSetup == null || !hidSetup.isUsable())) {
             errorString += "Must have valid HID setup in order to use other hid\n";
         }
 
         if (errorString.length() > 0) {
             throw new Exception(errorString);
         }
+
+        //Commit # features
+        committedNumTotalFeatures = getNumFeaturesEnabled();
+        committedNumBaseFeatures = getNumBaseFeaturesEnabled();
     }
 
     public static FeatureConfiguration readFromFile(File f) throws Exception {
-        return (FeatureConfiguration) SerializedFileUtil.readFromFile(f);
+        FeatureConfiguration fc = (FeatureConfiguration) SerializedFileUtil.readFromFile(f);
+        fc.committedNumTotalFeatures = fc.getNumFeaturesEnabled();
+        fc.committedNumBaseFeatures = fc.getNumBaseFeaturesEnabled();
+        return fc;
     }
 
     void writeToFile(File file) throws Exception {
         SerializedFileUtil.writeToFile(file, this);
     }
 
-    public String[] getBaseFeatureNames() {
- String s[] = new String[getNumFeatures()];
-        int n = 0;
-        if (useFFT) {
-            for (int i = 0; i < (fftSize * .5); i++) {
-           //     System.out.println(i + " of " + fftSize + "; " + getNumFeatures());
-                s[n++] = "FFT_" + i;
+    public String[] getEnabledBaseFeatureClassNames() {
+        //Problem: Could result in different order every time!
+       // String s[] = new String[getNumBaseFeaturesEnabled()]; //Problem: is base feature # dimensons or # features?
+        LinkedList<String> s = new LinkedList<String>();
+
+        int i = 0;
+        for (Feature f : featuresInOrder) {
+            if (f.enabled) {
+                s.add(f.name);
             }
         }
-        if (useRMS) {
-            s[n] = "RMS";
-            n++;
-        }
-        if (useCentroid) {
-            s[n] = "Centroid";
-            n++;
-        }
-        if (useRolloff) {
-            s[n] = "Rolloff";
-            n++;
-        }
-        if (useFlux) {
-            s[n] = "Flux";
-            n++;
-        }
-
-
-        if (useTrackpad) {
-            s[n++] = "Trackpad1";
-            s[n++] = "Trackpad2";
-        }
-
-        if (useMotionSensor) {
-            s[n++] = "Motion1";
-            s[n++] = "Motion2";
-            s[n++] = "Motion3";
-        }
-
-        if (useOtherHid) {
-            for (int i = 0; i < getHidSetup().getNumFeaturesUsed(); i++) {
-                s[n++] = "Hid_" + i;
-            }
-        }
-
-        if (useProcessing) {
-            for (int i = 0; i < getNumProcessingFeatures(); i++) {
-                s[n] = "Processing_" + i;
-                n++;
-            }
-        }
-
-        if (useCustomChuckFeatures) {
-            for (int i = 0; i < numCustomChuckFeatures; i++) {
-                s[n] = "Chuck_" + i;
-                n++;
-            }
-        }
-
-        if (useCustomOscFeatures) {
-            for (int i = 0; i < numCustomOscFeatures; i++) {
-                s[n] = "OSC_" + i;
-                n++;
-            }
-
-        }
-
-        return s;
+        return s.toArray(new String[0]);
     }
 
-    public String[] getFeatureNames() {
-        String[] b = getBaseFeatureNames();
-        String[] m = getMetaFeatureNames();
-        if (m == null) {
-            return b;
+    public void addMetaFeature(String featureName, MetaFeature.Type metafeatureType, int featureDimension) {
+        if (features.containsKey(featureName)) { //TODO: also check that metafeature name is ok!
+            Feature f = features.get(featureName);
+            if (featureDimension < f.dimensionality) {
+                LinkedList<MetaFeature> metafeatures = f.metaFeatures.get(featureDimension);
+                metafeatures.add(MetaFeature.createForType(metafeatureType, f));
+            } else {
+                System.out.println("invalid feature dimension " + featureDimension);
+            }
+        } else {
+            System.out.println("Error: no feature with name " + featureName);
         }
-
-        String[] all = new String[b.length + m.length];
-        for (int i= 0; i < b.length; i++) {
-            all[i] = b[i];
-        }
-        for (int i = 0; i < m.length; i++) {
-            all[i + b.length] = m[i];
-        }
-       return all;
     }
 
-    public String[] getMetaFeatureNames() {
-        String[] s = new String[getNumMetaFeatures()];
-       //TODO TODO TODO: fill in these names!!
-        
-
-        return s;
+    public void removeAllMetaFeatures() {
+        for (Feature f : features.values()) {
+            f.metaFeatures = new ArrayList<LinkedList<MetaFeature>>(f.dimensionality);
+            for (int i = 0; i < f.dimensionality; i++) {
+                LinkedList<MetaFeature> l = new LinkedList<MetaFeature>();
+                f.metaFeatures.add(l);
+            }
+        }
     }
 
-    double[] process(double[] features) {
-        //TODO: Add ability to compute additional statistics here.
+    protected HashMap<String, Feature> getBaseFeatures() {
         return features;
     }
 
+    //Doesn't affect features not in the HashMap!
+    public void setMetaFeaturesFromMatrix(HashMap<String, ArrayList<LinkedList<MetaFeature>>> list) {
+        for (String fname : list.keySet()) {
+            features.get(fname).metaFeatures = list.get(fname);
+        }
+    }
 
+    public String[] getBaseEnabledFeatureNames() {
+        String[] s = new String[getNumBaseFeaturesEnabled()];
+        int index = 0;
 
+        for (Feature f : featuresInOrder) {
+            if (f.enabled) {
+                for (int i = 0; i < f.dimensionality; i++) {
+                    s[index++] = f.name + "_" + i;
+                }
+            }
+        }
+        return s;
+    }
+
+    public String[] getAllEnabledFeatureNames() {
+        if (getNumMetaFeaturesEnabled() ==0) {
+            return getBaseEnabledFeatureNames();
+        }
+
+        String[] s = new String[getNumFeaturesEnabled()];
+        int i = 0;
+        for (Feature feat : featuresInOrder) {
+            int featNum = 0;
+
+            if (feat.enabled) {
+                ArrayList<LinkedList<MetaFeature>> mflists = feat.metaFeatures;
+                for (int j = 0; j < feat.dimensionality; j++) {
+                    s[i++] = feat.name + "_" + featNum;
+                    featNum++;
+                    for (MetaFeature mf : mflists.get(j)) {
+                        s[i++] = mf.getFeatureName() + "_" + featNum; //err: mf is null here!
+                    }
+
+                }
+            }
+        }
+        return s;
+    }
+
+    double[] process(double[] f) {
+        if (f.length != committedNumBaseFeatures) {
+            System.out.println("Error: wrong num features received. Expected " + committedNumBaseFeatures + ", received " + f.length);
+            return new double[0];
+        }
+
+        if (committedNumTotalFeatures == committedNumBaseFeatures) {
+            return f;
+        }
+
+        double[] out = new double[committedNumTotalFeatures];
+
+        int i = 0; //index into output array
+        int j = 0; //index into original feature array
+        for (Feature feat : featuresInOrder) {
+            if (feat.enabled) {
+                for (int d = 0; d < feat.dimensionality; d++) {
+                    out[i++] = f[j];
+                    LinkedList<MetaFeature> mflist = feat.metaFeatures.get(d); //this is causing exception for index that should be ok (16 when 19 feats - metafeats not counted?)
+                    for (MetaFeature mf : mflist) {
+                        double[] mfout = mf.computeForNextFeature(f, j);
+                        for (int k = 0; k < mfout.length; k++) {
+                            out[i++] = mfout[k];
+                        }
+                    }
+
+                    j++;
+                }
+            }
+        }
+        return out;
+    }
+
+    protected class Feature implements Serializable {
+
+        public Feature(String name, int dimensionality) {
+            this.name = name;
+            setDimensionality(dimensionality);
+            this.metaFeatures = new ArrayList<LinkedList<MetaFeature>>(dimensionality);
+            for (int i = 0; i < dimensionality; i++) {
+                this.metaFeatures.add(new LinkedList<MetaFeature>());
+            }
+        }
+
+        public void setDimensionality(int dim) {
+            this.dimensionality = dim;
+            if (metaFeatures == null) {
+                metaFeatures = new ArrayList<LinkedList<MetaFeature>>(dimensionality);
+
+            }
+            while (metaFeatures.size() < dim) {
+                metaFeatures.add(new LinkedList<MetaFeature>());
+            }
+            while (metaFeatures.size() > dim) {
+                metaFeatures.remove(metaFeatures.size() - 1);
+            }
+        }
+        public String name = "feature";
+        public boolean enabled = false;
+        public ArrayList<LinkedList<MetaFeature>> metaFeatures = null;
+        protected int dimensionality = 0;
+
+        public int getDimensionality() {
+            return dimensionality;
+        }
+    }
+
+    protected class HidFeature extends Feature {
+
+        public HidFeature(String name, int dimensionality) {
+            super(name, dimensionality);
+        }
+
+        @Override
+        public int getDimensionality() {
+            if (hidSetup == null) {
+                return 0;
+            }
+
+            return hidSetup.getNumFeaturesUsed();
+        }
+    }
 }

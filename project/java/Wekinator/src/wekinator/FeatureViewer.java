@@ -12,6 +12,8 @@
 package wekinator;
 
 import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  *
@@ -23,6 +25,14 @@ public class FeatureViewer extends javax.swing.JFrame {
     /** Creates new form FeatureViewer */
     public FeatureViewer() {
         initComponents();
+        FeatureExtractorProxy.get().addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(FeatureExtractorProxy.PROP_EXTRACTING_FOR_LEARNING)) {
+                    toggleExtractToView.setEnabled(!FeatureExtractorProxy.get().isExtractingForLearning());
+                }
+            }
+        });
     }
 
     public void setNames(String[] names) {
@@ -59,6 +69,7 @@ public class FeatureViewer extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         scrollFeaturePanel = new javax.swing.JScrollPane();
         panelFeatures = new javax.swing.JPanel();
+        toggleExtractToView = new javax.swing.JToggleButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Features (will update when you record examples or run)");
@@ -73,12 +84,20 @@ public class FeatureViewer extends javax.swing.JFrame {
         panelFeatures.setLayout(new javax.swing.BoxLayout(panelFeatures, javax.swing.BoxLayout.Y_AXIS));
         scrollFeaturePanel.setViewportView(panelFeatures);
 
+        toggleExtractToView.setText("Extract features to view");
+        toggleExtractToView.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                toggleExtractToViewActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(318, Short.MAX_VALUE)
+                .add(toggleExtractToView)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 126, Short.MAX_VALUE)
                 .add(jButton1)
                 .addContainerGap())
             .add(scrollFeaturePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE)
@@ -88,7 +107,9 @@ public class FeatureViewer extends javax.swing.JFrame {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(scrollFeaturePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jButton1))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jButton1)
+                    .add(toggleExtractToView)))
         );
 
         pack();
@@ -97,6 +118,11 @@ public class FeatureViewer extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         this.dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void toggleExtractToViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toggleExtractToViewActionPerformed
+            FeatureExtractorProxy.get().setExtractingForViewing(toggleExtractToView.getModel().isSelected());
+        
+}//GEN-LAST:event_toggleExtractToViewActionPerformed
 
     /**
     * @param args the command line arguments
@@ -123,6 +149,7 @@ public class FeatureViewer extends javax.swing.JFrame {
     private javax.swing.JButton jButton1;
     private javax.swing.JPanel panelFeatures;
     private javax.swing.JScrollPane scrollFeaturePanel;
+    private javax.swing.JToggleButton toggleExtractToView;
     // End of variables declaration//GEN-END:variables
 
 }

@@ -269,7 +269,7 @@ public class HidSetup implements Serializable {
                     instream.close();
                 }
             } catch (IOException ex) {
-                Logger.getLogger(FeatureManager.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(HidSetup.class.getName()).log(Level.SEVERE, null, ex);
             }
 
         }

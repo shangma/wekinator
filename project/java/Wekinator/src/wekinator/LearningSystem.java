@@ -10,8 +10,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.Serializable;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -866,7 +864,7 @@ public class LearningSystem implements Serializable {
         }
     }
 
-    class EvaluationWorker extends SwingWorker<Integer, Void> {
+    protected class EvaluationWorker extends SwingWorker<Integer, Void> {
 
         @Override
         protected Integer doInBackground() throws Exception {

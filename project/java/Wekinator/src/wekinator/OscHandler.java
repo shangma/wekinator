@@ -846,8 +846,8 @@ public class OscHandler {
                         Logger.getLogger(OscHandler.class.getName()).log(Level.WARNING, "Received feature is not a float");
                     }
                 }
-                WekinatorLearningManager.getInstance().updateFeatures(d); //may have to decouple this if want to view features too
-
+               // WekinatorLearningManager.getInstance().updateFeatures(d); //may have to decouple this if want to view features too
+                FeatureExtractorProxy.get().updateFeatures(d);
             }
         };
         receiver.addListener(featuresString, listener);

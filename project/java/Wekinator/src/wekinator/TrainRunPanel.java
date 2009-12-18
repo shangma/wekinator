@@ -166,19 +166,19 @@ public class TrainRunPanel extends javax.swing.JPanel {
         menuPanel.setLayout(menuPanelLayout);
         menuPanelLayout.setHorizontalGroup(
             menuPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(buttonCollect, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 236, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
             .add(buttonTrain, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 236, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
             .add(buttonRun, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 236, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
             .add(buttonConfigure, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 236, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(buttonCollect, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
         );
 
-        menuPanelLayout.linkSize(new java.awt.Component[] {buttonCollect, buttonConfigure, buttonRun, buttonTrain}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        menuPanelLayout.linkSize(new java.awt.Component[] {buttonConfigure, buttonRun, buttonTrain}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         menuPanelLayout.setVerticalGroup(
             menuPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(menuPanelLayout.createSequentialGroup()
-                .add(buttonCollect, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 69, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(buttonCollect, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(buttonTrain, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 69, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(buttonRun, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 70, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -186,7 +186,7 @@ public class TrainRunPanel extends javax.swing.JPanel {
                 .add(buttonConfigure, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
-        menuPanelLayout.linkSize(new java.awt.Component[] {buttonCollect, buttonConfigure, buttonRun, buttonTrain}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        menuPanelLayout.linkSize(new java.awt.Component[] {buttonConfigure, buttonRun, buttonTrain}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         buttonShh.setText("audio off");
         buttonShh.addActionListener(new java.awt.event.ActionListener() {

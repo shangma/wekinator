@@ -32,61 +32,41 @@ public class WekinatorInstance {
     protected ChuckRunner runner = null;
     private WekinatorSettings settings = null;
     protected HidSetup currentHidSetup;
-
-
-
     private static final String settingsSaveFile = "wekinator.usersettings";
     protected FeatureManager featureManager;
     public static final String PROP_FEATUREMANAGER = "featureManager";
     public static final String PROP_CURRENTHIDSETUP = "currentHidSetup";
     private LinkedList<Handler> handlers;
-    
 
-    //protected FeatureConfiguration currentFeatureConfiguration = null;
-    //public static final String PROP_CURRENTFEATURECONFIGURATION = "currentFeatureConfiguration";
-    //protected LearningSystem currentLearningSystem = null;
-    //public static final String PROP_CURRENTLEARNINGSYSTEM = "currentLearningSystem";
+    public enum State {
 
-
-    /**
-     * Get the value of currentLearningSystem
-     *
-     * @return the value of currentLearningSystem
-     */
-    /*public LearningSystem getCurrentLearningSystem() {
-        return currentLearningSystem;
-    } */
+        INIT,
+        OSC_CONNECTION_MADE,
+        FEATURE_SETUP_DONE,
+        MODELS_SETUP_DONE
+    };
+    protected State state = State.INIT;
+    public static final String PROP_STATE = "state";
 
     /**
-     * Set the value of currentLearningSystem
+     * Get the value of state
      *
-     * @param currentLearningSystem new value of currentLearningSystem
+     * @return the value of state
      */
-  /*  public void setCurrentLearningSystem(LearningSystem currentLearningSystem) {
-        LearningSystem oldCurrentLearningSystem = this.currentLearningSystem;
-        this.currentLearningSystem = currentLearningSystem;
-        propertyChangeSupport.firePropertyChange(PROP_CURRENTLEARNINGSYSTEM, oldCurrentLearningSystem, currentLearningSystem);
-    } */
+    public State getState() {
+        return state;
+    }
 
     /**
-     * Get the value of currentFeatureConfiguration
+     * Set the value of state
      *
-     * @return the value of currentFeatureConfiguration
+     * @param state new value of state
      */
-  /*  public FeatureConfiguration getCurrentFeatureConfiguration() {
-        return currentFeatureConfiguration;
-    } */
-
-    /**
-     * Set the value of currentFeatureConfiguration
-     *
-     * @param currentFeatureConfiguration new value of currentFeatureConfiguration
-     */
- /*   public void setCurrentFeatureConfiguration(FeatureConfiguration currentFeatureConfiguration) {
-        FeatureConfiguration oldCurrentFeatureConfiguration = this.currentFeatureConfiguration;
-        this.currentFeatureConfiguration = currentFeatureConfiguration;
-        propertyChangeSupport.firePropertyChange(PROP_CURRENTFEATURECONFIGURATION, oldCurrentFeatureConfiguration, currentFeatureConfiguration);
-    } */
+    public void setState(State state) {
+        State oldState = this.state;
+        this.state = state;
+        propertyChangeSupport.firePropertyChange(PROP_STATE, oldState, state);
+    }
 
     /**
      * Get the value of featureManager
@@ -109,7 +89,7 @@ public class WekinatorInstance {
     }
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
-        /**
+    /**
      * Get the value of currentHidSetup
      *
      * @return the value of currentHidSetup
@@ -124,7 +104,7 @@ public class WekinatorInstance {
      * @param currentHidSetup new value of currentHidSetup
      */
     public void setCurrentHidSetup(HidSetup currentHidSetup) {
-       HidSetup oldCurrentHidSetup = this.currentHidSetup;
+        HidSetup oldCurrentHidSetup = this.currentHidSetup;
         this.currentHidSetup = currentHidSetup;
         propertyChangeSupport.firePropertyChange(PROP_CURRENTHIDSETUP, oldCurrentHidSetup, currentHidSetup);
     }
@@ -164,8 +144,6 @@ public class WekinatorInstance {
     public ChuckConfiguration getConfiguration() {
         return configuration;
     }
-
-
 
     /**
      * Set the value of configuration
@@ -250,34 +228,80 @@ public class WekinatorInstance {
             System.out.println("Couldn't create log file");
         }
 
-       currentHidSetup = new HidSetup();
+        currentHidSetup = new HidSetup();
 
 
+        //add state listeners
+        OscHandler.getOscHandler().addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                oscPropertyChanged(evt);
+            }
+        });
+
+        WekinatorLearningManager.getInstance().addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                learningManagerPropertyChanged(evt);
+            }
+        });
+
+       // TODO RAF add check for valid model state
+    }
+
+    private void oscPropertyChanged(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(OscHandler.PROP_CONNECTIONSTATE)) {
+            setForOscState();
+        }
+    }
+
+    private void setForOscState()  {
+            if (OscHandler.getOscHandler().getConnectionState() != OscHandler.ConnectionState.CONNECTED) {
+                setState(State.INIT);
+            } else if (state == State.INIT && OscHandler.getOscHandler().getConnectionState() == OscHandler.ConnectionState.CONNECTED) {
+                setState(State.OSC_CONNECTION_MADE);
+            }
+    }
+
+
+
+    private void learningManagerPropertyChanged(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(WekinatorLearningManager.PROP_FEATURECONFIGURATION)) {
+            if (WekinatorLearningManager.getInstance().getFeatureConfiguration() == null) {
+                setForOscState();
+            } else {
+                if (state == State.OSC_CONNECTION_MADE) {
+                    setState(State.FEATURE_SETUP_DONE);
+                }
+
+            }
+
+        }
     }
 
     public void saveCurrentSettings() {
         FileOutputStream fout = null;
-            boolean fail = false;
+        boolean fail = false;
+        try {
+            fout = new FileOutputStream(settingsSaveFile);
+            ObjectOutputStream out = new ObjectOutputStream(fout);
+            out.writeObject(settings);
+            out.close();
+            fout.close();
+            System.out.println("Wrote to settings file");
+        } catch (IOException ex1) {
+            fail = true;
+            System.out.println("Failed to write to settings file: " + ex1.getMessage());
+            ex1.printStackTrace();
+        } finally {
             try {
-                fout = new FileOutputStream(settingsSaveFile);
-                ObjectOutputStream out = new ObjectOutputStream(fout);
-                out.writeObject(settings);
-                out.close();
-                fout.close();
-                System.out.println("Wrote to settings file");
-            } catch (IOException ex1) {
-                fail = true;
-                System.out.println("Failed to write to settings file: " + ex1.getMessage());
-                ex1.printStackTrace();
-            } finally {
-                try {
-                    if (fout != null) {
-                        fout.close();
-                    }
-                } catch (IOException ex2) {
-                    Logger.getLogger(WekinatorSettings.class.getName()).log(Level.INFO, null, ex2);
+                if (fout != null) {
+                    fout.close();
                 }
+            } catch (IOException ex2) {
+                Logger.getLogger(WekinatorSettings.class.getName()).log(Level.INFO, null, ex2);
             }
+        }
     }
 
     public static synchronized WekinatorInstance getWekinatorInstance() {
@@ -310,13 +334,13 @@ public class WekinatorInstance {
     }
 
     public void addLoggingHandler(Handler h) {
-        if (! handlers.contains(h)) {
+        if (!handlers.contains(h)) {
             Logger.getLogger(WekinatorInstance.class.getPackage().getName()).addHandler(h);
             handlers.add(h);
         }
     }
 
-   void removeLoggingHandler(Handler h) {
+    void removeLoggingHandler(Handler h) {
         handlers.remove(h);
     }
 

@@ -26,7 +26,6 @@ public class WekinatorLearningManager {
 
 
     private ChangeEvent changeEvent = null;
-    protected FeatureViewer featureViewer = null;
 
 
     private static WekinatorLearningManager ref = null;
@@ -40,14 +39,7 @@ public class WekinatorLearningManager {
 
     public static final String PROP_PARAMS = "params";
 
-    public void showFeatureViewer() {
-        if (featureViewer == null) {
-            featureViewer = new FeatureViewer();
-            featureViewer.setNames(featureConfiguration.getFeatureNames());
-        }
-        featureViewer.setVisible(true);
-        featureViewer.toFront();
-    }
+    
 
     protected double[] outputs = null;
 
@@ -251,13 +243,15 @@ public class WekinatorLearningManager {
             params = new double[learningSystem.getNumParams()];
         }
 
-        OscHandler.getOscHandler().initiateRecord();
+        //OscHandler.getOscHandler().initiateRecord();
+        FeatureExtractorProxy.get().setExtractingForLearning(true);
         setMode(Mode.DATASET_CREATION);
         }
     }
 
     public void stopRunning() {
-        OscHandler.getOscHandler().stopExtractingFeatures();
+       // OscHandler.getOscHandler().stopExtractingFeatures();
+        FeatureExtractorProxy.get().setExtractingForLearning(false);
         setMode(Mode.NONE);
     }
 
@@ -268,7 +262,8 @@ public class WekinatorLearningManager {
         if (mode == Mode.DATASET_CREATION) {
             stopDatasetCreation();
         }
-        OscHandler.getOscHandler().initiateRecord();
+       // OscHandler.getOscHandler().initiateRecord();
+        FeatureExtractorProxy.get().setExtractingForLearning(true);
         setMode(Mode.RUNNING);
     }
 
@@ -276,7 +271,8 @@ public class WekinatorLearningManager {
         if (mode != Mode.DATASET_CREATION)
             return;
 
-        OscHandler.getOscHandler().stopExtractingFeatures();
+       // OscHandler.getOscHandler().stopExtractingFeatures();
+        FeatureExtractorProxy.get().setExtractingForLearning(false);
         setMode(Mode.NONE);
     }
 
@@ -302,22 +298,15 @@ public class WekinatorLearningManager {
     public void updateFeatures(double[] features) {
         System.out.println("java received feature");
         if (mode == Mode.DATASET_CREATION) {
-           // learningSystem.addToTraining(features, params);
-              double[] fs = featureConfiguration.process(features);
-              learningSystem.addToTraining(fs, params);
-               if (featureViewer != null) {
-                    featureViewer.updateFeatures(fs);
-               }
+          
+              learningSystem.addToTraining(features, params);
+              
 
         } else if (mode == Mode.RUNNING) {
             System.out.println("in run mode");
             try {
-                //classify these features
-                double[] fs = featureConfiguration.process(features);
-               setOutputs(learningSystem.classify(fs));
-               if (featureViewer != null) {
-                    featureViewer.updateFeatures(fs);
-               }
+               setOutputs(learningSystem.classify(features));
+               
                 //TODO RAF important TODO TODO TODO: issue of displaying output for dist features
                OscHandler.getOscHandler().sendParamsToSynth(outputs);
                 
