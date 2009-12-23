@@ -106,7 +106,7 @@ public class FeatureConfiguration implements Serializable {
         Feature flux = features.get(FLUX);
         Feature rms = features.get(RMS);
         Feature rolloff = features.get(ROLLOFF);
-        return ((fft.enabled ? ((int) (fft.dimensionality / 2)) : 0) + (centroid.enabled ? 1 : 0) + (flux.enabled ? 1 : 0) + (rms.enabled ? 1 : 0) + (rolloff.enabled ? 1 : 0));
+        return ((fft.enabled ? ((int) (fft.getDimensionality() / 2)) : 0) + (centroid.enabled ? 1 : 0) + (flux.enabled ? 1 : 0) + (rms.enabled ? 1 : 0) + (rolloff.enabled ? 1 : 0));
     }
 
     public int getNumBaseFeatureClassesEnabled() {
@@ -123,7 +123,7 @@ public class FeatureConfiguration implements Serializable {
         int s = 0;
         for (Feature f : features.values()) {
             if (f.enabled) {
-                s += f.dimensionality;
+                s += f.getDimensionality();
             }
         }
         return s;
@@ -232,7 +232,7 @@ public class FeatureConfiguration implements Serializable {
      * @return the value of numProcessingFeatures
      */
     public int getNumProcessingFeatures() {
-        return features.get(PROCESSING).dimensionality;
+        return features.get(PROCESSING).getDimensionality();
     }
 
     /**
@@ -345,7 +345,7 @@ public class FeatureConfiguration implements Serializable {
      * @return the value of numCustomOscFeatures
      */
     public int getNumCustomOscFeatures() {
-        return (features.get(CUSTOMOSC).dimensionality);
+        return (features.get(CUSTOMOSC).getDimensionality());
     }
 
     /**
@@ -381,7 +381,7 @@ public class FeatureConfiguration implements Serializable {
      * @return the value of numCustomChuckFeatures
      */
     public int getNumCustomChuckFeatures() {
-        return features.get(CUSTOMCHUCK).dimensionality;
+        return features.get(CUSTOMCHUCK).getDimensionality();
     }
 
     /**
@@ -417,7 +417,7 @@ public class FeatureConfiguration implements Serializable {
      * @return the value of fftSize
      */
     public int getFftSize() {
-        return features.get(FFT).dimensionality*2;
+        return features.get(FFT).getDimensionality()*2;
     }
 
     /**
@@ -612,7 +612,7 @@ public class FeatureConfiguration implements Serializable {
     public void addMetaFeature(String featureName, MetaFeature.Type metafeatureType, int featureDimension) {
         if (features.containsKey(featureName)) { //TODO: also check that metafeature name is ok!
             Feature f = features.get(featureName);
-            if (featureDimension < f.dimensionality) {
+            if (featureDimension < f.getDimensionality()) {
                 LinkedList<MetaFeature> metafeatures = f.metaFeatures.get(featureDimension);
                 metafeatures.add(MetaFeature.createForType(metafeatureType, f));
             } else {
@@ -625,8 +625,8 @@ public class FeatureConfiguration implements Serializable {
 
     public void removeAllMetaFeatures() {
         for (Feature f : features.values()) {
-            f.metaFeatures = new ArrayList<LinkedList<MetaFeature>>(f.dimensionality);
-            for (int i = 0; i < f.dimensionality; i++) {
+            f.metaFeatures = new ArrayList<LinkedList<MetaFeature>>(f.getDimensionality());
+            for (int i = 0; i < f.getDimensionality(); i++) {
                 LinkedList<MetaFeature> l = new LinkedList<MetaFeature>();
                 f.metaFeatures.add(l);
             }
@@ -650,7 +650,7 @@ public class FeatureConfiguration implements Serializable {
 
         for (Feature f : featuresInOrder) {
             if (f.enabled) {
-                for (int i = 0; i < f.dimensionality; i++) {
+                for (int i = 0; i < f.getDimensionality(); i++) {
                     s[index++] = f.name + "_" + i;
                 }
             }
@@ -670,7 +670,7 @@ public class FeatureConfiguration implements Serializable {
 
             if (feat.enabled) {
                 ArrayList<LinkedList<MetaFeature>> mflists = feat.metaFeatures;
-                for (int j = 0; j < feat.dimensionality; j++) {
+                for (int j = 0; j < feat.getDimensionality(); j++) {
                     s[i++] = feat.name + "_" + featNum;
                     featNum++;
                     for (MetaFeature mf : mflists.get(j)) {
@@ -699,7 +699,7 @@ public class FeatureConfiguration implements Serializable {
         int j = 0; //index into original feature array
         for (Feature feat : featuresInOrder) {
             if (feat.enabled) {
-                for (int d = 0; d < feat.dimensionality; d++) {
+                for (int d = 0; d < feat.getDimensionality(); d++) {
                     out[i++] = f[j];
                     LinkedList<MetaFeature> mflist = feat.metaFeatures.get(d); //this is causing exception for index that should be ok (16 when 19 feats - metafeats not counted?)
                     for (MetaFeature mf : mflist) {
