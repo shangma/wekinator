@@ -518,6 +518,8 @@ public class FeatureConfiguration implements Serializable {
     public void setHidSetup(HidSetup hidSetup) {
         HidSetup oldHidSetup = this.hidSetup;
         this.hidSetup = hidSetup;
+        //TODO TODO TODO: set dimensionality appropriately
+        features.get(HID).setDimensionality(hidSetup.getNumFeaturesUsed());
         propertyChangeSupport.firePropertyChange(PROP_HIDSETUP, oldHidSetup, hidSetup);
     }
 
@@ -764,5 +766,7 @@ public class FeatureConfiguration implements Serializable {
 
             return hidSetup.getNumFeaturesUsed();
         }
+
+
     }
 }

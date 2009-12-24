@@ -683,8 +683,12 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
         try {
             //Zeroth, check this is valid
             setConfigurationFromForm();
+         /*   HidSetup tmptmp = new HidSetup();
+            tmptmp.usable = true;
+            featureConfiguration.setHidSetup(tmptmp); */
+            
             featureConfiguration.validate();
-                    mf = new FeatureConfigurationMetaFrame(featureConfiguration);
+            mf = new FeatureConfigurationMetaFrame(featureConfiguration);
         mf.setVisible(true);
 
         } catch (Exception ex) {
@@ -856,7 +860,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
             }
 
 
-            featureConfiguration.setUseCentroid(checkCentroid.isSelected());
+                featureConfiguration.setUseCentroid(checkCentroid.isSelected());
             featureConfiguration.setUseCustomChuckFeatures(checkCustomChuck.isSelected());
             featureConfiguration.setUseCustomOscFeatures(checkCustomOSC.isSelected());
             featureConfiguration.setUseFFT(checkFFT.isSelected());

@@ -64,14 +64,14 @@ public class FeatureConfigurationMetaFrame extends javax.swing.JFrame {
                 ArrayList<LinkedList<MetaFeature>> fExistingMeta = f.metaFeatures;
 
                 //Add parent row
-                childBoxArray[featNum] = new JCheckBox[f.dimensionality][numMeta];
-                for (int i = 0; i < f.dimensionality; i++) {
+                childBoxArray[featNum] = new JCheckBox[f.getDimensionality()][numMeta];
+                for (int i = 0; i < f.getDimensionality(); i++) {
                     test1.add(new JLabel(names[nameNum++]));
                     for (int j = 0; j < mfTypes.length; j++) {
                         JCheckBox b = new JCheckBox(MetaFeature.nameForType(mfTypes[j]));
                         childBoxArray[featNum][i][j] = b;
                         //Is checked?
-                        for (MetaFeature mf : f.metaFeatures.get(i)) {
+                        for (MetaFeature mf : f.metaFeatures.get(i)) { //causes error for hid device
                             if (mf.myName.equals(MetaFeature.nameForType(mfTypes[j]))) {
                                 b.setSelected(true);
                                 break;
