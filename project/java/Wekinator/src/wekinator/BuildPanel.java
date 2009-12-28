@@ -10,7 +10,6 @@
  */
 package wekinator;
 
-import java.awt.Color;
 import java.awt.event.ItemEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -37,6 +36,14 @@ public class BuildPanel extends javax.swing.JPanel {
             scorePropertyChanged(evt);
         }
 
+
+    };
+
+    PropertyChangeListener lsDatasetChangeListener = new PropertyChangeListener() {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            lsDatasetChanged(evt);
+        }
 
     };
 
@@ -80,6 +87,7 @@ public class BuildPanel extends javax.swing.JPanel {
             }
 
            learningSystem.getScore().removePropertyChangeListener(scoreChangeListener);
+           learningSystem.removePropertyChangeListener(lsDatasetChangeListener);
         }
 
 
@@ -100,6 +108,7 @@ public class BuildPanel extends javax.swing.JPanel {
         }
 
         learningSystem.getScore().addPropertyChangeListener(scoreChangeListener);
+        ls.addPropertyChangeListener(lsDatasetChangeListener);
 
         for (int i = 0; i < numParams; i++) {
             paramPanels[i] = new ParameterMiniPanel(
@@ -547,6 +556,19 @@ public class BuildPanel extends javax.swing.JPanel {
         updateForDataset();
     }
 
+    private void lsDatasetChanged(PropertyChangeEvent evt) {
+        //update?DSdfasdfadsf
+        if (dataset != null) {
+            dataset.removeChangeListener(datasetChangeListener);
+        }
+
+        dataset = learningSystem.getDataset();
+        if (dataset != null) {
+            dataset.addChangeListener(datasetChangeListener);
+            updateForDataset();
+        }
+    }
+
     private void updateForDataset() {
                 int numData = dataset.getNumDatapoints();
         labelNumExamples.setText(numData + " examples recorded");
@@ -607,16 +629,20 @@ public class BuildPanel extends javax.swing.JPanel {
     private void setParams(double[] p) {
         if (p == null) {
             System.out.println("***! p is null");
+            return;
         }
         if (paramPanels == null) {
             System.out.println("***! paramPanels is null");
+            return;
         }
         if (p.length != paramPanels.length) {
             System.out.println("***! plenght is " + p.length + ", paramPanels length is " + paramPanels.length);
+            return;
         }
         for (int i = 0; i < paramPanels.length; i++) {
             if (paramPanels[i] == null) {
                 System.out.println("***! paramPanels[" + i + "] is null");
+                return;
             }
           /*  if (p[i] == null) {
                 System.out.println("***! p[" + i + "] is null");
