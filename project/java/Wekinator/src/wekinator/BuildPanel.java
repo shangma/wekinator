@@ -605,8 +605,23 @@ public class BuildPanel extends javax.swing.JPanel {
     }
 
     private void setParams(double[] p) {
+        if (p == null) {
+            System.out.println("***! p is null");
+        }
+        if (paramPanels == null) {
+            System.out.println("***! paramPanels is null");
+        }
+        if (p.length != paramPanels.length) {
+            System.out.println("***! plenght is " + p.length + ", paramPanels length is " + paramPanels.length);
+        }
         for (int i = 0; i < paramPanels.length; i++) {
-            paramPanels[i].setValue(p[i]);
+            if (paramPanels[i] == null) {
+                System.out.println("***! paramPanels[" + i + "] is null");
+            }
+          /*  if (p[i] == null) {
+                System.out.println("***! p[" + i + "] is null");
+            } */
+            paramPanels[i].setValue(p[i]); //TODO TODO TODO: Getting null pointer exception here after learning manager change (post learningmanager.SetParams(...))
         }
     }
 
