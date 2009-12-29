@@ -7,6 +7,7 @@ package wekinator;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -24,13 +25,15 @@ import weka.filters.unsupervised.attribute.Remove;
 import weka.filters.unsupervised.attribute.Reorder;
 import wekinator.util.SerializedFileUtil;
 import javax.swing.event.*;
+import weka.core.converters.ArffLoader;
+import weka.core.converters.ArffSaver;
 
 /**
  *
  * @author Rebecca Fiebrink
  */
 public class SimpleDataset implements Serializable {
-        protected EventListenerList listenerList = new EventListenerList();
+    protected EventListenerList listenerList = new EventListenerList();
     private int numParams = 0;
     private int numFeatures = 0; //Total # features being stored, doesn't include my metadata
     private boolean featureParamMask[][] = null;
@@ -959,6 +962,31 @@ public class SimpleDataset implements Serializable {
     void writeToFile(File file) throws Exception {
         SerializedFileUtil.writeToFile(file, this);
     }
+
+    void writeInstancesToArff(File file) throws IOException {
+        ArffSaver saver = new ArffSaver();
+        saver.setInstances(allInstances);
+        saver.setFile(file);
+        saver.writeBatch();
+    }
+
+    public void loadInstancesFromArff(File f) throws IOException {
+        //Assumes already initialized properly; just need to load Instances
+        ArffLoader loader = new ArffLoader();
+        loader.setFile(f);
+        Instances i = loader.getDataSet();
+        if (i.numAttributes() != (numFeatures + numParams + numMetaData)) {
+            throw new IOException("Improper number of features: expecting " + (numFeatures + numParams + numMetaData));
+        }
+        allInstances = i;
+        setHasInstances(allInstances.numInstances() > 0);
+        //Set feature names ?
+        
+        //Set parameter names ?
+
+        //Set numParam values for each param ?
+    }
+
 
     public void addChangeListener(ChangeListener l) {
         listenerList.add(ChangeListener.class, l);

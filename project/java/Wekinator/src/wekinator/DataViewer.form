@@ -29,7 +29,9 @@
               <Component id="buttonAdd" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="buttonListen" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="209" max="32767" attributes="0"/>
+              <EmptySpace pref="67" max="32767" attributes="0"/>
+              <Component id="buttonListen1" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="buttonDone" min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -44,6 +46,7 @@
                   <Component id="buttonDelete" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="buttonAdd" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="buttonListen" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="buttonListen1" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
       </Group>
@@ -84,6 +87,14 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonListenActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="buttonListen1">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Save to ARFF..."/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonListen1ActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

@@ -7,6 +7,7 @@ package wekinator;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -17,25 +18,21 @@ import javax.swing.event.*;
  *
  * @author rebecca
  */
-public class PlayalongScore {
+public class PlayalongScore implements Serializable {
     protected List<double[]> paramLists = null;
     protected List<Double> secondLists = null;
     //No masks for now
     protected static boolean isPlaying = false;
-    protected static Thread myPlayerThread = null;
+    protected transient static Thread myPlayerThread = null;
     protected static final Object lock1 = new Object();
     int numParams = 0;
     protected int playingRow = 0;
     public static final String PROP_PLAYINGROW = "playingRow";
     public static final String PROP_ISPLAYING = "isPlaying";
-    MainGUI oldGui = null;
-        protected EventListenerList listenerList = new EventListenerList();
-        PlayalongScoreViewer myViewer = null; //TODO: put elsewhere?
+    protected EventListenerList listenerList = new EventListenerList();
+    protected transient PlayalongScoreViewer myViewer = null; //TODO: put elsewhere?
 
-    public void setMainGui(MainGUI g) {
-        oldGui = g;
-    }
-
+    
     public void view() {
         if (myViewer == null) {
             myViewer = new PlayalongScoreViewer(this);
@@ -207,17 +204,11 @@ public class PlayalongScore {
                                 System.out.print(next[j] + " ");
                             }
                             System.out.println("");
-                            if (oldGui != null) {
-                                float f[] = new float[numParams];
-                                for (int j = 0; j < numParams; j++) {
-                                    f[j] = (float) next[j];
-                                }
-                                oldGui.listenToValues(f);
-                            } else {
+                           
                                 //float f[] = new float[numParams];
                                 WekinatorLearningManager.getInstance().setParams(next);
                                 OscHandler.getOscHandler().sendParamsToSynth(next); //TODO: hack: get out of here!
-                            }
+                            
 
                             mySleep = (long) (secondLists.get(i) * 1000);
                             i++;

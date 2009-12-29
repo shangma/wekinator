@@ -8,10 +8,10 @@
  *
  * Created on Dec 3, 2009, 5:11:23 PM
  */
-
 package wekinator;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.OptionalDataException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,6 +25,7 @@ import wekinator.util.Util;
  * @author rebecca
  */
 public class DatasetLoadingPanel extends javax.swing.JPanel {
+
     SimpleDataset currentDataset = null;
     SimpleDataset loadedDataset = null;
 
@@ -48,13 +49,7 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
                 s = currentDataset;
             } else {
                 //Create one!
-                s = new SimpleDataset(
-                        WekinatorLearningManager.getInstance().getFeatureConfiguration().getNumFeaturesEnabled(),
-                        ChuckSystem.getChuckSystem().getNumParams(),
-                        ChuckSystem.getChuckSystem().isParamDiscrete,
-                        ChuckSystem.getChuckSystem().getNumSynthMaxParamVals(),
-                        WekinatorLearningManager.getInstance().getFeatureConfiguration().getAllEnabledFeatureNames(),
-                        ChuckSystem.getChuckSystem().getParamNames());
+                s = createNewDataset();
 
             }
         } else {
@@ -63,20 +58,25 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
         return s;
     }
 
+    protected SimpleDataset createNewDataset() {
+        SimpleDataset s = new SimpleDataset(
+                WekinatorLearningManager.getInstance().getFeatureConfiguration().getNumFeaturesEnabled(),
+                ChuckSystem.getChuckSystem().getNumParams(),
+                ChuckSystem.getChuckSystem().isParamDiscrete,
+                ChuckSystem.getChuckSystem().getNumSynthMaxParamVals(),
+                WekinatorLearningManager.getInstance().getFeatureConfiguration().getAllEnabledFeatureNames(),
+                ChuckSystem.getChuckSystem().getParamNames());
+        return s;
+    }
+
     public SimpleDataset commitAndGetSelectedDataset() {
-    
+
         if (radioUseCurrent.isSelected()) {
             if (currentDataset != null) {
                 return currentDataset;
             } else {
                 //Create one!
-                SimpleDataset s = new SimpleDataset(
-                        WekinatorLearningManager.getInstance().getFeatureConfiguration().getNumFeaturesEnabled(),
-                        ChuckSystem.getChuckSystem().getNumParams(),
-                        ChuckSystem.getChuckSystem().isParamDiscrete,
-                        ChuckSystem.getChuckSystem().getNumSynthMaxParamVals(),
-                        WekinatorLearningManager.getInstance().getFeatureConfiguration().getAllEnabledFeatureNames(),
-                        ChuckSystem.getChuckSystem().getParamNames());
+                SimpleDataset s = createNewDataset();
                 setCurrentDataset(s);
             }
         } else {
@@ -171,7 +171,7 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void buttonChooseFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonChooseFileActionPerformed
-       loadDatasetFromFile();
+        loadDatasetFromFile();
 }//GEN-LAST:event_buttonChooseFileActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -204,8 +204,6 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
         radioUseCurrent.setSelected(true);
     }
 
-    
-
     //TODO: bind to current dataset? Or make sure to set current every time this is displayed.
     protected void updateCurrentDatasetText() {
         if (currentDataset == null) {
@@ -232,19 +230,39 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
         if (f == null) {
             return;
         }
-        
+
         SimpleDataset s = null;
+        Exception e = null;
+        boolean success = false;
         try {
             s = SimpleDataset.readFromFile(f);
-        } catch (OptionalDataException ex) {
-            Logger.getLogger(DatasetLoadingPanel.class.getName()).log(Level.SEVERE, null, ex);
-            JOptionPane.showMessageDialog(this, "Invalid dataset file", "Could not load dataset from file", JOptionPane.ERROR_MESSAGE);
-            return;
+            success = true;
+        } catch (Exception ex) {
+            e = ex;
+        }
 
-        }catch (Exception ex) {
-            //Show warning box.
-            Logger.getLogger(DatasetLoadingPanel.class.getName()).log(Level.SEVERE, null, ex);
-            JOptionPane.showMessageDialog(this, "Could not load dataset from file: " + ex.getMessage(), "Could not load dataset from file", JOptionPane.ERROR_MESSAGE);
+        if (!success) {
+            s = createNewDataset();
+            try {
+                s.loadInstancesFromArff(f);
+                success = true;
+            } catch (IOException ex) {
+                e = ex;
+            }
+        }
+        if (!success) {
+            if (e != null && e instanceof OptionalDataException) {
+                Logger.getLogger(DatasetLoadingPanel.class.getName()).log(Level.SEVERE, null, e);
+                JOptionPane.showMessageDialog(this, "Invalid dataset file", "Could not load dataset from file", JOptionPane.ERROR_MESSAGE);
+                return;
+            } else if (e != null) {
+
+                Logger.getLogger(DatasetLoadingPanel.class.getName()).log(Level.SEVERE, null, e);
+                JOptionPane.showMessageDialog(this, "Could not load dataset from file: " + e.getMessage(), "Could not load dataset from file", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            Logger.getLogger(DatasetLoadingPanel.class.getName()).log(Level.SEVERE, null, e);
+            JOptionPane.showMessageDialog(this, "Could not load dataset from file for unspecified reason", "Could not load dataset from file for unspecified reason", JOptionPane.ERROR_MESSAGE);
             return;
 
         }
@@ -252,13 +270,13 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
             //TODO: Ultimately ensure no null problems here! (e.g. null featureconfiguration)
             if (s.getNumFeatures() != WekinatorLearningManager.getInstance().getFeatureConfiguration().getNumFeaturesEnabled()) {
                 JOptionPane.showMessageDialog(this, "The number of features of this dataset does not match the number of features currently being extracted.", "Dataset not usable", JOptionPane.ERROR_MESSAGE);
-                return; 
+                return;
             }
 
             ChuckSystem cs = ChuckSystem.getChuckSystem();
             if (s.getNumParameters() != cs.getNumParams()) {
-               JOptionPane.showMessageDialog(this, "The number of parameters of this dataset does not match the number of parameters used by your current synth.", "Dataset not usable", JOptionPane.ERROR_MESSAGE);
-               return;
+                JOptionPane.showMessageDialog(this, "The number of parameters of this dataset does not match the number of parameters used by your current synth.", "Dataset not usable", JOptionPane.ERROR_MESSAGE);
+                return;
             }
 
             boolean[] isPDiscrete = cs.isIsParamDiscrete();
@@ -290,8 +308,8 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
             if (numMismatch > 0) {
                 warning += "Proceed anyway?";
                 int response = JOptionPane.showConfirmDialog(this,
-                    warning, "",
-                    JOptionPane.YES_NO_OPTION);
+                        warning, "",
+                        JOptionPane.YES_NO_OPTION);
 
                 if (response != JOptionPane.YES_OPTION) {
                     return;
@@ -311,8 +329,8 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
             if (numMismatch > 0) {
                 warning += "Proceed anyway?";
                 int response = JOptionPane.showConfirmDialog(this,
-                    warning, "",
-                    JOptionPane.YES_NO_OPTION);
+                        warning, "",
+                        JOptionPane.YES_NO_OPTION);
 
                 if (response != JOptionPane.YES_OPTION) {
                     return;
@@ -338,6 +356,7 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
         boolean success = true;
         File file = null;
         int returnVal = fc.showOpenDialog(this);
+
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             file = fc.getSelectedFile();
         }

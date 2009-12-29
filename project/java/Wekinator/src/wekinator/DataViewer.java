@@ -10,14 +10,20 @@
  */
 package wekinator;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.table.AbstractTableModel;
+import wekinator.util.OverwritePromptingFileChooser;
 
 /**
  *
@@ -25,22 +31,24 @@ import javax.swing.table.AbstractTableModel;
  */
 public class DataViewer extends javax.swing.JFrame {
 
+    SimpleDataset myDataset = null;
+
     /** Creates new form DataViewer */
-   /* public DataViewer() {
-        initComponents();
-        populateTable();
+    /* public DataViewer() {
+    initComponents();
+    populateTable();
     } */
 
-   /* public DataViewer(Instances[] ii, MainGUI gui) {
-        initComponents();
-        populateTable(ii);
-        this.gui = gui;
+    /* public DataViewer(Instances[] ii, MainGUI gui) {
+    initComponents();
+    populateTable(ii);
+    this.gui = gui;
     }*/
-
     public DataViewer(SimpleDataset dataset) {
         initComponents();
+        myDataset = dataset;
         populateTable(dataset);
-       // this.gui = gui;
+    // this.gui = gui;
     }
 
     /** This method is called from within the constructor to
@@ -57,6 +65,7 @@ public class DataViewer extends javax.swing.JFrame {
         buttonDelete = new javax.swing.JButton();
         buttonAdd = new javax.swing.JButton();
         buttonListen = new javax.swing.JButton();
+        buttonListen1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -88,6 +97,13 @@ public class DataViewer extends javax.swing.JFrame {
             }
         });
 
+        buttonListen1.setText("Save to ARFF...");
+        buttonListen1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonListen1ActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -99,7 +115,9 @@ public class DataViewer extends javax.swing.JFrame {
                 .add(buttonAdd)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(buttonListen)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 209, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 67, Short.MAX_VALUE)
+                .add(buttonListen1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(buttonDone))
         );
         layout.setVerticalGroup(
@@ -111,7 +129,8 @@ public class DataViewer extends javax.swing.JFrame {
                     .add(buttonDone)
                     .add(buttonDelete)
                     .add(buttonAdd)
-                    .add(buttonListen)))
+                    .add(buttonListen)
+                    .add(buttonListen1)))
         );
 
         pack();
@@ -139,8 +158,8 @@ public class DataViewer extends javax.swing.JFrame {
 
         int row = table.getSelectedRow();
         double d[] = model.getSelectedParams(row);
-        for (int i= 0; i < d.length; i++) {
-            Double dd= new Double(d[i]);
+        for (int i = 0; i < d.length; i++) {
+            Double dd = new Double(d[i]);
             if (dd.isNaN()) {
                 d[i] = WekinatorLearningManager.getInstance().getParams(i);
             }
@@ -152,6 +171,76 @@ public class DataViewer extends javax.swing.JFrame {
         OscHandler.getOscHandler().sendParamsToSynth(d);
 }//GEN-LAST:event_buttonListenActionPerformed
 
+    private void buttonListen1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonListen1ActionPerformed
+        try {
+            File file = findArffFileToSave();
+            if (file != null) {
+                myDataset.writeInstancesToArff(file);
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid feature configuration", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_buttonListen1ActionPerformed
+
+    private File findArffFileToSave() throws IOException {
+        JFileChooser fc = new OverwritePromptingFileChooser();
+        fc.setDialogType(JFileChooser.SAVE_DIALOG);
+        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+        fc.setFileFilter(new FileFilter() {
+
+            @Override
+            public boolean accept(File f) {
+                if (f.isDirectory()) {
+                    return true;
+                }
+
+                String ext = "";
+                String s = f.getName();
+                int i = s.lastIndexOf('.');
+
+                if (i > 0 && i < s.length() - 1) {
+                    ext = s.substring(i + 1).toLowerCase();
+                }
+
+                if (ext != null) {
+                    if (ext.equals("arff")) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public String getDescription() {
+                return ".arff files";
+            }
+        });
+
+        //TODO: handle extension appropriately here
+        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastFeatureFileLocation();
+        if (location == null || location.equals("")) {
+            location = WekinatorInstance.getWekinatorInstance().getSettings().getDefaultFeatureFileLocation();
+        }
+        fc.setCurrentDirectory(new File(location));
+
+        File file = null;
+
+        int returnVal = fc.showSaveDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+
+            file = fc.getSelectedFile();
+            try {
+                WekinatorInstance.getWekinatorInstance().getSettings().setLastFeatureFileLocation(file.getCanonicalPath());
+            } catch (IOException ex) {
+                WekinatorInstance.getWekinatorInstance().getSettings().setLastFeatureFileLocation(file.getAbsolutePath());
+            }
+        }
+        return file;
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -159,7 +248,15 @@ public class DataViewer extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-         //       new DataViewer().setVisible(true);
+
+                boolean isDiscrete[] = {true, false};
+                int numVals[] = {3, 3};
+                String featureNames[] = {"F1", "f2", "F3", "f4", "f5"};
+                String paramNames[] = {"P1", "p2"};
+                SimpleDataset s = new SimpleDataset(5, 2, isDiscrete, numVals, featureNames, paramNames);
+
+
+                new DataViewer(s).setVisible(true);
             }
         });
     }
@@ -169,42 +266,41 @@ public class DataViewer extends javax.swing.JFrame {
     private javax.swing.JButton buttonDelete;
     private javax.swing.JButton buttonDone;
     private javax.swing.JButton buttonListen;
+    private javax.swing.JButton buttonListen1;
     private javax.swing.JScrollPane scrollTable;
     // End of variables declaration//GEN-END:variables
     private javax.swing.JTable table;
     private DataTableModel model;
-  //  private MainGUI gui;
+    //  private MainGUI gui;
 
     /*
     private void populateTable() {
-        //  table = new JTable(new DataTableModel(2, 3));
-        BufferedReader reader = null;
-        Instances instances[] = new Instances[2];
-        try {
-            reader = new BufferedReader(new FileReader("/Users/rebecca/work/weka-3-5-6/data/iris.arff"));
-            ArffReader arff = new ArffReader(reader);
-            Instances data = arff.getData();
-            Instances data2 = new Instances(data);
-            data.setClassIndex(data.numAttributes() - 1);
-            data2.setClassIndex(data.numAttributes() - 1);
-            instances[0] = data;
-            instances[1] = data2;
-        } catch (IOException ex) {
-            Logger.getLogger(DataViewer.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            try {
-                reader.close();
-            } catch (IOException ex) {
-                Logger.getLogger(DataViewer.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+    //  table = new JTable(new DataTableModel(2, 3));
+    BufferedReader reader = null;
+    Instances instances[] = new Instances[2];
+    try {
+    reader = new BufferedReader(new FileReader("/Users/rebecca/work/weka-3-5-6/data/iris.arff"));
+    ArffReader arff = new ArffReader(reader);
+    Instances data = arff.getData();
+    Instances data2 = new Instances(data);
+    data.setClassIndex(data.numAttributes() - 1);
+    data2.setClassIndex(data.numAttributes() - 1);
+    instances[0] = data;
+    instances[1] = data2;
+    } catch (IOException ex) {
+    Logger.getLogger(DataViewer.class.getName()).log(Level.SEVERE, null, ex);
+    } finally {
+    try {
+    reader.close();
+    } catch (IOException ex) {
+    Logger.getLogger(DataViewer.class.getName()).log(Level.SEVERE, null, ex);
+    }
+    }
 
-        model = new DataTableModel(instances);
-        table = new JTable(model);
-        scrollTable.setViewportView(table);
+    model = new DataTableModel(instances);
+    table = new JTable(model);
+    scrollTable.setViewportView(table);
     } */
-
-
     private void populateTable(SimpleDataset data) {
         model = new DataTableModel(data);
         table = new JTable(model);
@@ -252,10 +348,10 @@ class DataTableModel extends AbstractTableModel {
 
         setColNames();
 
-    //  setFeatures(ii[0]);
+        //  setFeatures(ii[0]);
       /*  for (int i = 0; i < ii.length; i++) {
-    setParamsAll(i, ii[i].attributeToDoubleArray(ii[i].classIndex()));
-    } */
+        setParamsAll(i, ii[i].attributeToDoubleArray(ii[i].classIndex()));
+        } */
         dataset.addChangeListener(new ChangeListener() {
 
             public void stateChanged(ChangeEvent e) {
@@ -407,7 +503,7 @@ class DataTableModel extends AbstractTableModel {
             } else if (value instanceof Double) {
                 d = ((Double) value).doubleValue();
             } else if (value instanceof String) {
-                String s = (String)value;
+                String s = (String) value;
                 if (s.equals("?")) {
                     dataset.setParameterMissing(row, paramNum);
                     fireTableCellUpdated(row, col);
@@ -415,7 +511,7 @@ class DataTableModel extends AbstractTableModel {
 
                 } else {
                     try {
-                        d = Double.parseDouble((String)value);
+                        d = Double.parseDouble((String) value);
                     } catch (Exception ex) {
                         System.out.println("BAD!"); //TODO
                         return;
@@ -465,9 +561,9 @@ class DataTableModel extends AbstractTableModel {
         System.out.println("made it here");
         double f[] = new double[numParams];
         for (int i = 0; i < numParams; i++) {
-           // f[i] = (float) instances[i].instance(row).classValue();
+            // f[i] = (float) instances[i].instance(row).classValue();
             f[i] = dataset.getParam(row, i);
-            Double d= new Double(f[i]);
+            Double d = new Double(f[i]);
             if (d.isNaN()) {
                 System.out.println("AHFALJFLSDJGSDFDLFJDFDJ NaN here");
             }

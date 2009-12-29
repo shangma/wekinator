@@ -38,6 +38,7 @@ public class LearningSystem implements Serializable {
     public static final String PROP_CVRESULTS = "cvResults";
     protected double[] trainResults;
     public static final String PROP_TRAINRESULTS = "trainResults";
+    public static final String PROP_DATASET = "dataset";
     protected int learnerToEvaluate = -1;
     protected int learnerToTrain = -1;
 
@@ -197,7 +198,7 @@ public class LearningSystem implements Serializable {
     protected int numFolds = 2;
     protected EvaluationType evaluationType = EvaluationType.CV;
     //TODO: why is this score here?
-    protected transient PlayalongScore score = null;
+    protected PlayalongScore score = null;
     public static final String PROP_SCORE = "score";
     protected SimpleDataset dataset = null;
     protected FeatureLearnerConfiguration featureLearnerConfiguration = null;
@@ -685,7 +686,11 @@ public class LearningSystem implements Serializable {
         if (dataset != null) {
             dataset.addPropertyChangeListener(datasetListener);
         }
+        SimpleDataset oldDataset = this.dataset;
         this.dataset = dataset;
+
+        propertyChangeSupport.firePropertyChange(PROP_DATASET, oldDataset, dataset);
+        updateDatasetState();
     }
 
     public void computeTrainingAccuracyInBackground() throws Exception {
@@ -741,13 +746,19 @@ public class LearningSystem implements Serializable {
         }
     }
 
-    protected void datasetChanged(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(SimpleDataset.PROP_HASINSTANCES)) {
+    protected void updateDatasetState() {
             if (dataset.isHasInstances()) {
                 setDatasetState(DatasetState.HAS_DATA);
             } else {
                 setDatasetState(DatasetState.NO_DATA);
             }
+
+    }
+
+
+    protected void datasetChanged(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(SimpleDataset.PROP_HASINSTANCES)) {
+            updateDatasetState();
         }
     }
 
@@ -921,7 +932,7 @@ public class LearningSystem implements Serializable {
     public static LearningSystem readFromFile(File f) throws Exception {
         final LearningSystem ls = (LearningSystem)SerializedFileUtil.readFromFile(f);
         ls.listenerList = new EventListenerList();
-                System.out.println("Dataset state is " + ls.datasetState);
+                //System.out.println("Dataset state is " + ls.datasetState);
 
         LearningAlgorithm[] algs = ls.getLearners();
 
@@ -938,6 +949,7 @@ public class LearningSystem implements Serializable {
         }
     };
 
+    //TODO: what about score player?
 
         ls.setLearners(algs); //re-adds property change listeners!
 

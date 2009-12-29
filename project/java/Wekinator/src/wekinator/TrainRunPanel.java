@@ -35,7 +35,7 @@ public class TrainRunPanel extends javax.swing.JPanel {
             learningSystemChange(evt);
         }
     };
-
+    
     /** Creates new form TrainRunPanel */
     public TrainRunPanel() {
         initComponents();
