@@ -701,9 +701,11 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         configuration.setNumOscSynthMaxParamVals(Integer.parseInt(textSynthMaxParamVals.getText()));
 
         boolean isDist = (comboUseDist.getSelectedIndex() == 1);
+        System.out.println("isDist ? " + isDist); //TODO: fix in future!
+
         boolean isDistArray[] = new boolean[configuration.getNumOscSynthParams()];
         for (int i = 0; i < configuration.getNumOscSynthParams(); i++) {
-            isDistArray[i] = isDiscrete;
+            isDistArray[i] = isDist;
         }
         configuration.setOscUseDistribution(isDistArray);
 

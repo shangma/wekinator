@@ -190,7 +190,7 @@ public class ChuckRunner {
         fstream.close();
     }
 
-    public void run() throws IOException {
+       public void run() throws IOException {
         stop();
         lastErrorMessages = "";
         try {
@@ -199,59 +199,121 @@ public class ChuckRunner {
             Logger.getLogger(ChuckRunner.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        LinkedList<String> cmds = new LinkedList<String>();
+        LinkedList<String[]> cmds = new LinkedList<String[]>();
         // cmds.add("ovisodiu oheroh");
-        cmds.add(configuration.getChuckExecutable() + " --loop");
+        String[] s;
+        s = new String[2];
+        s[0] = configuration.getChuckExecutable();
+        s[1] = "--loop";
+        cmds.add(s);
 
-        cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "TrackpadFeatureExtractor.ck");
-        cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "MotionFeatureExtractor.ck");
-        cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "AudioFeatureExtractor.ck");
+        s = new String[3];
+        s[0] = configuration.getChuckExecutable();
+        s[1] = "+";
+        s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "TrackpadFeatureExtractor.ck";
+        cmds.add(s);
 
-        cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "HidDiscoverer.ck");
-        cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "CustomOSCFeatureExtractor.ck");
+        s = new String[3];
+        s[0] = configuration.getChuckExecutable();
+        s[1] = "+";
+        s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "MotionFeatureExtractor.ck";
+        cmds.add(s);
 
-        cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "ProcessingFeatureExtractor.ck");
+        s = new String[3];
+        s[0] = configuration.getChuckExecutable();
+        s[1] = "+";
+        s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "AudioFeatureExtractor.ck";
+        cmds.add(s);
 
+        s = new String[3];
+        s[0] = configuration.getChuckExecutable();
+        s[1] = "+";
+        s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "HidDiscoverer.ck";
+        cmds.add(s);
+
+        s = new String[3];
+        s[0] = configuration.getChuckExecutable();
+        s[1] = "+";
+        s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "CustomOSCFeatureExtractor.ck";
+        cmds.add(s);
+
+        s = new String[3];
+        s[0] = configuration.getChuckExecutable();
+        s[1] = "+";
+        s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "ProcessingFeatureExtractor.ck";
+        cmds.add(s);
+
+        s = new String[3];
+        s[0] = configuration.getChuckExecutable();
+        s[1] = "+";
         if (configuration.isCustomChuckFeatureExtractorEnabled()) {
-            cmds.add(configuration.getChuckExecutable() + " + " + configuration.getCustomChuckFeatureExtractorFilename());
-        } else {
-            cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + File.separator + "feature_extractors" + File.separator + "keyboard_rowcol.ck");
-        }
+            s[2] = configuration.getCustomChuckFeatureExtractorFilename();
 
+           // cmds.add(configuration.getChuckExecutable() + " + \"" + configuration.getCustomChuckFeatureExtractorFilename());
+        } else {
+           // cmds.add(configuration.getChuckExecutable() + " + \"" + configuration.getChuckDir() + File.separator + "feature_extractors" + File.separator + "keyboard_rowcol.ck\"");
+            s[2] = configuration.getChuckDir() + File.separator + "feature_extractors" + File.separator + "keyboard_rowcol.ck";
+        }
+        cmds.add(s);
+        
+        s = new String[3];
+        s[0] = configuration.getChuckExecutable();
+        s[1] = "+";
         if (configuration.isUseOscSynth()) {
-            cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + File.separator + "synths" + File.separator + "OSC_synth_proxy.ck");
+            s[2] = configuration.getChuckDir() + File.separator + "synths" + File.separator + "OSC_synth_proxy.ck";
         } else {
-            cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckSynthFilename());
+            s[2] = configuration.getChuckSynthFilename();
         }
+        cmds.add(s);
 
+        s = new String[3];
+        s[0] = configuration.getChuckExecutable();
+        s[1] = "+";
         if (configuration.isIsPlayalongLearningEnabled()) {
-            cmds.add(configuration.getChuckExecutable() + " + " + configuration.getPlayalongLearningFile());
+            s[2] = configuration.getPlayalongLearningFile();
         } else {
-            cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + File.separator + "score_players" + File.separator + "icmc_melody.ck");
+            s[2] = configuration.getChuckDir() + File.separator + "score_players" + File.separator + "icmc_melody.ck";
         }
+        cmds.add(s);
+
 
         if (configuration.isUseOscSynth()) {
+            s = new String[3];
+            s[0] = configuration.getChuckExecutable();
+            s[1] = "+";
             String args = ":synthNumParams:" + configuration.getNumOscSynthParams();
 
             args += ":synthIsDiscrete:" + (configuration.getIsOscSynthParamDiscrete()[0] ? "1" : "0");
             args += ":synthUsingDistribution:" + (configuration.getOscUseDistribution()[0] ? "1" : "0");
             args += ":synthNumClasses:" + configuration.getNumOscSynthMaxParamVals();
             args += ":synthPort:" + configuration.getOscSynthReceivePort();
-            cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "main_chuck_new.ck" + args);
+            s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "main_chuck_new.ck" + args;
+            //s[3] = args;
+            cmds.add(s);
         } else {
-            cmds.add(configuration.getChuckExecutable() + " + " + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "main_chuck.ck");
+            s = new String[3];
+            s[0] = configuration.getChuckExecutable();
+            s[1] = "+";
+            s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "main_chuck.ck";
+            cmds.add(s);
         }
 
         //Now we want to execute these commands.
         int numErrLines = 0;
 
         for (int i = 0; i < cmds.size(); i++) {
-            System.out.println("Executing: " + cmds.get(i));
+            System.out.print("Executing: ");
+            String c[] = cmds.get(i);
+            for (int j = 0; j < c.length; j++) {
+                System.out.print(c[j] + " ");
+            }
+            System.out.println("");
 
             try {
                 String line, output;
                 output = "";
                 Process child = Runtime.getRuntime().exec(cmds.get(i));
+                //Runtime.getRuntime().exec
 
                 if (i == 0) {
                     //Special! Fork a thread that listens to the output of this process,
@@ -327,8 +389,13 @@ public class ChuckRunner {
 
     public void stop() throws IOException {
         //String cmd = "chuck --kill";
-        String cmd = configuration.getChuckExecutable() + " --kill";
-        Process child = Runtime.getRuntime().exec(cmd);
+        //String cmd = configuration.getChuckExecutable() + " --kill";
+        //Process child = Runtime.getRuntime().exec(cmd);
+        String[] s = new String[2];
+        s[0] = configuration.getChuckExecutable();
+        s[1] = "--kill";
+        Process child = Runtime.getRuntime().exec(s);
+
         String cmd2 = "killall chuck";
         Process child2 = Runtime.getRuntime().exec(cmd2);
 
