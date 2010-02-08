@@ -220,12 +220,18 @@ public class OscHandler {
         addHidSettingsMaskListener(); */
         addNumParamsListener();
         addChuckSettingsListener();
-        receiver.startListening();
-        sendHandshakeMessage();
-        addPlayalongMessageListener();
+                addPlayalongMessageListener();
         addHidSettingsAllListener();
         addChuckSettingsArrayListener();
+                OscController.addListeners(receiver);
+
+        receiver.startListening();
+
+
+        sendHandshakeMessage();
+
         //  oldState = ConnectionState.CONNECTING;
+
 
         setConnectionState(ConnectionState.CONNECTING);
     // notifyObservers();

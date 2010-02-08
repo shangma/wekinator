@@ -18,6 +18,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * TODOTODOTODO: change custom file stuff to hash table; everyone responsible for their own thing.
  *
  * @author rebecca
  */
