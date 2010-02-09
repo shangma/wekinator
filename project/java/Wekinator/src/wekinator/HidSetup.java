@@ -49,6 +49,20 @@ public class HidSetup implements Serializable {
     protected boolean usable = false;
     public static final String PROP_USABLE = "usable";
 
+    public static String getFileExtension() {
+        return "whid";
+    }
+
+    public static String getFileTypeDescription() {
+        return "HID configuration";
+    }
+
+    public static String getDefaultLocation() {
+       // String dir = WekinatorInstance.getWekinatorInstance().getSettings().getDefaultSettingsDirectory();
+        return "hidConfigurations";
+        //return dir + File.separator + "hidConfigurations";
+    }
+
     /**
      * Get the value of usable
      *

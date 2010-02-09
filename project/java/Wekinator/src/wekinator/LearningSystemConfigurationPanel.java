@@ -81,9 +81,9 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
 
     private File findLearningSystemFile() {
         JFileChooser fc = new JFileChooser();
-        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastClassifierFileLocation();
+        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastLocation(LearningSystem.getFileExtension());
         if (location == null || location.equals("")) {
-            location = WekinatorInstance.getWekinatorInstance().getSettings().getDefaultClassifierFileLocation();
+            location = LearningSystem.getDefaultLocation();
         }
         fc.setCurrentDirectory(new File(location)); //TODO: Could set directory vs file here according to above results
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -95,12 +95,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
         }
 
         if (file != null) {
-            try {
-                WekinatorInstance.getWekinatorInstance().getSettings().setLastClassifierFileLocation(file.getCanonicalPath());
-            } catch (Exception ex) {
-                WekinatorInstance.getWekinatorInstance().getSettings().setLastClassifierFileLocation(file.getAbsolutePath());
-
-            }
+            WekinatorInstance.getWekinatorInstance().getSettings().setLastLocation(LearningSystem.getFileExtension(), Util.getCanonicalPath(file));
         }
         return file;
     }
@@ -143,7 +138,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
             .add(panelSimpleTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(jLabel1)
-                .addContainerGap(391, Short.MAX_VALUE))
+                .addContainerGap(498, Short.MAX_VALUE))
         );
         panelSimpleTabLayout.setVerticalGroup(
             panelSimpleTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -172,7 +167,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
         panelAdvancedTab.setLayout(panelAdvancedTabLayout);
         panelAdvancedTabLayout.setHorizontalGroup(
             panelAdvancedTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 499, Short.MAX_VALUE)
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 606, Short.MAX_VALUE)
         );
         panelAdvancedTabLayout.setVerticalGroup(
             panelAdvancedTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -211,7 +206,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(17, 17, 17)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(paneTabSimpleAdvanced, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
+                    .add(paneTabSimpleAdvanced, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 627, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
@@ -242,7 +237,46 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void buttonLoadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonLoadActionPerformed
-        File f = findLearningSystemFile();
+
+       File file = Util.findLoadFile(LearningSystem.getFileExtension(),
+                LearningSystem.getFileTypeDescription(),
+                LearningSystem.getDefaultLocation(),
+                this);
+        if (file != null) {
+               LearningSystem newS = null;
+
+            try {
+                newS = LearningSystem.readFromFile(file);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid learning system file", JOptionPane.ERROR_MESSAGE);
+                Logger.getLogger(LearningSystemConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            if (newS != null) {
+                //TODO TODO TODO:
+                //CHeck: newS # params
+                //Check newS # features
+                // check newS param types
+                //check newS feature names & param names (warn if disagree)
+
+                setLearningSystem(newS); //TODO: Problematic: What do we do w/ backup?; make usre to deal with hid there
+                WekinatorLearningManager.getInstance().setLearningSystem(newS);
+                labelLearningSystemStatus.setText("Learning system loaded successfully.");
+
+                System.out.println("Sanity check:");
+                for (int i = 0; i < newS.getNumParams(); i++) {
+                        int[] mapping = newS.getDataset().getFeatureLearnerConfiguration().getFeatureMappingForLearner(i);
+                        System.out.println("mapping " + i + " is: ");
+                        for (int j = 0; j < mapping.length; j++) {
+                            System.out.print(mapping[j] + " ");
+                        }
+                        System.out.println("");
+                }
+
+                Util.setLastFile(LearningSystem.getFileExtension(), file);
+            }
+        }
+
+      /*  File f = findLearningSystemFile();
         boolean success = false;
         if (f != null) {
             LearningSystem newS = null;
@@ -276,7 +310,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
                 }
 
             }
-        }
+        } */
 }//GEN-LAST:event_buttonLoadActionPerformed
 //TODO: enable GO button depending on init state.
 

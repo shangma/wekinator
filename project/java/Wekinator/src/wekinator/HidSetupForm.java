@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import wekinator.HidSetup.HidState;
 import wekinator.util.OverwritePromptingFileChooser;
 import wekinator.util.Util;
@@ -35,13 +36,13 @@ public class HidSetupForm extends javax.swing.JFrame {
 
     //  private  setupPropertyListener = null;
     private PropertyChangeListener setupListener = new PropertyChangeListener() {
+
         public void propertyChange(PropertyChangeEvent evt) {
             setupPropertyChange(evt);
         }
     };
-
     private boolean inInteractiveSetup = false;
-  //  public static final String PROP_MYCURRENTSETUP = "myCurrentSetup";
+    //  public static final String PROP_MYCURRENTSETUP = "myCurrentSetup";
 
     /**
      * Get the value of myCurrentSetup
@@ -63,7 +64,7 @@ public class HidSetupForm extends javax.swing.JFrame {
         oldSetup.removePropertyChangeListener(setupListener);
         this.mySetup = myCurrentSetup;
         mySetup.addPropertyChangeListener(setupListener);
-     //   propertyChangeSupport.firePropertyChange(PROP_MYCURRENTSETUP, oldSetup, mySetup);
+    //   propertyChangeSupport.firePropertyChange(PROP_MYCURRENTSETUP, oldSetup, mySetup);
     }
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
@@ -209,14 +210,14 @@ public class HidSetupForm extends javax.swing.JFrame {
 
     private void buttonCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCancelActionPerformed
         //Close
-        
+
         //Return setup to how it was before -- not sure how I feel about this... But right now
         //we have to monopolize global setup in order for it to communicate via OSC. :(
-          WekinatorInstance.getWekinatorInstance().setCurrentHidSetup(backup);
-    /*    if (backup != null) {
-            WekinatorInstance.getWekinatorInstance().setCurrentHidSetup(backup);
+        WekinatorInstance.getWekinatorInstance().setCurrentHidSetup(backup);
+        /*    if (backup != null) {
+        WekinatorInstance.getWekinatorInstance().setCurrentHidSetup(backup);
         } else {
-            WekinatorInstance.getWekinatorInstance().setCurrentHidSetup(new HidSetup());
+        WekinatorInstance.getWekinatorInstance().setCurrentHidSetup(new HidSetup());
         } */
         this.dispose();
 }//GEN-LAST:event_buttonCancelActionPerformed
@@ -226,15 +227,15 @@ public class HidSetupForm extends javax.swing.JFrame {
         if (this.parent != null) {
             parent.setNewHidSetup(mySetup);
         }
-       /* else {
-            WekinatorInstance.getWekinatorInstance().setCurrentHidSetup(mySetup);
+        /* else {
+        WekinatorInstance.getWekinatorInstance().setCurrentHidSetup(mySetup);
         } */
         this.dispose();
     }//GEN-LAST:event_buttonOKActionPerformed
 
     private void buttonLoadOtherHIDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonLoadOtherHIDActionPerformed
         // checkOtherHID.setSelected(true);
-        File f = findHidSetupFile();
+      /*  File f = findHidSetupFile();
         boolean success = false;
         HidSetup loadedHs = null;
         if (f != null) {
@@ -245,7 +246,7 @@ public class HidSetupForm extends javax.swing.JFrame {
                     WekinatorInstance.getWekinatorInstance().setCurrentHidSetup(mySetup);
                     mySetup.startHidRun();
                     mySetup.startHidInit();
-                   // displayHidSettings();
+                    // displayHidSettings();
                     success = true;
                 } catch (Exception ex) {
                     success = false;
@@ -257,6 +258,33 @@ public class HidSetupForm extends javax.swing.JFrame {
         if (!success) {
             labelStatus.setText("Could not load settings successfully.");
             System.out.println("Could not succeed in loading settings");
+        } */
+        boolean success = false;
+        File file = Util.findLoadFile(HidSetup.getFileExtension(),
+                HidSetup.getFileTypeDescription(),
+                HidSetup.getDefaultLocation(),
+                this);
+        if (file == null)
+            return;
+
+        HidSetup loadedHs = null;
+        loadedHs = HidSetup.readFromFile(file);
+        if (loadedHs != null) {
+           try {
+                setMyCurrentSetup(loadedHs);
+                WekinatorInstance.getWekinatorInstance().setCurrentHidSetup(mySetup);
+                 mySetup.startHidRun();
+                 mySetup.startHidInit();
+                 success = true;
+                 Util.setLastFile(HidSetup.getFileExtension(), file);
+
+                } catch (Exception ex) {
+                    Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+        }
+        if (!success) {
+            labelStatus.setText("Could not load settings successfully.");
+            JOptionPane.showMessageDialog(this, "Could not load setup from file", "Could not load setup from file.", JOptionPane.ERROR_MESSAGE);
         }
 
 }//GEN-LAST:event_buttonLoadOtherHIDActionPerformed
@@ -277,7 +305,7 @@ public class HidSetupForm extends javax.swing.JFrame {
             try {
                 mySetup.requestSetupStop();
                 labelStatus.setText("Status: Setup stopping");
-                //displayHidSettings();
+            //displayHidSettings();
             } catch (IOException ex) {
                 labelStatus.setText("Status: Encountered a problem.");
                 System.out.println("setup stop exception");
@@ -288,9 +316,18 @@ public class HidSetupForm extends javax.swing.JFrame {
 }//GEN-LAST:event_buttonIdentifyNewHIDActionPerformed
 
     private void buttonSaveHidFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSaveHidFileActionPerformed
-         File f = findHidSetupFileToSave();
-        if (f != null) {
-        mySetup.writeToFile(f); //Serialized out!
+        File file = Util.findSaveFile(HidSetup.getFileExtension(),
+                HidSetup.getFileTypeDescription(),
+                HidSetup.getDefaultLocation(),
+                this);
+        if (file != null) {
+            try {
+                mySetup.writeToFile(file);
+                Util.setLastFile(HidSetup.getFileExtension(), file);
+            } catch (Exception ex) {
+                Logger.getLogger(HidSetupForm.class.getName()).log(Level.INFO, null, ex);
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Could not save setup to file.", JOptionPane.ERROR_MESSAGE);
+            }
         }
 }//GEN-LAST:event_buttonSaveHidFileActionPerformed
 
@@ -321,9 +358,9 @@ public class HidSetupForm extends javax.swing.JFrame {
         WekinatorInstance wek = WekinatorInstance.getWekinatorInstance();
         JFileChooser fc = new JFileChooser();
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        String location = wek.getSettings().getLastFeatureFileLocation();
+        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastLocation(HidSetup.getFileExtension());
         if (location == null || location.equals("")) {
-            location = wek.getSettings().getDefaultFeatureFileLocation();
+            location = HidSetup.getDefaultLocation();
         }
         fc.setCurrentDirectory(new File(location)); //TODO: Could set directory vs file here according to above results
 
@@ -334,8 +371,7 @@ public class HidSetupForm extends javax.swing.JFrame {
             file = fc.getSelectedFile();
         }
         if (file != null) {
-            wek.getSettings().setLastHidFileLocation(Util.getCanonicalPath(file));
-
+            wek.getSettings().setLastLocation(HidSetup.getFileExtension(), Util.getCanonicalPath(file));
         }
         return file;
     }
@@ -349,9 +385,9 @@ public class HidSetupForm extends javax.swing.JFrame {
     private void setupPropertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(HidSetup.PROP_HIDSTATE)) {
             HidSetup.HidState state = mySetup.hidState;
-           System.out.println("Received property change hid state: " + state);
-          //  this.setInInteractiveSetup(state == HidState.SETUP_BEGUN);
-           // buttonSaveHidFile.setEnabled(state == HidState.INIT_DONE || state== HidState.SETUP_STOPPED);
+            System.out.println("Received property change hid state: " + state);
+            //  this.setInInteractiveSetup(state == HidState.SETUP_BEGUN);
+            // buttonSaveHidFile.setEnabled(state == HidState.INIT_DONE || state== HidState.SETUP_STOPPED);
 
             if (state == HidState.INIT_DONE || state == HidState.SETTINGS_RECEIVED) {
                 displayHidSettings();
@@ -365,10 +401,17 @@ public class HidSetupForm extends javax.swing.JFrame {
     }
 
     private File findHidSetupFileToSave() {
-    //TODO: Preopulate w/ reasonable thing.
+        //TODO: Preopulate w/ reasonable thing.
         JFileChooser fc = new OverwritePromptingFileChooser();
         fc.setDialogType(JFileChooser.SAVE_DIALOG);
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastLocation(HidSetup.getFileExtension());
+        if (location == null || location.equals("")) {
+            location = HidSetup.getDefaultLocation();
+        }
+        fc.setCurrentDirectory(new File(location)); //TODO: Could set directory vs file here according to above results
+
         File file = null;
 
         int returnVal = fc.showSaveDialog(this);
@@ -377,7 +420,7 @@ public class HidSetupForm extends javax.swing.JFrame {
             file = fc.getSelectedFile();
         }
         if (file != null) {
-            WekinatorInstance.getWekinatorInstance().getSettings().setLastHidFileLocation(Util.getCanonicalPath(file));
+            WekinatorInstance.getWekinatorInstance().getSettings().setLastLocation(HidSetup.getFileExtension(), Util.getCanonicalPath(file));
         }
         return file;
     }

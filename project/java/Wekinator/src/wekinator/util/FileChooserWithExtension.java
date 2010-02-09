@@ -21,6 +21,9 @@ public class FileChooserWithExtension extends JFileChooser {
     //  private final String defaultName;
     // private final String defaultDir;
 
+    //defFile: should be fully qualified
+    // defDir: also qualified
+    // priority is File, if not null
     public FileChooserWithExtension(String ext, String description, File defFile, File defDir, boolean isSave) {
         super();
         this.extension = ext;
@@ -64,7 +67,7 @@ public class FileChooserWithExtension extends JFileChooser {
             @Override
             public String getDescription() {
                 if (descriptionOfType != null) {
-                    return descriptionOfType + " files (." + extension + ")";
+                    return descriptionOfType + " (." + extension + ")";
                 } else {
                     return "Supported types";
                 }
@@ -126,7 +129,7 @@ public class FileChooserWithExtension extends JFileChooser {
                             JOptionPane.YES_NO_OPTION);
                     if (lResponse == JOptionPane.YES_OPTION) {
                         String newName = rebuildName(parts, parts.length - 1, extension);
-                        setSelectedFile(new File(newName));
+                        setSelectedFile(new File(selected.getParent(), newName));
                     }
 
                 } else if (!parts[parts.length - 1].equals(extension)) {

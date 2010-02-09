@@ -60,6 +60,18 @@ public class SimpleDataset implements Serializable {
     protected FeatureLearnerConfiguration featureLearnerConfiguration = null;
     private ChangeEvent changeEvent = null;
 
+    public static String getFileExtension() {
+        return "wdata";
+    }
+
+    public static String getFileTypeDescription() {
+        return "Wekinator dataset";
+    }
+
+    public static String getDefaultLocation() {
+        return "datasets";
+    }
+
     private transient DataViewer viewer =null;
 
     public void showViewer() {

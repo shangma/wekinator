@@ -7,12 +7,25 @@ package wekinator.LearningAlgorithms;
 
 import java.io.File;
 import wekinator.util.SerializedFileUtil;
+import wekinator.WekinatorInstance;
 
 /**
  *
  * @author rebecca
  */
-public class LearningAlgorithmUtil {
+public class LearningAlgorithms {
+
+    public static String getFileExtension() {
+        return "wmodel";
+    }
+
+    public static String getFileTypeDescription() {
+        return "learning algorithm";
+    }
+
+    public static String getDefaultLocation() {
+        return "individualModels";
+    }
 
     public static LearningAlgorithm readFromFile(File f) throws ClassCastException, Exception {
         Object o = SerializedFileUtil.readFromFile(f);

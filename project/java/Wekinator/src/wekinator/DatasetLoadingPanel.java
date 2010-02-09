@@ -126,7 +126,7 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
         labelFile.setText(": 150 datapoints recorded");
         labelFile.setEnabled(false);
 
-        jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 13));
         jLabel1.setText("Configure dataset");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -150,7 +150,7 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(labelFile))))
                     .add(jLabel1))
-                .addContainerGap(150, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -225,14 +225,25 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
     }
 
     private void loadDatasetFromFile() {
+        //TODO: Insert support for loading ARFF files again.
+        File file = Util.findLoadFile(FeatureConfiguration.getFileExtension(),
+                FeatureConfiguration.getFileTypeDescription(),
+                FeatureConfiguration.getDefaultLocation(),
+                this);
 
-        File f = chooseLoadFile();
-        if (f == null) {
+        if (file == null)
             return;
-        }
 
         SimpleDataset s = null;
-        Exception e = null;
+        try {
+              s = SimpleDataset.readFromFile(file);
+        } catch (Exception ex) {
+              Logger.getLogger(DatasetLoadingPanel.class.getName()).log(Level.SEVERE, null, ex);
+              JOptionPane.showMessageDialog(this, "Could not load dataset from file", "Could not load dataset from file", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+            
+      /*  Exception e = null;
         boolean success = false;
         try {
             s = SimpleDataset.readFromFile(f);
@@ -265,7 +276,7 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(this, "Could not load dataset from file for unspecified reason", "Could not load dataset from file for unspecified reason", JOptionPane.ERROR_MESSAGE);
             return;
 
-        }
+        } */
         if (s != null) {
             //TODO: Ultimately ensure no null problems here! (e.g. null featureconfiguration)
             if (s.getNumFeatures() != WekinatorLearningManager.getInstance().getFeatureConfiguration().getNumFeaturesEnabled()) {
@@ -340,16 +351,21 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
             //Made it here? Then we're good to go.
             setLoadedDataset(s);
             radioUseFile.setSelected(true);
+            Util.setLastFile(SimpleDataset.getFileExtension(), file);
+
         }
     }
 
     private File chooseLoadFile() {
+
+
         WekinatorInstance wek = WekinatorInstance.getWekinatorInstance();
         JFileChooser fc = new JFileChooser();
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        String location = wek.getSettings().getLastClassifierFileLocation();
+        String location = wek.getSettings().getLastLocation(SimpleDataset.getFileExtension());
+
         if (location == null || location.equals("")) {
-            location = wek.getSettings().getDefaultClassifierFileLocation();
+            location = SimpleDataset.getDefaultLocation();
         }
         fc.setCurrentDirectory(new File(location)); //TODO: Could set directory vs file here according to above results
 
@@ -361,7 +377,7 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
             file = fc.getSelectedFile();
         }
         if (file != null) {
-            wek.getSettings().setLastClassifierFileLocation(Util.getCanonicalPath(file));
+            wek.getSettings().setLastLocation(SimpleDataset.getFileExtension(), Util.getCanonicalPath(file));
         }
         return file;
     }

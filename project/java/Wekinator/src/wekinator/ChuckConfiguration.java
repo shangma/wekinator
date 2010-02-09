@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -38,6 +40,68 @@ public class ChuckConfiguration implements Serializable {
     protected boolean usable = false;
     public static final String PROP_USABLE = "usable";
 
+
+    public static String getFileExtension() {
+        return "wckconf";
+    }
+
+    public static String getFileTypeDescription() {
+        return "ChucK configuration";
+    }
+
+    public static String getDefaultLocation() {
+       // String dir = WekinatorInstance.getWekinatorInstance().getSettings().getDefaultSettingsDirectory();
+        return "chuckConfigurations";
+        //return dir + File.separator + "hidConfigurations";
+    }
+    
+   public static ChuckConfiguration readFromFile(File f) throws IOException {
+        FileInputStream fin = null;
+        ChuckConfiguration c;
+        try {
+            fin = new FileInputStream(f);
+            ObjectInputStream sin = new ObjectInputStream(fin);
+            c = (ChuckConfiguration) sin.readObject();
+            sin.close();
+            fin.close();
+        } catch (Exception ex) {
+            throw new IOException("Could not load configuration from file\n");
+        } finally {
+            try {
+                if (fin != null) {
+                    fin.close();
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(ChuckConfiguration.class.getName()).log(Level.INFO, null, ex);
+            }
+        }
+        return c;
+    }
+
+   public void writeToFile(File f) throws IOException {
+        FileOutputStream fout = null;
+        boolean fail = false;
+        try {
+            fout = new FileOutputStream(f);
+            ObjectOutputStream out = new ObjectOutputStream(fout);
+            out.writeObject(this);
+            out.close();
+            fout.close();
+        } catch (IOException ex) {
+            fail = true;
+        } finally {
+            try {
+                if (fout != null) {
+                    fout.close();
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(ChuckConfiguration.class.getName()).log(Level.INFO, null, ex);
+            }
+        }
+        if (fail) {
+            throw new IOException("Could not write to file " + f.getCanonicalPath());
+        }
+    } 
 
     /**
      * Get the value of usable
@@ -118,14 +182,14 @@ public class ChuckConfiguration implements Serializable {
         setEqualTo(c);
     }
 
-    public void writeToFile(File settingsFile) throws FileNotFoundException, IOException {
+   /* public void writeToFile(File settingsFile) throws FileNotFoundException, IOException {
         FileOutputStream fout = new FileOutputStream(settingsFile);
         ObjectOutputStream out = new ObjectOutputStream(fout);
         locationToSaveMyself = settingsFile.getCanonicalPath();
         out.writeObject(this);
         out.close();
         fout.close();
-    }
+    } */
 
     public ChuckConfiguration(ChuckConfiguration c) {
         setEqualTo(c);

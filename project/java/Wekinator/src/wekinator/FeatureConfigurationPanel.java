@@ -22,6 +22,7 @@ import javax.swing.JOptionPane;
 import wekinator.FeatureConfiguration.WindowType;
 import wekinator.util.DeepCopy;
 import wekinator.util.OverwritePromptingFileChooser;
+import wekinator.util.Util;
 
 /**
  *
@@ -65,9 +66,9 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
         JFileChooser fc = new OverwritePromptingFileChooser();
         fc.setDialogType(JFileChooser.SAVE_DIALOG);
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastFeatureFileLocation();
+        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastLocation(FeatureConfiguration.getFileExtension());
         if (location == null || location.equals("")) {
-            location = WekinatorInstance.getWekinatorInstance().getSettings().getDefaultFeatureFileLocation();
+            location = FeatureConfiguration.getDefaultLocation();
         }
         fc.setCurrentDirectory(new File(location));
 
@@ -77,10 +78,9 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
 
             file = fc.getSelectedFile();
-            try {
-                WekinatorInstance.getWekinatorInstance().getSettings().setLastFeatureFileLocation(file.getCanonicalPath());
-            } catch (IOException ex) {
-                WekinatorInstance.getWekinatorInstance().getSettings().setLastFeatureFileLocation(file.getAbsolutePath());
+
+            if (file != null) {
+                WekinatorInstance.getWekinatorInstance().getSettings().setLastLocation(FeatureConfiguration.getFileExtension(), Util.getCanonicalPath(file));
             }
         }
         return file;
@@ -595,7 +595,26 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void buttonLoadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonLoadActionPerformed
-        File f = findFeatureSetupFile();
+         File file = Util.findLoadFile(FeatureConfiguration.getFileExtension(),
+                FeatureConfiguration.getFileTypeDescription(),
+                FeatureConfiguration.getDefaultLocation(),
+                this);
+        if (file != null) {
+                FeatureConfiguration newF = null;
+
+            try {
+                newF = FeatureConfiguration.readFromFile(file);
+            } catch (Exception ex) {
+                System.out.println("Unable to load feature configuration from file");
+                Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            if (newF != null) {
+                setFeatureConfiguration(newF); //TODO: Problematic: What do we do w/ backup?; make usre to deal with hid there
+                Util.setLastFile(FeatureConfiguration.getFileExtension(), file);
+            }
+        }
+        
+        /* File f = findFeatureSetupFile();
         boolean success = false;
         if (f != null) {
             FeatureConfiguration newF = null;
@@ -608,11 +627,27 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
             if (newF != null) {
                 setFeatureConfiguration(newF); //TODO: Problematic: What do we do w/ backup?; make usre to deal with hid there
             }
-        }
+        }*/
     }//GEN-LAST:event_buttonLoadActionPerformed
 
     private void buttonSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSaveActionPerformed
-        try {
+         try {
+            setConfigurationFromForm();
+            featureConfiguration.validate();
+            File file = Util.findSaveFile(FeatureConfiguration.getFileExtension(),
+                    FeatureConfiguration.getFileTypeDescription(),
+                    FeatureConfiguration.getDefaultLocation(),
+                    this);
+            if (file != null) {
+                try {
+                    featureConfiguration.writeToFile(file); //TODOTODOTODO: update last path on this.
+                    Util.setLastFile(FeatureConfiguration.getFileExtension(), file);
+                } catch (Exception ex) {
+                    Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.INFO, null, ex);
+                    System.out.println("Could not save feature configuration to file");
+                }
+            }
+        /*   try {
             setConfigurationFromForm();
             featureConfiguration.validate();
             File file = findFeatureSetupFileToSave();
@@ -623,9 +658,9 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
                     //TODO: handle:
                     System.out.println("Could not save to file");
                 }
-            }
+            } */
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid feature configuration", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid feature configuration; cannot save.", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_buttonSaveActionPerformed
 
@@ -647,8 +682,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
 
 
         //First, prompt the user to overwrite
-        if (WekinatorLearningManager.getInstance().getFeatureConfiguration() != null
-                && ChuckSystem.getChuckSystem().getState() == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID) {
+        if (WekinatorLearningManager.getInstance().getFeatureConfiguration() != null && ChuckSystem.getChuckSystem().getState() == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID) {
             int lResponse = JOptionPane.showConfirmDialog(this, "Are you sure you want to change your feature configuration?\n" + "This could destroy your existing trained models...", "", JOptionPane.YES_NO_OPTION);
             if (lResponse != JOptionPane.YES_OPTION) {
                 return;
@@ -676,20 +710,20 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
         } catch (IOException ex) {
             Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
     }//GEN-LAST:event_buttonGoActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         try {
             //Zeroth, check this is valid
             setConfigurationFromForm();
-         /*   HidSetup tmptmp = new HidSetup();
+            /*   HidSetup tmptmp = new HidSetup();
             tmptmp.usable = true;
             featureConfiguration.setHidSetup(tmptmp); */
-            
+
             featureConfiguration.validate();
             mf = new FeatureConfigurationMetaFrame(featureConfiguration);
-        mf.setVisible(true);
+            mf.setVisible(true);
 
         } catch (Exception ex) {
             Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.INFO, null, ex);
@@ -701,9 +735,9 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
 
     private File findFeatureSetupFile() {
         JFileChooser fc = new JFileChooser();
-        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastFeatureFileLocation();
+        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastLocation(FeatureConfiguration.getFileExtension());
         if (location == null || location.equals("")) {
-            location = WekinatorInstance.getWekinatorInstance().getSettings().getDefaultFeatureFileLocation();
+            location = FeatureConfiguration.getDefaultLocation();
         }
         fc.setCurrentDirectory(new File(location)); //TODO: Could set directory vs file here according to above results
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -715,12 +749,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
         }
 
         if (file != null) {
-            try {
-                WekinatorInstance.getWekinatorInstance().getSettings().setLastFeatureFileLocation(file.getCanonicalPath());
-            } catch (Exception ex) {
-                WekinatorInstance.getWekinatorInstance().getSettings().setLastFeatureFileLocation(file.getAbsolutePath());
-
-            }
+            WekinatorInstance.getWekinatorInstance().getSettings().setLastLocation(FeatureConfiguration.getFileExtension(), Util.getCanonicalPath(file));
         }
         return file;
     }
@@ -860,7 +889,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
             }
 
 
-                featureConfiguration.setUseCentroid(checkCentroid.isSelected());
+            featureConfiguration.setUseCentroid(checkCentroid.isSelected());
             featureConfiguration.setUseCustomChuckFeatures(checkCustomChuck.isSelected());
             featureConfiguration.setUseCustomOscFeatures(checkCustomOSC.isSelected());
             featureConfiguration.setUseFFT(checkFFT.isSelected());

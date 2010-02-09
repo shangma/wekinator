@@ -21,7 +21,7 @@ import javax.swing.event.ChangeListener;
 import wekinator.LearningAlgorithms.AdaboostM1LearningAlgorithm;
 import wekinator.LearningAlgorithms.LearningAlgorithm;
 import wekinator.LearningAlgorithms.LearningAlgorithm.TrainingState;
-import wekinator.LearningAlgorithms.LearningAlgorithmUtil;
+import wekinator.LearningAlgorithms.LearningAlgorithms;
 import wekinator.LearningAlgorithms.NNLearningAlgorithm;
 
 /**
@@ -302,7 +302,7 @@ public class LearnerEditPanel extends javax.swing.JPanel {
         //TODO: Show file chooser
         File f = new File("test.out");
         try {
-            LearningAlgorithmUtil.writeToFile(al, f);
+            LearningAlgorithms.writeToFile(al, f);
         } catch (Exception ex) {
             //TODO: display warning popup
             Logger.getLogger(LearnerEditPanel.class.getName()).log(Level.SEVERE, null, ex);

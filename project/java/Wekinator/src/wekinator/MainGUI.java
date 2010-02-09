@@ -432,9 +432,15 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         trainRunPanel1 = new wekinator.TrainRunPanel();
         labelGlobalStatus = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
-        fileMenu = new javax.swing.JMenu();
+        wekMenu = new javax.swing.JMenu();
         preferencesMenuItem = new javax.swing.JMenuItem();
         exitMenuItem = new javax.swing.JMenuItem();
+        fileMenu = new javax.swing.JMenu();
+        menuSaveSystem = new javax.swing.JMenuItem();
+        jMenuItem2 = new javax.swing.JMenuItem();
+        jMenuItem3 = new javax.swing.JMenuItem();
+        jMenuItem4 = new javax.swing.JMenuItem();
+        jMenuItem1 = new javax.swing.JMenuItem();
         viewMenu = new javax.swing.JMenu();
         menuItemViewConsole = new javax.swing.JMenuItem();
         menuItemViewFeatures = new javax.swing.JMenuItem();
@@ -511,7 +517,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                         .add(buttonOscDisconnect))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel5Layout.createSequentialGroup()
                         .add(23, 23, 23)
-                        .add(labelOscStatus, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 780, Short.MAX_VALUE))
+                        .add(labelOscStatus, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 763, Short.MAX_VALUE))
                     .add(jPanel5Layout.createSequentialGroup()
                         .addContainerGap()
                         .add(jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -562,7 +568,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         jPanel8Layout.setHorizontalGroup(
             jPanel8Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel8Layout.createSequentialGroup()
-                .add(chuckRunnerPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 803, Short.MAX_VALUE)
+                .add(chuckRunnerPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 786, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel8Layout.setVerticalGroup(
@@ -595,13 +601,13 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
             panelTabFeatureConfigurationLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(panelTabFeatureConfigurationLayout.createSequentialGroup()
                 .add(featureConfigurationPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(283, Short.MAX_VALUE))
+                .addContainerGap(261, Short.MAX_VALUE))
         );
         panelTabFeatureConfigurationLayout.setVerticalGroup(
             panelTabFeatureConfigurationLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(panelTabFeatureConfigurationLayout.createSequentialGroup()
                 .add(featureConfigurationPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(223, Short.MAX_VALUE))
+                .addContainerGap(107, Short.MAX_VALUE))
         );
 
         panelMainTabs.addTab("Features Setup", panelTabFeatureConfiguration);
@@ -612,22 +618,22 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
         panelTabLearningSystemConfiguration.setLayout(panelTabLearningSystemConfigurationLayout);
         panelTabLearningSystemConfigurationLayout.setHorizontalGroup(
             panelTabLearningSystemConfigurationLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, learningSystemConfigurationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 835, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, learningSystemConfigurationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 818, Short.MAX_VALUE)
         );
         panelTabLearningSystemConfigurationLayout.setVerticalGroup(
             panelTabLearningSystemConfigurationLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(panelTabLearningSystemConfigurationLayout.createSequentialGroup()
                 .add(learningSystemConfigurationPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 551, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(101, Short.MAX_VALUE))
+                .addContainerGap(71, Short.MAX_VALUE))
         );
 
-        panelMainTabs.addTab("Model Setup", panelTabLearningSystemConfiguration);
+        panelMainTabs.addTab("Learning Setup", panelTabLearningSystemConfiguration);
         panelMainTabs.addTab("Use it!", trainRunPanel1);
 
-        fileMenu.setText("Wekinator");
+        wekMenu.setText("Wekinator");
 
         preferencesMenuItem.setText("Preferences");
-        fileMenu.add(preferencesMenuItem);
+        wekMenu.add(preferencesMenuItem);
 
         exitMenuItem.setText("Exit");
         exitMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -635,7 +641,31 @@ public class MainGUI extends javax.swing.JFrame implements Observer {
                 exitMenuItemActionPerformed(evt);
             }
         });
-        fileMenu.add(exitMenuItem);
+        wekMenu.add(exitMenuItem);
+
+        menuBar.add(wekMenu);
+
+        fileMenu.setText("File");
+
+        menuSaveSystem.setText("Save learning system");
+        menuSaveSystem.setEnabled(false);
+        fileMenu.add(menuSaveSystem);
+
+        jMenuItem2.setText("Save model(s)");
+        jMenuItem2.setEnabled(false);
+        fileMenu.add(jMenuItem2);
+
+        jMenuItem3.setText("Save dataset");
+        jMenuItem3.setEnabled(false);
+        fileMenu.add(jMenuItem3);
+
+        jMenuItem4.setText("Load global configuration");
+        jMenuItem4.setEnabled(false);
+        fileMenu.add(jMenuItem4);
+
+        jMenuItem1.setText("Save global configuration");
+        jMenuItem1.setEnabled(false);
+        fileMenu.add(jMenuItem1);
 
         menuBar.add(fileMenu);
 
@@ -1004,7 +1034,7 @@ private void buttonOscDisconnectActionPerformed(java.awt.event.ActionEvent evt) 
     }
     
 
-    private void saveTrainedModel() {
+   /* private void saveTrainedModel() {
         JFileChooser fc = new OverwritePromptingFileChooser();
 
         fc.setDialogType(JFileChooser.SAVE_DIALOG);
@@ -1053,7 +1083,8 @@ private void buttonOscDisconnectActionPerformed(java.awt.event.ActionEvent evt) 
         } else if (returnVal == JFileChooser.ERROR_OPTION) {
             throw new Error("huh?");
         }
-    }
+    } */
+
     private int myNumParams;
     private int myNumFeats;
 
@@ -1160,7 +1191,7 @@ private void buttonOscDisconnectActionPerformed(java.awt.event.ActionEvent evt) 
 
     }
 
-    private boolean loadModelsFromFile() {
+  /*  private boolean loadModelsFromFile() {
         JFileChooser fc = new JFileChooser();
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         String location = wek.getSettings().getLastClassifierFileLocation();
@@ -1246,7 +1277,8 @@ private void buttonOscDisconnectActionPerformed(java.awt.event.ActionEvent evt) 
             }
         }
         return success;
-    }
+    } */
+
     private String classifierFilename;
     public void listenToValues(float[] params) {
         w.startSound();
@@ -1268,7 +1300,7 @@ private void buttonOscDisconnectActionPerformed(java.awt.event.ActionEvent evt) 
         }
         return f;
     }
-
+/*
     public File findFeatureSetupFileToSave() {
         JFileChooser fc = new OverwritePromptingFileChooser();
         fc.setDialogType(JFileChooser.SAVE_DIALOG);
@@ -1293,7 +1325,7 @@ private void buttonOscDisconnectActionPerformed(java.awt.event.ActionEvent evt) 
         }
         return file;
 
-    }
+    } */
 
     private void attemptTrainingNow() {
         if (currentWorker == null) {
@@ -1396,7 +1428,7 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
     FeatureExtractorProxy.get().showFeatureViewer();
 }//GEN-LAST:event_menuItemViewFeaturesActionPerformed
 
-    private File findHidSetupFileToSave() {
+/*    private File findHidSetupFileToSave() {
 
         JFileChooser fc = new OverwritePromptingFileChooser();
         fc.setDialogType(JFileChooser.SAVE_DIALOG);
@@ -1412,7 +1444,7 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
             wek.getSettings().setLastHidFileLocation(Util.getCanonicalPath(file));
         }
         return file;
-    }
+    } */
 
     /*  private void displayHidSettings() {
     HidSetup hs = wek.getCurrentHidSetup();
@@ -1441,6 +1473,8 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
     //labelHIDDescription.setText(s);
 
     }*/
+
+/*
     private File findFeatureSetupFile() {
         JFileChooser fc = new JFileChooser();
         String location = wek.getSettings().getLastFeatureFileLocation();
@@ -1465,9 +1499,9 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
             }
         }
         return file;
-    }
+    } */
 
-    private File findHidSetupFile() {
+   /* private File findHidSetupFile() {
         JFileChooser fc = new JFileChooser();
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         String location = wek.getSettings().getLastFeatureFileLocation();
@@ -1487,7 +1521,7 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
 
         }
         return file;
-    }
+    } */
 
     private boolean validateSettingsInput() {
     /*    System.out.println("validating settings");
@@ -1558,6 +1592,10 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem3;
+    private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel8;
     private javax.swing.JLabel labelGlobalStatus;
@@ -1569,6 +1607,7 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
     private javax.swing.JMenuItem menuItemViewConsole;
     private javax.swing.JMenuItem menuItemViewDataset;
     private javax.swing.JMenuItem menuItemViewFeatures;
+    private javax.swing.JMenuItem menuSaveSystem;
     private javax.swing.JTabbedPane panelMainTabs;
     private javax.swing.JPanel panelOSC;
     private javax.swing.JPanel panelTabFeatureConfiguration;
@@ -1578,6 +1617,7 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
     private javax.swing.JTextField textOscSend;
     private wekinator.TrainRunPanel trainRunPanel1;
     private javax.swing.JMenu viewMenu;
+    private javax.swing.JMenu wekMenu;
     // End of variables declaration//GEN-END:variables
     private ArrayList<javax.swing.JButton> trainingButtons = new ArrayList<javax.swing.JButton>();
 

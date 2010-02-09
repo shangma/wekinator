@@ -182,7 +182,12 @@ public class DataViewer extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_buttonListen1ActionPerformed
 
-    private File findArffFileToSave() throws IOException {
+     private File findArffFileToSave() throws IOException {
+         return null;
+         //TODOTODOTODO: handle this after get fileext support in.
+     }
+
+  /*  private File findArffFileToSave() throws IOException {
         JFileChooser fc = new OverwritePromptingFileChooser();
         fc.setDialogType(JFileChooser.SAVE_DIALOG);
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -239,7 +244,7 @@ public class DataViewer extends javax.swing.JFrame {
             }
         }
         return file;
-    }
+    } */
 
     /**
      * @param args the command line arguments

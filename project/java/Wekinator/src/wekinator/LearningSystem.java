@@ -42,6 +42,18 @@ public class LearningSystem implements Serializable {
     protected int learnerToEvaluate = -1;
     protected int learnerToTrain = -1;
 
+
+    public static String getFileExtension() {
+        return "wlsys";
+    }
+
+    public static String getFileTypeDescription() {
+        return "learning system";
+    }
+
+    public static String getDefaultLocation() {
+        return "learningSystems";
+    }
     /**
      * Get the value of trainResults
      *

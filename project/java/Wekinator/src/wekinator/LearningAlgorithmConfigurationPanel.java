@@ -28,6 +28,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import wekinator.LearningAlgorithms.LearningAlgorithms;
 import wekinator.util.SerializedFileUtil;
 import wekinator.util.Util;
 
@@ -249,9 +250,9 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
         WekinatorInstance wek = WekinatorInstance.getWekinatorInstance();
         JFileChooser fc = new JFileChooser();
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        String location = wek.getSettings().getLastLearnerFileLocation();
+         String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastLocation(LearningAlgorithms.getFileExtension());
         if (location == null || location.equals("")) {
-            location = wek.getSettings().getDefaultLearnerFileLocation();
+            location = HidSetup.getDefaultLocation();
         }
         fc.setCurrentDirectory(new File(location)); //TODO: Could set directory vs file here according to above results
 
@@ -262,8 +263,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
             file = fc.getSelectedFile();
         }
         if (file != null) {
-            wek.getSettings().setLastLearnerFileLocation(Util.getCanonicalPath(file));
-
+            WekinatorInstance.getWekinatorInstance().getSettings().setLastLocation(LearningAlgorithms.getFileExtension(), Util.getCanonicalPath(file));
         }
         return file;
     }
@@ -283,9 +283,16 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
     }
 
     private void loadLearnerFromNewFile() {
-        File f = chooseLoadFile();
+       /* File f = chooseLoadFile();
         if (f != null) {
             loadLearnerFromFile(f);
+        } */
+        File file = Util.findLoadFile(LearningAlgorithms.getFileExtension(),
+                LearningAlgorithms.getFileTypeDescription(),
+                LearningAlgorithms.getDefaultLocation(),
+                this);
+        if (file != null) {
+                loadLearnerFromFile(file);
         }
     }
 
@@ -309,6 +316,8 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
                 if (discrete) {
                     setLoadedLearningAlgorithm(l);
                     setHasUsableLoadedFile(true);
+                    Util.setLastFile(LearningAlgorithms.getFileExtension(), f);
+
                 } else {
                     JOptionPane.showMessageDialog(this, "A discrete learning algorithm may only be loaded for a discrete parameter", "Could not load algorithm from file", JOptionPane.ERROR_MESSAGE);
                 }
@@ -316,6 +325,8 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
                 if (!discrete) {
                     setLoadedLearningAlgorithm(l);
                     setHasUsableLoadedFile(true);
+                    Util.setLastFile(LearningAlgorithms.getFileExtension(), f);
+
                 } else {
                     JOptionPane.showMessageDialog(this, "A real-valued learning algorithm may only be loaded for a real-valued parameter", "Could not load algorithm from file", JOptionPane.ERROR_MESSAGE);
                 }
@@ -806,7 +817,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
         });
 
         buttonGroup1.add(radioUseFile);
-        radioUseFile.setText("Load from file:");
+        radioUseFile.setText("Load model from file:");
         radioUseFile.setEnabled(false);
         radioUseFile.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         radioUseFile.addActionListener(new java.awt.event.ActionListener() {
@@ -867,8 +878,8 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
                         .add(buttonLoadedFeatures))
                     .add(layout.createSequentialGroup()
                         .add(radioUseFile)
-                        .add(5, 5, 5)
-                        .add(labelFile, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(labelFile, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 428, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(layout.createSequentialGroup()
                         .add(radioUseNew)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -878,7 +889,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
                         .add(labelFeatures)
                         .add(18, 18, 18)
                         .add(buttonFeatures)))
-                .addContainerGap())
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

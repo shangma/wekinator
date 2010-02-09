@@ -16,7 +16,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import wekinator.util.FileChooserWithExtension;
 import wekinator.util.OverwritePromptingFileChooser;
+import wekinator.util.Util;
 
 /**
  *
@@ -757,7 +759,11 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
 
     private void buttonLoadConfigurationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonLoadConfigurationActionPerformed
         //Pop up findConfigurationFile dialog box
-        File file = findConfigurationLoadFile();
+    //    File file = findConfigurationLoadFile();
+        File file = Util.findLoadFile(ChuckConfiguration.getFileExtension(),
+                ChuckConfiguration.getFileTypeDescription(),
+                ChuckConfiguration.getDefaultLocation(),
+                this);
         if (file != null) {
             try {
                 //configuration = ChuckConfiguration.loadFromFile(file); //this is where it goes wrong...  TODO
@@ -774,10 +780,15 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         setConfigurationFromForm();
         try {
             configuration.validate();
-            File file = findConfigurationSaveFile();
+           // File file = findConfigurationSaveFile();
+            File file = Util.findSaveFile(ChuckConfiguration.getFileExtension(),
+                    ChuckConfiguration.getFileTypeDescription(),
+                    ChuckConfiguration.getDefaultLocation(),
+                    this);
             if (file != null) {
                 try {
-                    configuration.writeToFile(file);
+                    configuration.writeToFile(file); //TODOTODOTODO: update last path on this.
+                    Util.setLastFile(ChuckConfiguration.getFileExtension(), file);
                 } catch (Exception ex) {
                     //TODO: handle:
                     System.out.println("Could not save to file");
@@ -906,7 +917,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_comboRealIntegerActionPerformed
 
-    private File findConfigurationLoadFile() {
+/*    private File findConfigurationLoadFile() {
         JFileChooser fc = new JFileChooser(homePath);
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         boolean success = true;
@@ -914,9 +925,26 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             file = fc.getSelectedFile();
+        } 
+
+        String lastFile = WekinatorInstance.getWekinatorInstance().getSettings().getLastLocation(ChuckConfiguration.getFileExtension());
+        String defaultDir = null;
+        if (lastFile == null) {
+            defaultDir = ChuckConfiguration.getDefaultLocation();
+        }
+        FileChooserWithExtension fc = new FileChooserWithExtension(
+                ChuckConfiguration.getFileExtension(),
+                ChuckConfiguration.getFileTypeDescription(),
+                WekinatorInstance.getWekinatorInstance().getSettings().getLastLocation(ChuckConfiguration.getFileExtension()),
+                ChuckConfiguration.getDefaultLocation(),
+                false);
+        File file = null;
+        int returnVal = fc.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            file = fc.getSelectedFile();
         }
         return file;
-    }
+    } */
 
     private File findChuckFile() {
         //Start looking in chuck dir if possible

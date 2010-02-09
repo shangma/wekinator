@@ -7,6 +7,7 @@ package wekinator;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -37,6 +38,7 @@ public class WekinatorInstance {
     public static final String PROP_FEATUREMANAGER = "featureManager";
     public static final String PROP_CURRENTHIDSETUP = "currentHidSetup";
     private LinkedList<Handler> handlers;
+    private static final String chuckConfigSaveFile = "lastChuckConfig";
 
     public enum State {
 
@@ -168,14 +170,26 @@ public class WekinatorInstance {
                 }
             });
 
-            configuration = settings.loadLastConfiguration();
+//            configuration = settings.loadLastConfiguration();
+           // configuration = ChuckConfiguration.readFromFile(new File(settings.getLastLocation(ChuckConfiguration.getFileExtension())));
+            //load last configuration
+            String cLoc = settings.getDefaultSettingsDirectory()
+                 + File.separator
+                 + ChuckConfiguration.getDefaultLocation() + File.separator
+                 + chuckConfigSaveFile + "." + ChuckConfiguration.getFileExtension();
+            configuration = ChuckConfiguration.readFromFile(new File(cLoc));
+            System.out.println("read chuck config from " + cLoc );
             sin.close();
             fin.close();
             System.out.println("Loaded user settings");
         } catch (Exception ex) {
             System.out.println("No user settings found");
             settings = new WekinatorSettings();
-            settings.setLastConfigurationFileLocation("chuckconfiguration.usersettings");
+           // String dLoc = settings.getDefaultSettingsDirectory()
+           //         + File.separator + ChuckConfiguration.getDefaultLocation()
+           //         + File.separator + "chuckConfig" + ChuckConfiguration.getFileExtension();
+           // settings.setLastLocation(ChuckConfiguration.getFileExtension(), dLoc);
+           // System.out.println("Default chuck loc is " + dLoc);
             //Save settings now.
             FileOutputStream fout = null;
             boolean fail = false;
@@ -313,7 +327,13 @@ public class WekinatorInstance {
 
     public void useConfigurationNextSession() {
         try {
-            settings.saveConfiguration(configuration);
+         //   settings.saveConfiguration(configuration);
+         String cLoc = WekinatorInstance.getWekinatorInstance().getSettings().getDefaultSettingsDirectory()
+                 + File.separator
+                 + ChuckConfiguration.getDefaultLocation() + File.separator
+                 + chuckConfigSaveFile + "." + ChuckConfiguration.getFileExtension();
+         configuration.writeToFile(new File(cLoc));
+
         } catch (IOException ex) {
             System.out.println("Could not save configuration to use next session");
             Logger.getLogger(WekinatorInstance.class.getName()).log(Level.SEVERE, null, ex);

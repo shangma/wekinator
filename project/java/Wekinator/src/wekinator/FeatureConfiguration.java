@@ -56,6 +56,18 @@ public class FeatureConfiguration implements Serializable {
     protected int committedNumTotalFeatures = 0;
     protected int committedNumBaseFeatures = 0;
 
+    public static String getFileExtension() {
+        return "wfconf";
+    }
+
+    public static String getFileTypeDescription() {
+        return "Feature configuration";
+    }
+
+    public static String getDefaultLocation() {
+        return "featureConfigurations";
+    }
+
     protected void populateFeatureList() {
         featuresInOrder = new LinkedList<Feature>();
         features = new HashMap<String, Feature>();

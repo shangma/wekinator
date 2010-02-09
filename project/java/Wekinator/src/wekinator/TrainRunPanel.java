@@ -14,6 +14,8 @@ import java.awt.CardLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -259,25 +261,34 @@ public class TrainRunPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_buttonRunActionPerformed
 
     private void buttonSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSaveActionPerformed
-    try {
-            File file = findLearningSystemFileToSave();
+
+
+            File file = Util.findSaveFile(LearningSystem.getFileExtension(),
+                    LearningSystem.getFileTypeDescription(),
+                    LearningSystem.getDefaultLocation(),
+                    this);
             if (file != null) {
-                ls.writeToFile(file);
+                try {
+                    ls.writeToFile(file); //TODOTODOTODO: update last path on this.
+                    Util.setLastFile(LearningSystem.getFileExtension(), file);
+                } catch (Exception ex) {
+                    Logger.getLogger(TrainRunPanel.class.getName()).log(Level.INFO, null, ex);
+                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Could not save to file", JOptionPane.ERROR_MESSAGE);
+                }
             }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid attempt to write to file", JOptionPane.ERROR_MESSAGE);
-        }
 }//GEN-LAST:event_buttonSaveActionPerformed
 
         private File findLearningSystemFileToSave() {
         JFileChooser fc = new OverwritePromptingFileChooser();
         fc.setDialogType(JFileChooser.SAVE_DIALOG);
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastFeatureFileLocation();
+        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastLocation(LearningSystem.getFileExtension());
         if (location == null || location.equals("")) {
-            location = WekinatorInstance.getWekinatorInstance().getSettings().getDefaultFeatureFileLocation();
+            //location = HidSetup.getDefaultLocation();
+            location = WekinatorInstance.getWekinatorInstance().getSettings().getDefaultSettingsDirectory() + File.separator + HidSetup.getDefaultLocation();
         }
-        fc.setCurrentDirectory(new File(location));
+        fc.setCurrentDirectory(new File(location)); //TODO: Could set directory vs file here according to above results
+
 
         File file = null;
 
@@ -285,8 +296,9 @@ public class TrainRunPanel extends javax.swing.JPanel {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
 
             file = fc.getSelectedFile();
-            WekinatorInstance.getWekinatorInstance().getSettings().setLastClassifierFileLocation(Util.getCanonicalPath(file));
-
+        if (file != null) {
+            WekinatorInstance.getWekinatorInstance().getSettings().setLastLocation(LearningSystem.getFileExtension(), Util.getCanonicalPath(file));
+        }
         }
         return file;
 
