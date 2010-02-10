@@ -126,7 +126,6 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
         buttonUndo = new javax.swing.JButton();
         buttonGo = new javax.swing.JButton();
         labelLearningSystemStatus = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
 
         paneTabSimpleAdvanced.setEnabled(false);
 
@@ -202,13 +201,6 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
 
         labelLearningSystemStatus.setText("No learning configuration set.");
 
-        jButton1.setText("jButton1");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -221,9 +213,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
                                 .add(buttonLoad)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(jButton1)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 239, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 336, Short.MAX_VALUE)
                                 .add(buttonUndo))
                             .add(layout.createSequentialGroup()
                                 .add(buttonGo)
@@ -239,8 +229,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(buttonLoad)
-                    .add(buttonUndo)
-                    .add(jButton1))
+                    .add(buttonUndo))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(buttonGo)
@@ -259,6 +248,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
                LearningSystem newS = null;
 
             try {
+              //  newS = LearningSystem.readFromFile(file);
                 newS = LearningSystem.readFromFile(file);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid learning system file", JOptionPane.ERROR_MESSAGE);
@@ -352,56 +342,11 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
 
     }//GEN-LAST:event_buttonGoActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        File file = Util.findLoadFile(LearningSystem.getFileExtension(),
-                LearningSystem.getFileTypeDescription(),
-                LearningSystem.getDefaultLocation(),
-                this);
-        if (file != null) {
-               LearningSystem newS = null;
-
-            try {
-             //   newS = LearningSystem.readFromFile(file);
-                FileInputStream fin = new FileInputStream(file);
-                ObjectInputStream ii = new ObjectInputStream(fin);
-                newS = LearningSystem.loadFromInputStream(ii);
-                
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid learning system file", JOptionPane.ERROR_MESSAGE);
-                Logger.getLogger(LearningSystemConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            if (newS != null) {
-                //TODO TODO TODO:
-                //CHeck: newS # params
-                //Check newS # features
-                // check newS param types
-                //check newS feature names & param names (warn if disagree)
-
-                setLearningSystem(newS); //TODO: Problematic: What do we do w/ backup?; make usre to deal with hid there
-                WekinatorLearningManager.getInstance().setLearningSystem(newS);
-                labelLearningSystemStatus.setText("Learning system loaded successfully.");
-
-                System.out.println("Sanity check:");
-                for (int i = 0; i < newS.getNumParams(); i++) {
-                        int[] mapping = newS.getDataset().getFeatureLearnerConfiguration().getFeatureMappingForLearner(i);
-                        System.out.println("mapping " + i + " is: ");
-                        for (int j = 0; j < mapping.length; j++) {
-                            System.out.print(mapping[j] + " ");
-                        }
-                        System.out.println("");
-                }
-
-              //  Util.setLastFile(LearningSystem.getFileExtension(), file);
-            }
-        }
-    }//GEN-LAST:event_jButton1ActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonGo;
     private javax.swing.JButton buttonLoad;
     private javax.swing.JButton buttonUndo;
     private wekinator.DatasetLoadingPanel datasetLoadingPanel1;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel labelLearningSystemStatus;

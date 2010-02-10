@@ -35,7 +35,6 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="menuPanel" min="-2" max="-2" attributes="0"/>
                           <Component id="buttonSave" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="tmpButton" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
                       <Component id="layoutPanel" min="-2" max="-2" attributes="0"/>
@@ -57,8 +56,6 @@
                       <Component id="buttonShh" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="buttonSave" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="tmpButton" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace min="-2" pref="114" max="-2" attributes="0"/>
@@ -175,14 +172,6 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonSaveActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JButton" name="tmpButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="jButton1"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="tmpButtonActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

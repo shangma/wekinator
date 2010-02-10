@@ -134,7 +134,6 @@ public class TrainRunPanel extends javax.swing.JPanel {
         buttonConfigure = new javax.swing.JButton();
         buttonShh = new javax.swing.JButton();
         buttonSave = new javax.swing.JButton();
-        tmpButton = new javax.swing.JButton();
 
         jLabel3.setText("jLabel3");
 
@@ -212,13 +211,6 @@ public class TrainRunPanel extends javax.swing.JPanel {
             }
         });
 
-        tmpButton.setText("jButton1");
-        tmpButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tmpButtonActionPerformed(evt);
-            }
-        });
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -230,8 +222,7 @@ public class TrainRunPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(menuPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(buttonSave)
-                            .add(tmpButton))
+                            .add(buttonSave))
                         .add(26, 26, 26)
                         .add(layoutPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -247,9 +238,7 @@ public class TrainRunPanel extends javax.swing.JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(buttonShh)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(buttonSave)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(tmpButton)))
+                        .add(buttonSave)))
                 .add(114, 114, 114))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -309,69 +298,6 @@ public class TrainRunPanel extends javax.swing.JPanel {
             }
 }//GEN-LAST:event_buttonSaveActionPerformed
 
-    private void tmpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tmpButtonActionPerformed
-       File inFile = Util.findSaveFile(LearningSystem.getFileExtension(),
-                    LearningSystem.getFileTypeDescription(),
-                    LearningSystem.getDefaultLocation(),
-                    this);
-
-       File outFile = new File("tmp.out");
-        try {
-            LearningSystemRecoverer.recover(inFile, outFile);
-            
-        } catch (Exception ex) {
-            System.out.println("Could not recover");
-            Logger.getLogger(TrainRunPanel.class.getName()).log(Level.SEVERE, null, ex);
-        }
-/* File file = Util.findSaveFile(LearningSystem.getFileExtension(),
-            LearningSystem.getFileTypeDescription(),
-            LearningSystem.getDefaultLocation(),
-            this);
-            if (file != null) {
-            FileOutputStream fout = null;
-            try {
-            fout = new FileOutputStream(file);
-            ObjectOutputStream o = new ObjectOutputStream(fout);
-            ls.writeToOutputStreamNew(o);
-            System.out.println("Wrote to output stream at " + file.getName());
-            } catch (IOException ex) {
-            Logger.getLogger(TrainRunPanel.class.getName()).log(Level.SEVERE, null, ex);
-            } finally {
-            try {
-            fout.close();
-            } catch (IOException ex) {
-            Logger.getLogger(TrainRunPanel.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            }
-            } */
-
-
-       /* File file = Util.findSaveFile(LearningSystem.getFileExtension(),
-                    LearningSystem.getFileTypeDescription(),
-                    LearningSystem.getDefaultLocation(),
-                    this);
-            if (file != null) {
-            FileOutputStream fout = null;
-            try {
-                fout = new FileOutputStream(file);
-                ObjectOutputStream o = new ObjectOutputStream(fout);
-                ls.writeToOutputStreamNew(o);
-                System.out.println("Wrote to output stream at " + file.getName());
-            } catch (IOException ex) {
-                Logger.getLogger(TrainRunPanel.class.getName()).log(Level.SEVERE, null, ex);
-            } finally {
-                try {
-                    fout.close();
-                } catch (IOException ex) {
-                    Logger.getLogger(TrainRunPanel.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-
-            } */
-
-
-    }//GEN-LAST:event_tmpButtonActionPerformed
-
         private File findLearningSystemFileToSave() {
         JFileChooser fc = new OverwritePromptingFileChooser();
         fc.setDialogType(JFileChooser.SAVE_DIALOG);
@@ -413,7 +339,6 @@ public class TrainRunPanel extends javax.swing.JPanel {
     private javax.swing.JPanel layoutPanel;
     private javax.swing.JPanel menuPanel;
     private wekinator.RunPanel runPanel;
-    private javax.swing.JButton tmpButton;
     private wekinator.TrainPanel trainPanel;
     // End of variables declaration//GEN-END:variables
 

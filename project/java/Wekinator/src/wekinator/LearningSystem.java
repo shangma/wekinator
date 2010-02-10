@@ -10,6 +10,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -945,6 +947,16 @@ public class LearningSystem implements Serializable {
     }
 
     public static LearningSystem readFromFile(File f) throws Exception {
+        FileInputStream fin = new FileInputStream(f);
+        ObjectInputStream i = new ObjectInputStream(fin);
+        LearningSystem l;
+        l = loadFromInputStream(i);
+        i.close();
+        fin.close();
+        return l;
+    }
+
+    public static LearningSystem readFromFileOld(File f) throws Exception {
         final LearningSystem ls = (LearningSystem)SerializedFileUtil.readFromFile(f);
         ls.listenerList = new EventListenerList();
                 //System.out.println("Dataset state is " + ls.datasetState);
@@ -971,9 +983,17 @@ public class LearningSystem implements Serializable {
         return ls;
     }
 
-    public void writeToFile(File f) throws Exception {
+    public void writeToFileOld(File f) throws Exception {
         System.out.println("Dataset state is " + datasetState);
         SerializedFileUtil.writeToFile(f, this);
+    }
+
+    public void writeToFile(File f) throws IOException {
+        FileOutputStream fout = new FileOutputStream(f);
+        ObjectOutputStream o = new ObjectOutputStream(fout);
+        writeToOutputStreamNew(o);
+        o.close();
+        fout.close();
     }
 
     public void writeToOutputStreamNew(ObjectOutputStream o) throws IOException {
@@ -992,8 +1012,6 @@ public class LearningSystem implements Serializable {
     }
 
     public static LearningSystem loadFromInputStream(ObjectInputStream i) throws IOException, ClassNotFoundException {
-        
-
             LearningSystem ls = null;
             int numParams = i.readInt();
             ls = new LearningSystem(numParams);
