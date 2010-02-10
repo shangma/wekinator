@@ -21,7 +21,6 @@ import wekinator.util.SerializedFileUtil;
 public class FeatureConfiguration implements Serializable {
 
     public enum WindowType {
-
         HAMMING,
         HANN,
         RECTANGULAR
@@ -530,7 +529,6 @@ public class FeatureConfiguration implements Serializable {
     public void setHidSetup(HidSetup hidSetup) {
         HidSetup oldHidSetup = this.hidSetup;
         this.hidSetup = hidSetup;
-        //TODO TODO TODO: set dimensionality appropriately
         features.get(HID).setDimensionality(hidSetup.getNumFeaturesUsed());
         propertyChangeSupport.firePropertyChange(PROP_HIDSETUP, oldHidSetup, hidSetup);
     }
@@ -697,7 +695,7 @@ public class FeatureConfiguration implements Serializable {
         return s;
     }
 
-    double[] process(double[] f) {
+    public double[] process(double[] f) {
         if (f.length != committedNumBaseFeatures) {
             System.out.println("Error: wrong num features received. Expected " + committedNumBaseFeatures + ", received " + f.length);
             return new double[0];
@@ -778,7 +776,5 @@ public class FeatureConfiguration implements Serializable {
 
             return hidSetup.getNumFeaturesUsed();
         }
-
-
     }
 }

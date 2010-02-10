@@ -4,11 +4,14 @@
  */
 package wekinator;
 
+import java.io.IOException;
 import wekinator.LearningAlgorithms.LearningAlgorithm;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.logging.Level;
@@ -41,6 +44,37 @@ public class LearningSystem implements Serializable {
     public static final String PROP_DATASET = "dataset";
     protected int learnerToEvaluate = -1;
     protected int learnerToTrain = -1;
+    protected int numFolds = 2;
+    protected EvaluationType evaluationType = EvaluationType.CV;
+    //TODO: why is this score here?
+    protected PlayalongScore score = null;
+    public static final String PROP_SCORE = "score";
+    protected SimpleDataset dataset = null;
+    protected int numParams = 0;
+    protected LearningAlgorithm[] learners;
+    protected boolean[] learnerEnabled;
+    protected transient PropertyChangeListener learnerChangeListener = new PropertyChangeListener() {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            learnerPropertyChanged(evt);
+        }
+    };
+    protected transient PropertyChangeListener datasetListener = new PropertyChangeListener() {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            datasetChanged(evt);
+        }
+    };
+    protected transient Logger logger = Logger.getLogger(LearningSystem.class.getName());
+    protected LearningAlgorithmsInitializationState initializationState = LearningAlgorithmsInitializationState.NOT_INITIALIZED;
+    public static final String PROP_INITIALIZATIONSTATE = "initializationState";
+    // protected LearningAlgorithmsTrainingState algorithmsTrainingState = LearningAlgorithmsTrainingState.NOT_TRAINED;
+    protected DatasetState datasetState = DatasetState.NO_DATA;
+    public static final String PROP_DATASETSTATE = "datasetState";
+    protected LearningSystemTrainingState systemTrainingState = LearningSystemTrainingState.NOT_TRAINED;
+    public static final String PROP_SYSTEMTRAININGSTATE = "systemTrainingState";
+    protected EvaluationState evaluationState = EvaluationState.NOT_EVALUATED;
+    public static final String PROP_EVALUATIONSTATE = "evaluationState";
 
 
     public static String getFileExtension() {
@@ -185,8 +219,7 @@ public class LearningSystem implements Serializable {
         CV,
         TRAINING
     };
-    protected EvaluationState evaluationState = EvaluationState.NOT_EVALUATED;
-    public static final String PROP_EVALUATIONSTATE = "evaluationState";
+
 
     /**
      * Get the value of evaluationState
@@ -207,36 +240,6 @@ public class LearningSystem implements Serializable {
         this.evaluationState = evaluationState;
         propertyChangeSupport.firePropertyChange(PROP_EVALUATIONSTATE, oldEvaluationState, evaluationState);
     }
-    protected int numFolds = 2;
-    protected EvaluationType evaluationType = EvaluationType.CV;
-    //TODO: why is this score here?
-    protected PlayalongScore score = null;
-    public static final String PROP_SCORE = "score";
-    protected SimpleDataset dataset = null;
-    protected FeatureLearnerConfiguration featureLearnerConfiguration = null;
-    protected int numParams = 0;
-    protected LearningAlgorithm[] learners;
-    protected boolean[] learnerEnabled;
-    protected transient PropertyChangeListener learnerChangeListener = new PropertyChangeListener() {
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            learnerPropertyChanged(evt);
-        }
-    };
-    protected transient PropertyChangeListener datasetListener = new PropertyChangeListener() {
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            datasetChanged(evt);
-        }
-    };
-    protected transient Logger logger = Logger.getLogger(LearningSystem.class.getName());
-    protected LearningAlgorithmsInitializationState initializationState = LearningAlgorithmsInitializationState.NOT_INITIALIZED;
-    public static final String PROP_INITIALIZATIONSTATE = "initializationState";
-    // protected LearningAlgorithmsTrainingState algorithmsTrainingState = LearningAlgorithmsTrainingState.NOT_TRAINED;
-    protected DatasetState datasetState = DatasetState.NO_DATA;
-    public static final String PROP_DATASETSTATE = "datasetState";
-    protected LearningSystemTrainingState systemTrainingState = LearningSystemTrainingState.NOT_TRAINED;
-    public static final String PROP_SYSTEMTRAININGSTATE = "systemTrainingState";
 
     void addToTraining(double[] features, double[] params) {
         //Add to the training dataset.
@@ -971,6 +974,43 @@ public class LearningSystem implements Serializable {
     public void writeToFile(File f) throws Exception {
         System.out.println("Dataset state is " + datasetState);
         SerializedFileUtil.writeToFile(f, this);
+    }
+
+    public void writeToOutputStreamNew(ObjectOutputStream o) throws IOException {
+        
+            o.writeInt(numParams);
+            o.writeObject(paramUsingDistribution);
+            o.writeObject(numMaxValsForParameter);
+            o.writeObject(learners);
+            if (dataset == null) {
+                o.writeInt(0);
+            } else {
+                o.writeInt(1);
+                dataset.writeToOutputStreamNew(o);
+            }
+       
+    }
+
+    public static LearningSystem loadFromInputStream(ObjectInputStream i) throws IOException, ClassNotFoundException {
+        
+
+            LearningSystem ls = null;
+            int numParams = i.readInt();
+            ls = new LearningSystem(numParams);
+            ls.paramUsingDistribution = (boolean[]) i.readObject(); //TODO: may have to init this bit by bit...
+            int[] numMax = (int[]) i.readObject();
+            ls.setNumMaxValsForParameter(numMax);
+            LearningAlgorithm[] algs = (LearningAlgorithm[]) i.readObject();
+            ls.setLearners(algs);
+            int flag = i.readInt();
+            if (flag == 0) {
+                ls.setDataset(null);
+            } else {
+                SimpleDataset ds = SimpleDataset.loadFromInputStream(i);
+                ls.setDataset(ds);
+            }
+            return ls;
+
     }
 }
 

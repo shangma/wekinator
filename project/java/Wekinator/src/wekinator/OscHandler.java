@@ -28,7 +28,7 @@ public class OscHandler {
     public int sendPort = 6453;
     OSCPortOut sender;
     public OSCPortIn receiver;
-    WekaOperator w;
+   // WekaOperator w;
     String paramSendString = "/params";
     String returnHandshakeString = "/hiback";
     String featureInfoString = "/featureInfo";
@@ -185,10 +185,13 @@ public class OscHandler {
 
     }
 
-    public void startHandshake() throws IOException {
+    public void startHandshake(int rPort, int sPort) throws IOException {
         /*if (receiver.isListening()) {
         receiver.close();
         } */ //TODO??
+
+        setReceivePort(rPort);
+        setSendPort(sPort);
 
         receiver = new OSCPortIn(receivePort);
         //  System.out.println("Java listening on " + receivePort);
@@ -198,7 +201,7 @@ public class OscHandler {
         OSCListener listener = new OSCListener() {
 
             public void acceptMessage(java.util.Date time, OSCMessage message) {
-                w.receivedHandshake();
+             //   w.receivedHandshake();
                 // oldState = ConnectionState.CONNECTED;
                 setConnectionState(ConnectionState.CONNECTED);
                 myStatusMessage = "Connected";
@@ -765,7 +768,7 @@ public class OscHandler {
                 System.out.println("Feature info received!");
                 Object[] o = message.getArguments();
                 if (o.length > 0 && (o[0] instanceof java.lang.Integer)) {
-                    w.receivedFeatureInfo((Integer) o[0]);
+                   // w.receivedFeatureInfo((Integer) o[0]);
                 }
             }
         };
@@ -779,7 +782,7 @@ public class OscHandler {
                 System.out.println("# params received!");
                 Object[] o = message.getArguments();
 
-                w.receivedNumParams(o);
+             //   w.receivedNumParams(o);
 
             }
         };
@@ -792,7 +795,7 @@ public class OscHandler {
             public void acceptMessage(java.util.Date time, OSCMessage message) {
                 System.out.println("playalong message received!"); //only gets here after "Play along" executed-- because xmit not ready yet!!
                 Object[] o = message.getArguments();
-                w.receivedPlayalongUpdate((String) o[0]);
+            //    w.receivedPlayalongUpdate((String) o[0]);
                 if (bp != null) {
                     bp.updatePlayalongMessage((String) o[0]);
                 }
@@ -810,7 +813,7 @@ public class OscHandler {
                 Object[] o = message.getArguments();
                 System.out.println("class " + o[0].getClass().toString());
 
-                w.receivedChuckSettings(o);
+             //   w.receivedChuckSettings(o);
 
             }
         };
@@ -839,11 +842,6 @@ public class OscHandler {
             public void acceptMessage(java.util.Date time, OSCMessage message) {
                  System.out.println("Feature received!");
                 Object[] o = message.getArguments();
-
-                //Old way
-                w.receivedFeature(o);
-
-
                 double d[]  = new double[o.length];
                 for (int i = 0; i < o.length; i++) {
                     if (o[i] instanceof Float) {
@@ -852,8 +850,7 @@ public class OscHandler {
                         Logger.getLogger(OscHandler.class.getName()).log(Level.WARNING, "Received feature is not a float");
                     }
                 }
-               // WekinatorLearningManager.getInstance().updateFeatures(d); //may have to decouple this if want to view features too
-                FeatureExtractorProxy.get().updateFeatures(d);
+                FeatureExtractionController.updateFeatures(d);
             }
         };
         receiver.addListener(featuresString, listener);
@@ -1093,14 +1090,6 @@ public class OscHandler {
 
     public void setSendPort(int sendPort) {
         this.sendPort = sendPort;
-    }
-
-    public WekaOperator getW() { //TODO: Get rid of this!
-        return w;
-    }
-
-    public void setW(WekaOperator w) { //TODO: get rid of this!
-        this.w = w;
     }
 
     public void sendFeatureConfiguration(FeatureConfiguration f) throws IOException {

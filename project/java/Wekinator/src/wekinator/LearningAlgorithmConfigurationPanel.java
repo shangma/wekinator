@@ -38,7 +38,7 @@ import wekinator.util.Util;
  */
 public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
 
-    protected FeatureConfiguration featureConfiguration;
+  //  protected FeatureConfiguration featureConfiguration;
     protected int paramNum = 0;
     protected String paramName = null;
     protected boolean discrete = true;
@@ -231,7 +231,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
             setNewLearningAlgorithmSelected();
         }
         checkDisabled.setSelected(!learnerEnabled);
-        this.featureConfiguration = fc;
+     //   this.featureConfiguration = fc;
         updateFeatures();
     }
 
@@ -1270,7 +1270,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
         fc.setUseFFT(true);
         fc.setUseMotionSensor(true);
 
-        WekinatorLearningManager.getInstance().setFeatureConfiguration(fc);
+        WekinatorInstance.getWekinatorInstance().setFeatureConfiguration(fc);
 
         JFrame frame = new JFrame();
         // LearningAlgorithmConfigurationPanel panel = new LearningAlgorithmConfigurationPanel(0, "My param", true, null);
@@ -1286,6 +1286,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
     protected void updateFeatures() {
         panelFeatures.removeAll();
 //        FeatureConfiguration fc = WekinatorLearningManager.getInstance().getFeatureConfiguration();
+        FeatureConfiguration featureConfiguration = WekinatorInstance.getWekinatorInstance().getFeatureConfiguration();
         if (featureConfiguration != null) {
             String[] featureNames = featureConfiguration.getAllEnabledFeatureNames();
             if (featureSelected == null || featureSelected.length != featureNames.length) {

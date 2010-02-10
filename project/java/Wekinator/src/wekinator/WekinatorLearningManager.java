@@ -34,9 +34,6 @@ public class WekinatorLearningManager {
     protected LearningSystem learningSystem = null;
     public static final String PROP_LEARNINGSYSTEM = "learningSystem";
 
-    protected FeatureConfiguration featureConfiguration = null;
-    public static final String PROP_FEATURECONFIGURATION = "featureConfiguration";
-
     public static final String PROP_PARAMS = "params";
 
     
@@ -244,14 +241,14 @@ public class WekinatorLearningManager {
         }
 
         //OscHandler.getOscHandler().initiateRecord();
-        FeatureExtractorProxy.get().setExtractingForLearning(true);
+        FeatureExtractionController.startExtracting();
         setMode(Mode.DATASET_CREATION);
         }
     }
 
     public void stopRunning() {
        // OscHandler.getOscHandler().stopExtractingFeatures();
-        FeatureExtractorProxy.get().setExtractingForLearning(false);
+        FeatureExtractionController.stopExtracting();
         setMode(Mode.NONE);
     }
 
@@ -263,7 +260,7 @@ public class WekinatorLearningManager {
             stopDatasetCreation();
         }
        // OscHandler.getOscHandler().initiateRecord();
-        FeatureExtractorProxy.get().setExtractingForLearning(true);
+        FeatureExtractionController.startExtracting();
         setMode(Mode.RUNNING);
     }
 
@@ -272,7 +269,7 @@ public class WekinatorLearningManager {
             return;
 
        // OscHandler.getOscHandler().stopExtractingFeatures();
-        FeatureExtractorProxy.get().setExtractingForLearning(false);
+        FeatureExtractionController.stopExtracting();
         setMode(Mode.NONE);
     }
 
@@ -338,27 +335,7 @@ public class WekinatorLearningManager {
 
 
 
-    /**
-     * Get the value of featureConfiguration
-     *
-     * @return the value of featureConfiguration
-     */
-    public FeatureConfiguration getFeatureConfiguration() {
-        return featureConfiguration;
-    }
-
-    /**
-     * Set the value of featureConfiguration
-     *
-     * @param featureConfiguration new value of featureConfiguration
-     */
-    public void setFeatureConfiguration(FeatureConfiguration featureConfiguration) {
-        FeatureConfiguration oldFeatureConfiguration = this.featureConfiguration;
-        this.featureConfiguration = featureConfiguration;
-        propertyChangeSupport.firePropertyChange(PROP_FEATURECONFIGURATION, oldFeatureConfiguration, featureConfiguration);
-        updateMyInitState();
-    }
-
+ 
     /**
      * Get the value of learningSystem
      *
@@ -462,13 +439,12 @@ public class WekinatorLearningManager {
     }
 
     protected void updateMyInitState() {
-        if (learningSystem != null && featureConfiguration != null
+        if (learningSystem != null
                 && learningSystem.getInitializationState() != LearningSystem.LearningAlgorithmsInitializationState.ALL_INITIALIZED) {
             setInitState(InitializationState.NOT_INITIALIZED);
         } else {
             setInitState(InitializationState.INITIALIZED);
-        }
-                
+        }   
     }
 
  

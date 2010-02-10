@@ -25,81 +25,23 @@ import javax.swing.JOptionPane;
  * @author rebecca
  */
 public class ChuckRunnerPanel extends javax.swing.JPanel {
-
-    ChuckRunner runner = null;
-    //   protected boolean isRunning = false;
-    //   public static final String PROP_ISRUNNING = "isRunning";
-
-    /**
-     * Get the value of running
-     *
-     * @return the value of running
-     */
-    /* public boolean isIsRunning() {
-    return isRunning;
-    } */
-    /**
-     * Set the value of running
-     *
-     * @param running new value of running
-     */
-    /* public void setIsRunning(boolean isRunning) {
-    boolean oldIsRunning = this.isRunning;
-    this.isRunning = isRunning;
-    propertyChangeSupport.firePropertyChange(PROP_ISRUNNING, oldIsRunning, isRunning);
-    }
-     *
-    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-
-    /**
-     * Add PropertyChangeListener.
-     *
-     * @param listener
-     */
-    /* @Override
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-    propertyChangeSupport.addPropertyChangeListener(listener);
-    } */
-    /**
-     * Remove PropertyChangeListener.
-     *
-     * @param listener
-     */
-    /*    @Override
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-    propertyChangeSupport.removePropertyChangeListener(listener);
-    }
-     */
-    public ChuckRunner getRunner() {
-        return runner;
-    }
-
-    public void setRunner(ChuckRunner runner) {
-        this.runner = runner;
-        runner.addPropertyChangeListener(new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent evt) {
-                runnerPropertyChange(evt);
-            }
-        });
-
-        runner.getConfiguration().addPropertyChangeListener(new PropertyChangeListener() {
-
+    protected PropertyChangeListener configurationChangeListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 configurationPropertyChange(evt);
             }
-        });
-
-        //   updateRunnerIsRunning(runner.isRunning());
-        updateRunnerState(runner.getRunnerState());
-        updateConfigurationUsable(runner.getConfiguration().isUsable());
-    }
+        };
 
     /** Creates new form ChuckRunnerPanel */
     public ChuckRunnerPanel() {
         initComponents();
-    // setRunner(WekinatorInstance.getWekinatorInstance().getRunner());
-
+        ChuckRunner.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                runnerPropertyChange(evt);
+            }
+        });
+        updateConfigurationListeners(null, ChuckRunner.getConfiguration(), configurationChangeListener);
+        updateGUIForConfiguration(ChuckRunner.getConfiguration().isUsable());
+        updateRunnerState(ChuckRunner.getRunnerState());
     }
 
     /** This method is called from within the constructor to
@@ -227,23 +169,22 @@ public class ChuckRunnerPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        ChuckConfigurationForm p = new ChuckConfigurationForm(runner.getConfiguration());
+        ChuckConfigurationForm p = new ChuckConfigurationForm(ChuckRunner.getConfiguration());
         p.setVisible(true);
         Logger.getLogger(ChuckRunnerPanel.class.getName()).warning("TEST");
 }//GEN-LAST:event_jButton1ActionPerformed
 
     private void buttonRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRunActionPerformed
         try {
-            runner.run();
+            ChuckRunner.run();
         } catch (IOException ex) {
-            // labelStatus.setText("Chuck encountered an error while running.");
             Logger.getLogger(ChuckRunnerPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
 }//GEN-LAST:event_buttonRunActionPerformed
 
     private void buttonStopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonStopActionPerformed
         try {
-            runner.stop();
+            ChuckRunner.stop();
         } catch (IOException ex) {
             Logger.getLogger(ChuckRunnerPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -265,17 +206,29 @@ public class ChuckRunnerPanel extends javax.swing.JPanel {
 
     private void runnerPropertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(ChuckRunner.PROP_RUNNERSTATE)) {
-            //   updateRunnerIsRunning(runner.isRunning());
-            updateRunnerState(runner.getRunnerState());
+            updateRunnerState(ChuckRunner.getRunnerState());
+        } else if (evt.getPropertyName().equals(ChuckRunner.PROP_CONFIGURATION)) {
+            ChuckConfiguration o = (ChuckConfiguration)evt.getOldValue();
+            ChuckConfiguration n = (ChuckConfiguration)evt.getNewValue();
+            updateConfigurationListeners(o, n, configurationChangeListener);
+            updateGUIForConfiguration(n.isUsable());
         }
-
     }
 
     private void configurationPropertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(ChuckConfiguration.PROP_USABLE)) {
-            updateConfigurationUsable(runner.getConfiguration().isUsable());
+            updateGUIForConfiguration(ChuckRunner.getConfiguration().isUsable());
         }
 
+    }
+
+    private void updateConfigurationListeners(ChuckConfiguration o, ChuckConfiguration n, PropertyChangeListener configurationChangeListener) {
+        if (o != null) {
+            o.removePropertyChangeListener(configurationChangeListener);
+        }
+        if (n != null) {
+            n.addPropertyChangeListener(configurationChangeListener);
+        }
     }
 
     private void updateRunnerState(ChuckRunner.ChuckRunnerState state) {
@@ -294,19 +247,19 @@ public class ChuckRunnerPanel extends javax.swing.JPanel {
             buttonRun.setEnabled(true);
             buttonStop.setEnabled(false);
             int lResponse = JOptionPane.showConfirmDialog(this,
-                    "Chuck encountered errors:\n" + runner.getLastErrorMessages() + "\n Do you want to try to proceed anyway?", "",
+                    "Chuck encountered errors:\n" + ChuckRunner.getLastErrorMessages() + "\n Do you want to try to proceed anyway?", "",
                     JOptionPane.YES_NO_OPTION);
 
             if (lResponse != JOptionPane.YES_OPTION) {
-                runner.ignoreRunErrors(false);
+                ChuckRunner.ignoreRunErrors(false);
             } else {
-                runner.ignoreRunErrors(true);
+                ChuckRunner.ignoreRunErrors(true);
             }
         }
 
     }
 
-    private void updateConfigurationUsable(boolean usable) {
+    private void updateGUIForConfiguration(boolean usable) {
         buttonRun.setEnabled(usable);
         if (!usable) {
             labelAboutConfiguration.setText("No valid configuration");
@@ -316,12 +269,11 @@ public class ChuckRunnerPanel extends javax.swing.JPanel {
             populateConfigurationInfo();
             setAboutConfigurationVisible(true);
         }
-
     }
 
     private void populateConfigurationInfo() {
         String s = "";
-        ChuckConfiguration c = runner.getConfiguration();
+        ChuckConfiguration c = ChuckRunner.getConfiguration();
         if (c.isCustomChuckFeatureExtractorEnabled()) {
             String fname = getLastPart(c.getCustomChuckFeatureExtractorFilename());
             s += c.getNumCustomChuckFeaturesExtracted() + " features from " + fname + ". ";
@@ -372,22 +324,15 @@ public class ChuckRunnerPanel extends javax.swing.JPanel {
         labelFeatures.setVisible(visible);
         labelPlayalong.setVisible(visible);
         labelSynth.setVisible(visible);
-
-
     }
 
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-
-
-                // ChuckConfigurationForm panel = new ChuckConfigurationForm(c);
-
                 // panel.setVisible(true);
                 JFrame frame = new JFrame();
                 ChuckRunnerPanel panel = new ChuckRunnerPanel();
-                panel.setRunner(WekinatorInstance.getWekinatorInstance().getRunner());
 
                 frame.add(panel);
                 frame.setVisible(true);

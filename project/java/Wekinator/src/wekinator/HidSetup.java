@@ -336,8 +336,6 @@ public class HidSetup implements Serializable {
 
     public int getNumFeaturesUsed() {
        return getNumAxesReal() + getNumHatsReal() + getNumButtonsReal();
-        //tmptmp
-       // return 1;
     }
 
     public float[] getInitAxes() {

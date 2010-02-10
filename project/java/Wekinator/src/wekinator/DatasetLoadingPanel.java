@@ -60,11 +60,11 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
 
     protected SimpleDataset createNewDataset() {
         SimpleDataset s = new SimpleDataset(
-                WekinatorLearningManager.getInstance().getFeatureConfiguration().getNumFeaturesEnabled(),
+                WekinatorInstance.getWekinatorInstance().getFeatureConfiguration().getNumFeaturesEnabled(),
                 ChuckSystem.getChuckSystem().getNumParams(),
                 ChuckSystem.getChuckSystem().isParamDiscrete,
                 ChuckSystem.getChuckSystem().getNumSynthMaxParamVals(),
-                WekinatorLearningManager.getInstance().getFeatureConfiguration().getAllEnabledFeatureNames(),
+                WekinatorInstance.getWekinatorInstance().getFeatureConfiguration().getAllEnabledFeatureNames(),
                 ChuckSystem.getChuckSystem().getParamNames());
         return s;
     }
@@ -226,9 +226,9 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
 
     private void loadDatasetFromFile() {
         //TODO: Insert support for loading ARFF files again.
-        File file = Util.findLoadFile(FeatureConfiguration.getFileExtension(),
-                FeatureConfiguration.getFileTypeDescription(),
-                FeatureConfiguration.getDefaultLocation(),
+        File file = Util.findLoadFile(SimpleDataset.getFileExtension(),
+                SimpleDataset.getFileTypeDescription(),
+                SimpleDataset.getDefaultLocation(),
                 this);
 
         if (file == null)
@@ -279,7 +279,7 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
         } */
         if (s != null) {
             //TODO: Ultimately ensure no null problems here! (e.g. null featureconfiguration)
-            if (s.getNumFeatures() != WekinatorLearningManager.getInstance().getFeatureConfiguration().getNumFeaturesEnabled()) {
+            if (s.getNumFeatures() != WekinatorInstance.getWekinatorInstance().getFeatureConfiguration().getNumFeaturesEnabled()) {
                 JOptionPane.showMessageDialog(this, "The number of features of this dataset does not match the number of features currently being extracted.", "Dataset not usable", JOptionPane.ERROR_MESSAGE);
                 return;
             }
@@ -306,7 +306,7 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
                 }
             }
 
-            String[] currentFeats = WekinatorLearningManager.getInstance().getFeatureConfiguration().getAllEnabledFeatureNames();
+            String[] currentFeats = WekinatorInstance.getWekinatorInstance().getFeatureConfiguration().getAllEnabledFeatureNames();
             String[] dbFeats = s.getFeatureNames();
             String warning = "There is a mismatch between the following features being extracted and the features stored in the dataset:\n";
             int numMismatch = 0;
@@ -402,7 +402,7 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
         fc.setUseCustomOscFeatures(true);
         fc.setNumCustomOscFeatures(5);
 
-        WekinatorLearningManager.getInstance().setFeatureConfiguration(fc);
+        WekinatorInstance.getWekinatorInstance().setFeatureConfiguration(fc);
 
         f.add(p);
         f.setVisible(true);

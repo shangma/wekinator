@@ -7,7 +7,11 @@ package wekinator;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -33,27 +37,29 @@ import weka.core.converters.ArffSaver;
  * @author Rebecca Fiebrink
  */
 public class SimpleDataset implements Serializable {
+
+
     protected EventListenerList listenerList = new EventListenerList();
-    private int numParams = 0;
-    private int numFeatures = 0; //Total # features being stored, doesn't include my metadata
-    private boolean featureParamMask[][] = null;
-    private boolean[] isParamDiscrete = null;
-    private String[] featureNames = null;
-    private String[] paramNames = null;
-    private int numParamValues[] = null;
-    private Instances allInstances = null;
-    private Instances dummyInstances = null; //An empty set of instances with proper heading info
-    private Filter[] learnerFilters = null;
-    private Remove allFeaturesOnly = null;
-    private Remove allParamsOnly = null;
-    private int nextID = 0;
-    private List<RawAudioSegment> audioSegments = null;
-    private int currentTrainingRound = 0;
-    private int numMetaData = 3;
-    private int idIndex = 0;
-    private int timestampIndex = 1;
-    private int trainingIndex = 2;
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HHmmss");
+    protected int numParams = 0;
+    protected int numFeatures = 0; //Total # features being stored, doesn't include my metadata
+//    private boolean featureParamMask[][] = null;
+    protected boolean[] isParamDiscrete = null;
+    protected String[] featureNames = null;
+    protected String[] paramNames = null;
+    protected int numParamValues[] = null;
+    protected Instances allInstances = null;
+    protected Instances dummyInstances = null; //An empty set of instances with proper heading info
+    protected Filter[] learnerFilters = null;
+    protected Remove allFeaturesOnly = null;
+    protected Remove allParamsOnly = null;
+    protected int nextID = 0;
+    protected List<RawAudioSegment> audioSegments = null;
+    protected int currentTrainingRound = 0;
+    protected int numMetaData = 3;
+    protected int idIndex = 0;
+    protected int timestampIndex = 1;
+    protected int trainingIndex = 2;
+    protected static final SimpleDateFormat dateFormat = new SimpleDateFormat("HHmmss");
     public static final SimpleDateFormat prettyDateFormat = new SimpleDateFormat("HH:mm:ss");
     protected boolean hasInstances = false;
     public static final String PROP_HASINSTANCES = "hasInstances";
@@ -320,7 +326,7 @@ public class SimpleDataset implements Serializable {
 
     }
 
-    private void updateFilterOld(int filterNum) throws Exception {
+   /* private void updateFilterOld(int filterNum) throws Exception {
         assert (filterNum > 0 && filterNum < learnerFilters.length);
 
         //Get rid of metadata, other params, and non-used features
@@ -353,7 +359,7 @@ public class SimpleDataset implements Serializable {
 
         learnerFilters[filterNum].setInputFormat(dummyInstances);
 
-    }
+    } */
 
     private void updateFilters() throws Exception {
         learnerFilters = new Reorder[numParams];
@@ -1019,4 +1025,71 @@ public class SimpleDataset implements Serializable {
             }
         }
     }
+    
+    public void writeToOutputStreamNew(ObjectOutputStream o) throws IOException {
+                o.writeInt(numParams);
+                o.writeInt(numFeatures);
+                o.writeObject(isParamDiscrete);
+                o.writeObject(featureNames);
+                o.writeObject(paramNames);
+                o.writeObject(numParamValues);
+                o.writeObject(allInstances);
+                o.writeInt(nextID);
+                o.writeObject(audioSegments);
+                o.writeInt(currentTrainingRound);
+                o.writeInt(numMetaData);
+                o.writeInt(idIndex);
+                o.writeInt(timestampIndex);
+                o.writeInt(trainingIndex);
+                o.writeObject(dateFormat);
+                o.writeObject(prettyDateFormat);
+                o.writeBoolean(hasInstances);
+                if (featureLearnerConfiguration == null) {
+                    o.writeInt(0);
+                } else {
+                    o.writeInt(1);
+                    featureLearnerConfiguration.writeToOutputStreamNew(o);
+                }
+
+    }
+    public static SimpleDataset loadFromInputStream(ObjectInputStream i) throws IOException, ClassNotFoundException {
+        SimpleDataset s;
+        int numParams = i.readInt(); //
+        int numFeatures = i.readInt(); //
+        boolean[] isParamDiscrete = (boolean[]) i.readObject();//
+        String[] featureNames = (String[]) i.readObject();//
+        String[] paramNames = (String[])i.readObject();//
+        int[] numParamValues = (int[]) i.readObject();//
+        Instances allInstances = (Instances) i.readObject();//
+        int nextId = i.readInt(); //
+        List<RawAudioSegment> audioSegments = (List<RawAudioSegment>)i.readObject(); //
+        int currentTrainingRound = i.readInt(); //
+        int numMetaData = i.readInt(); //Could do something with these later if necessary
+        int idIndex = i.readInt(); //later?
+        int timestampIndex = i.readInt(); //later?
+        int trainingIndex = i.readInt(); //later?
+        SimpleDateFormat mdateFormat = (SimpleDateFormat) i.readObject(); //?
+       SimpleDateFormat mprettyDateFormat = (SimpleDateFormat) i.readObject(); //?
+       boolean hasInstances = i.readBoolean(); //
+       int validFeatureLearner = i.readInt();
+       FeatureLearnerConfiguration flc = null; //
+       if (validFeatureLearner == 1) {
+            flc = FeatureLearnerConfiguration.loadFromInputStream(i);
+       }
+
+       s = new SimpleDataset(numFeatures, numParams, isParamDiscrete, numParamValues, featureNames, paramNames);
+       for (int j = 0; j < allInstances.numInstances(); j++) {
+            s.allInstances.add(allInstances.instance(j));
+       }
+       s.setHasInstances(hasInstances);
+       s.nextID = nextId;
+       s.setFeatureLearnerConfiguration(flc);
+       s.audioSegments = audioSegments;
+       s.currentTrainingRound = currentTrainingRound + 1;
+
+       return s;
+    }
+
+    
+
 }

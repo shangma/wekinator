@@ -8,31 +8,39 @@
  *
  * Created on Dec 13, 2009, 11:14:56 PM
  */
-
 package wekinator;
 
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.JToggleButton;
 
 /**
+ *
+ * TODO: listen to overall wekiantor state; disable button toggle when running or recording.
  *
  * @author rebecca
  */
 public class FeatureViewer extends javax.swing.JFrame {
 
     ParameterMiniViewer[] viewers = null;
+
     /** Creates new form FeatureViewer */
     public FeatureViewer() {
         initComponents();
-        FeatureExtractorProxy.get().addPropertyChangeListener(new PropertyChangeListener() {
-
+        FeatureExtractionController.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(FeatureExtractorProxy.PROP_EXTRACTING_FOR_LEARNING)) {
-                    toggleExtractToView.setEnabled(!FeatureExtractorProxy.get().isExtractingForLearning());
+                if (evt.getPropertyName().equals(FeatureExtractionController.PROP_EXTRACTING)) {
+                    if (FeatureExtractionController.isExtracting()) {
+                        toggleExtractToView.setText("Stop extracting features");
+                    } else {
+                        toggleExtractToView.setText("Start extracting features");
+                    }
                 }
             }
         });
+        //TODO: add listener for learning system: when recording / running, don't enable this button.
+        //Also, update me when # or names of features change!
     }
 
     public void setNames(String[] names) {
@@ -40,18 +48,17 @@ public class FeatureViewer extends javax.swing.JFrame {
         viewers = new ParameterMiniViewer[names.length];
 
         for (int i = 0; i < names.length; i++) {
-           viewers[i] = new ParameterMiniViewer(names[i], 0.0);
-                       viewers[i].setPreferredSize(new Dimension(409, 28));
+            viewers[i] = new ParameterMiniViewer(names[i], 0.0);
+            viewers[i].setPreferredSize(new Dimension(409, 28));
 
             panelFeatures.add(viewers[i]);
         }
-
     }
 
     public void updateFeatures(double[] features) {
         if (features.length == viewers.length) {
             for (int i = 0; i < viewers.length; i++) {
-            viewers[i].setValue(features[i]);
+                viewers[i].setValue(features[i]);
             }
         }
 
@@ -84,7 +91,7 @@ public class FeatureViewer extends javax.swing.JFrame {
         panelFeatures.setLayout(new javax.swing.BoxLayout(panelFeatures, javax.swing.BoxLayout.Y_AXIS));
         scrollFeaturePanel.setViewportView(panelFeatures);
 
-        toggleExtractToView.setText("Extract features to view");
+        toggleExtractToView.setText("Start extracting features");
         toggleExtractToView.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 toggleExtractToViewActionPerformed(evt);
@@ -97,7 +104,7 @@ public class FeatureViewer extends javax.swing.JFrame {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(toggleExtractToView)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 126, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 122, Short.MAX_VALUE)
                 .add(jButton1)
                 .addContainerGap())
             .add(scrollFeaturePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE)
@@ -120,25 +127,29 @@ public class FeatureViewer extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void toggleExtractToViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toggleExtractToViewActionPerformed
-            FeatureExtractorProxy.get().setExtractingForViewing(toggleExtractToView.getModel().isSelected());
-        
+        if (toggleExtractToView.getModel().isSelected()) {
+            FeatureExtractionController.startExtracting();
+        } else {
+            FeatureExtractionController.stopExtracting();
+        }
 }//GEN-LAST:event_toggleExtractToViewActionPerformed
 
     /**
-    * @param args the command line arguments
-    */
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 FeatureViewer fv = new FeatureViewer();
                 String[] names = new String[2];
                 names[0] = "abc";
                 names[1] = "def";
                 double[] vals = {0.0, 1.0};
-                
+
                 fv.setNames(names);
                 fv.updateFeatures(vals);
-                
+
                 fv.setVisible(true);
 
             }
@@ -151,5 +162,4 @@ public class FeatureViewer extends javax.swing.JFrame {
     private javax.swing.JScrollPane scrollFeaturePanel;
     private javax.swing.JToggleButton toggleExtractToView;
     // End of variables declaration//GEN-END:variables
-
 }

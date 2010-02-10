@@ -28,116 +28,39 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 //TODO: kill listener threads when chuck runner stops!
-
 /**
  *
  * @author rebecca
  */
 public class ChuckRunner {
 
-    private static ChuckRunner ref = null;
-    private ChuckConfiguration configuration;
+    protected static final ChuckRunner ref = new ChuckRunner();
+    protected static ChuckConfiguration configuration;
+    protected static String lastErrorMessages = "";
+    protected static Logger logger = Logger.getLogger(ChuckRunner.class.getName());
 
-    private String lastErrorMessages = "";
+    private ChuckRunner() {
 
-    public String getLastErrorMessages() {
-        return lastErrorMessages;
-    }
-
-    public void setLastErrorMessages(String lastErrorMessages) {
-        this.lastErrorMessages = lastErrorMessages;
     }
 
     public enum ChuckRunnerState {
+
         NOT_RUNNING,
         TRYING_TO_RUN,
         RUNNING
     }
-
-    protected ChuckRunnerState runnerState;
+    protected ChuckRunnerState runnerState = ChuckRunnerState.NOT_RUNNING;
     public static final String PROP_RUNNERSTATE = "runnerState";
-
-    /**
-     * Get the value of runnerState
-     *
-     * @return the value of runnerState
-     */
-    public ChuckRunnerState getRunnerState() {
-        return runnerState;
-    }
-
-    /**
-     * Set the value of runnerState
-     *
-     * @param runnerState new value of runnerState
-     */
-    protected void setRunnerState(ChuckRunnerState runnerState) {
-        ChuckRunnerState oldRunnerState = this.runnerState;
-        this.runnerState = runnerState;
-        propertyChangeSupport.firePropertyChange(PROP_RUNNERSTATE, oldRunnerState, runnerState);
-    }
-
-    static void exportConfigurationToChuckFile(ChuckConfiguration configuration, File file) throws IOException {
-        //Open output stream
-        BufferedWriter w = null;
-        w = new BufferedWriter(new FileWriter(file));
-
-        w.write("//Automatically generated machine.add file\n");
-        w.write("//Created " + (new Date()).toString() + "\n\n");
-        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "TrackpadFeatureExtractor.ck" + "\");\n");
-        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "MotionFeatureExtractor.ck" + "\");\n");
-        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "AudioFeatureExtractor.ck" + "\");\n");
-        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "HidDiscoverer.ck" + "\");\n");
-        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "CustomOSCFeatureExtractor.ck" + "\");\n");
-
-        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "ProcessingFeatureExtractor.ck" + "\");\n");
-
-
-
-        if (configuration.isCustomChuckFeatureExtractorEnabled()) {
-            w.write("Machine.add(\"" + configuration.getCustomChuckFeatureExtractorFilename() + "\");\n");
-
-        } else {
-                        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "feature_extractors" + File.separator + "keyboard_rowcol.ck" + "\");\n");
-        }
-
-        if (configuration.isUseOscSynth()) {
-            w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "synths" + File.separator + "OSC_synth_proxy.ck" + "\");\n");
-        } else {
-            w.write("Machine.add(\"" + configuration.getChuckSynthFilename() + "\");\n");
-        }
-
-        if (configuration.isIsPlayalongLearningEnabled()) {
-           w.write("Machine.add(\"" + configuration.getPlayalongLearningFile() + "\");\n");
-        } else {
-           w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "score_players"+ File.separator + "icmc_melody.ck" + "\");\n");
-        }
-
-        if (configuration.isUseOscSynth()) {
-            String args = ":synthNumParams:" + configuration.getNumOscSynthParams();
-
-            args += ":synthIsDiscrete:" + (configuration.getIsOscSynthParamDiscrete()[0] ? "1" : "0");
-            args += ":synthUsingDistribution:" + (configuration.getOscUseDistribution()[0] ? "1" : "0");
-            args += ":synthNumClasses:" + configuration.getNumOscSynthMaxParamVals();
-            args += ":synthPort:" + configuration.getOscSynthReceivePort();
-            w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "main_chuck_new.ck" + args + "\");\n");
-        } else {
-           w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "main_chuck.ck" + "\");\n");
-        }
-
-        w.close();
-    }
-
+    public static final String PROP_CONFIGURATION = "configuration";
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-
 
     /**
      * Add PropertyChangeListener.
      *
      * @param listener
      */
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        propertyChangeSupport.addPropertyChangeListener(listener);
+    public static void addPropertyChangeListener(PropertyChangeListener listener) {
+        ref.propertyChangeSupport.addPropertyChangeListener(listener);
     }
 
     /**
@@ -145,62 +68,62 @@ public class ChuckRunner {
      *
      * @param listener
      */
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        propertyChangeSupport.removePropertyChangeListener(listener);
+    public static void removePropertyChangeListener(PropertyChangeListener listener) {
+        ref.propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
-    private ChuckRunner() {
-       // running = false;
-        setRunnerState(ChuckRunnerState.NOT_RUNNING);
+
+    /**
+     * Get the value of runnerState
+     *
+     * @return the value of runnerState
+     */
+    public static ChuckRunnerState getRunnerState() {
+        return ref.runnerState;
     }
 
-    public static synchronized ChuckRunner getChuckRunner() {
-        if (ref == null) {
-            ref = new ChuckRunner();
-        }
-        return ref;
+    /**
+     * Set the value of runnerState
+     *
+     * @param runnerState new value of runnerState
+     */
+    protected static void setRunnerState(ChuckRunnerState runnerState) {
+        ChuckRunnerState oldRunnerState = ref.runnerState;
+        ref.runnerState = runnerState;
+        ref.propertyChangeSupport.firePropertyChange(PROP_RUNNERSTATE, oldRunnerState, ref.runnerState);
     }
 
-    public static void main(String[] args) {
-        //Test
+    public static String getLastErrorMessages() {
+        return lastErrorMessages;
     }
 
-    public ChuckConfiguration getConfiguration() {
+    public static ChuckConfiguration getConfiguration() {
         return configuration;
     }
 
-    public void setConfiguration(ChuckConfiguration c) {
+    public static void setConfiguration(ChuckConfiguration c) {
+        ChuckConfiguration oldConfiguration = configuration;
+        if (ref.runnerState != ChuckRunnerState.NOT_RUNNING) {
+            try {
+                stop();
+            } catch (IOException ex) {
+                ChuckRunner.logger.log(Level.SEVERE, null, ex);
+            }
+        }
         configuration = c;
+        ref.propertyChangeSupport.firePropertyChange(PROP_CONFIGURATION, oldConfiguration, configuration);
     }
 
-    public static void createChuckFileFromConfiguration(ChuckConfiguration configuration, File file) throws IOException {
-
-        FileWriter fstream;
-        BufferedWriter out;
-        fstream = new FileWriter(file);
-        out = new BufferedWriter(fstream);
-
-        String nextLine = "// File automatically produced from ChuckConfiguration\n";
-        nextLine += "// " + new Date();
-        fstream.write(nextLine);
-
-        System.out.println("NOT IMPLEMENTED YET!");
-
-        out.close();
-        fstream.close();
-    }
-
-       public void run() throws IOException {
+    public static void run() throws IOException {
         stop();
         lastErrorMessages = "";
         try {
             Thread.sleep(1000);
         } catch (InterruptedException ex) {
-            Logger.getLogger(ChuckRunner.class.getName()).log(Level.SEVERE, null, ex);
+           ChuckRunner.logger.log(Level.SEVERE, null, ex);
         }
 
         LinkedList<String[]> cmds = new LinkedList<String[]>();
-        // cmds.add("ovisodiu oheroh");
         String[] s;
         s = new String[2];
         s[0] = configuration.getChuckExecutable();
@@ -249,13 +172,11 @@ public class ChuckRunner {
         if (configuration.isCustomChuckFeatureExtractorEnabled()) {
             s[2] = configuration.getCustomChuckFeatureExtractorFilename();
 
-           // cmds.add(configuration.getChuckExecutable() + " + \"" + configuration.getCustomChuckFeatureExtractorFilename());
         } else {
-           // cmds.add(configuration.getChuckExecutable() + " + \"" + configuration.getChuckDir() + File.separator + "feature_extractors" + File.separator + "keyboard_rowcol.ck\"");
             s[2] = configuration.getChuckDir() + File.separator + "feature_extractors" + File.separator + "keyboard_rowcol.ck";
         }
         cmds.add(s);
-        
+
         s = new String[3];
         s[0] = configuration.getChuckExecutable();
         s[1] = "+";
@@ -275,7 +196,6 @@ public class ChuckRunner {
             s[2] = configuration.getChuckDir() + File.separator + "score_players" + File.separator + "icmc_melody.ck";
         }
         cmds.add(s);
-
 
         if (configuration.isUseOscSynth()) {
             s = new String[3];
@@ -318,7 +238,6 @@ public class ChuckRunner {
                 if (i == 0) {
                     //Special! Fork a thread that listens to the output of this process,
                     //and log lines using logger
-                    // Runtime.getRuntime().
                     new LoggerThread(child.getErrorStream());
                     new LoggerThread(child.getInputStream());
                 }
@@ -328,7 +247,7 @@ public class ChuckRunner {
                         child.waitFor();
                     } catch (InterruptedException ex) {
                         System.out.println("Couldn't wait");
-                        Logger.getLogger(ChuckRunner.class.getName()).log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, null, ex);
                     }
 
                     BufferedReader input = new BufferedReader(new InputStreamReader(child.getErrorStream()));
@@ -345,52 +264,39 @@ public class ChuckRunner {
                     try {
                         Thread.sleep(2000);
                     } catch (InterruptedException ex) {
-                        Logger.getLogger(ChuckRunner.class.getName()).log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, null, ex);
                     }
                 }
 
             } catch (IOException ex) {
-                System.out.println("Yikes got an exception here");
-                Logger.getLogger(ChuckRunner.class.getName()).log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, null, ex);
             }
-
-
-
         }
 
-       // numErrLines = 1;
-        //lastErrorMessages += "";
         if (numErrLines != 0) {
-            System.out.println("Errors were encountered running chuck.");
+            logger.log(Level.SEVERE, "Errors encountered running chuck: " + lastErrorMessages);
             setRunnerState(ChuckRunnerState.TRYING_TO_RUN);
-            //stop();
-//            throw new IOException("Could not run: Bad configuration");
         } else {
             System.out.println("A miracle! Chuck runs.");
-        //    setRunning(true);
             setRunnerState(ChuckRunnerState.RUNNING);
         }
-
     }
 
-    public void ignoreRunErrors(boolean ignore) {
-        if (runnerState == ChuckRunnerState.TRYING_TO_RUN) {
+    public static void ignoreRunErrors(boolean ignore) {
+        if (ref.runnerState == ChuckRunnerState.TRYING_TO_RUN) {
             if (ignore) {
                 setRunnerState(ChuckRunnerState.RUNNING);
             } else {
                 try {
                     stop();
                 } catch (IOException ex) {
-                    Logger.getLogger(ChuckRunner.class.getName()).log(Level.SEVERE, null, ex);
+                    logger.log(Level.SEVERE, null, ex);
                 }
             }
         }
     }
 
-    public void stop() throws IOException {
-        //String cmd = "chuck --kill";
-        //String cmd = configuration.getChuckExecutable() + " --kill";
-        //Process child = Runtime.getRuntime().exec(cmd);
+    public static void stop() throws IOException {
         String[] s = new String[2];
         s[0] = configuration.getChuckExecutable();
         s[1] = "--kill";
@@ -399,9 +305,7 @@ public class ChuckRunner {
         String cmd2 = "killall chuck";
         Process child2 = Runtime.getRuntime().exec(cmd2);
 
-
-        System.out.println("Attempted to kill chuck.");
-    //    setRunning(false);
+        logger.log(Level.INFO, "Attempted to kill chuck");
         setRunnerState(ChuckRunnerState.NOT_RUNNING);
     }
 
@@ -414,6 +318,55 @@ public class ChuckRunner {
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
     }
+
+     public static void exportConfigurationToChuckFile(ChuckConfiguration configuration, File file) throws IOException {
+        //Open output stream
+        BufferedWriter w = null;
+        w = new BufferedWriter(new FileWriter(file));
+
+        w.write("//Automatically generated machine.add file\n");
+        w.write("//Created " + (new Date()).toString() + "\n\n");
+        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "TrackpadFeatureExtractor.ck" + "\");\n");
+        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "MotionFeatureExtractor.ck" + "\");\n");
+        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "AudioFeatureExtractor.ck" + "\");\n");
+        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "HidDiscoverer.ck" + "\");\n");
+        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "CustomOSCFeatureExtractor.ck" + "\");\n");
+
+        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "ProcessingFeatureExtractor.ck" + "\");\n");
+        if (configuration.isCustomChuckFeatureExtractorEnabled()) {
+            w.write("Machine.add(\"" + configuration.getCustomChuckFeatureExtractorFilename() + "\");\n");
+
+        } else {
+            w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "feature_extractors" + File.separator + "keyboard_rowcol.ck" + "\");\n");
+        }
+
+        if (configuration.isUseOscSynth()) {
+            w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "synths" + File.separator + "OSC_synth_proxy.ck" + "\");\n");
+        } else {
+            w.write("Machine.add(\"" + configuration.getChuckSynthFilename() + "\");\n");
+        }
+
+        if (configuration.isIsPlayalongLearningEnabled()) {
+            w.write("Machine.add(\"" + configuration.getPlayalongLearningFile() + "\");\n");
+        } else {
+            w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "score_players" + File.separator + "icmc_melody.ck" + "\");\n");
+        }
+
+        if (configuration.isUseOscSynth()) {
+            String args = ":synthNumParams:" + configuration.getNumOscSynthParams();
+
+            args += ":synthIsDiscrete:" + (configuration.getIsOscSynthParamDiscrete()[0] ? "1" : "0");
+            args += ":synthUsingDistribution:" + (configuration.getOscUseDistribution()[0] ? "1" : "0");
+            args += ":synthNumClasses:" + configuration.getNumOscSynthMaxParamVals();
+            args += ":synthPort:" + configuration.getOscSynthReceivePort();
+            w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "main_chuck_new.ck" + args + "\");\n");
+        } else {
+            w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "main_chuck.ck" + "\");\n");
+        }
+
+        w.close();
+    }
+    
 }
 
 class LoggerThread implements Runnable {
@@ -437,7 +390,7 @@ class LoggerThread implements Runnable {
 
                 if (b == -1) {
                     stop = true;
-                    System.out.println("made it to end of stream");
+                   // System.out.println("made it to end of stream");
                 } else {
                     //TODO: send to console in reasonable way
                     System.out.print((char) b);
@@ -447,8 +400,6 @@ class LoggerThread implements Runnable {
             } catch (IOException ex) {
                 Logger.getLogger(LoggerThread.class.getName()).log(Level.SEVERE, null, ex);
             }
-
         }
-
-    }
+    }    
 }

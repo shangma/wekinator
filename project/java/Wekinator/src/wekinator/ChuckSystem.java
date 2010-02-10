@@ -33,35 +33,6 @@ public class ChuckSystem {
         CONNECTED_AND_VALID //good to go
     };
 
-    public enum FeatureExtractionState {
-        NOT_EXTRACTING,
-        EXTRACTING
-    };
-
-    protected FeatureExtractionState featureExtractionState = FeatureExtractionState.NOT_EXTRACTING;
-    public static final String PROP_FEATUREEXTRACTIONSTATE = "featureExtractionState";
-
-    /**
-     * Get the value of featureExtractionState
-     *
-     * @return the value of featureExtractionState
-     */
-    public FeatureExtractionState getFeatureExtractionState() {
-        return featureExtractionState;
-    }
-
-    /**
-     * Set the value of featureExtractionState
-     *
-     * @param featureExtractionState new value of featureExtractionState
-     */
-    public void setFeatureExtractionState(FeatureExtractionState featureExtractionState) {
-        FeatureExtractionState oldFeatureExtractionState = this.featureExtractionState;
-        this.featureExtractionState = featureExtractionState;
-        propertyChangeSupport.firePropertyChange(PROP_FEATUREEXTRACTIONSTATE, oldFeatureExtractionState, featureExtractionState);
-    }
-
-
     protected ChuckSystemState state = ChuckSystemState.NOT_CONNECTED;
     public static final String PROP_STATE = "state";
     

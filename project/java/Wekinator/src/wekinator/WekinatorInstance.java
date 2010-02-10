@@ -30,7 +30,6 @@ public class WekinatorInstance {
 
     private static WekinatorInstance ref = null;
     protected ChuckConfiguration configuration = null;
-    protected ChuckRunner runner = null;
     private WekinatorSettings settings = null;
     protected HidSetup currentHidSetup;
     private static final String settingsSaveFile = "wekinator.usersettings";
@@ -39,6 +38,39 @@ public class WekinatorInstance {
     public static final String PROP_CURRENTHIDSETUP = "currentHidSetup";
     private LinkedList<Handler> handlers;
     private static final String chuckConfigSaveFile = "lastChuckConfig";
+
+    protected FeatureConfiguration featureConfiguration = null;
+    public static final String PROP_FEATURECONFIGURATION = "featureConfiguration";
+
+    /**
+     * Get the value of featureConfiguration
+     *
+     * @return the value of featureConfiguration
+     */
+    public FeatureConfiguration getFeatureConfiguration() {
+        return featureConfiguration;
+    }
+
+    /**
+     * Set the value of featureConfiguration
+     *
+     * @param featureConfiguration new value of featureConfiguration
+     */
+    public void setFeatureConfiguration(FeatureConfiguration featureConfiguration) {
+        FeatureConfiguration oldFeatureConfiguration = this.featureConfiguration;
+        this.featureConfiguration = featureConfiguration;
+        propertyChangeSupport.firePropertyChange(PROP_FEATURECONFIGURATION, oldFeatureConfiguration, featureConfiguration);
+
+        if (featureConfiguration == null) {
+                setForOscState();
+        } else {
+            if (state == State.OSC_CONNECTION_MADE) {
+                   setState(State.FEATURE_SETUP_DONE);
+            }
+        }
+    }
+
+
 
     public enum State {
 
@@ -130,15 +162,6 @@ public class WekinatorInstance {
     }
 
     /**
-     * Get the value of runner
-     *
-     * @return the value of runner
-     */
-    public ChuckRunner getRunner() {
-        return runner;
-    }
-
-    /**
      * Get the value of configuration
      *
      * @return the value of configuration
@@ -226,8 +249,7 @@ public class WekinatorInstance {
             }
         }
 
-        runner = ChuckRunner.getChuckRunner();
-        runner.setConfiguration(configuration);
+        ChuckRunner.setConfiguration(configuration);
 
         featureManager = new FeatureManager();
 
@@ -280,7 +302,7 @@ public class WekinatorInstance {
 
 
     private void learningManagerPropertyChanged(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(WekinatorLearningManager.PROP_FEATURECONFIGURATION)) {
+     /*   if (evt.getPropertyName().equals(WekinatorLearningManager.PROP_FEATURECONFIGURATION)) {
             if (WekinatorLearningManager.getInstance().getFeatureConfiguration() == null) {
                 setForOscState();
             } else {
@@ -290,7 +312,7 @@ public class WekinatorInstance {
 
             }
 
-        }
+        } */
     }
 
     public void saveCurrentSettings() {

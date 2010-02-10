@@ -4,10 +4,15 @@
  */
 package wekinator;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -60,20 +65,47 @@ public class FeatureLearnerConfiguration implements Serializable {
         featureLists.set(l, m);
     }
 
-  /*  public Reorder getReorderFilterForLearner(int l) {
-        if (l < 0 || l >= numLearners) {
-            System.out.println("Error - bad learner #");
-            return null;
-        }
+    /*  public Reorder getReorderFilterForLearner(int l) {
+    if (l < 0 || l >= numLearners) {
+    System.out.println("Error - bad learner #");
+    return null;
+    }
 
-        Reorder r = new Reorder();
+    Reorder r = new Reorder();
+    try {
+    r.setAttributeIndicesArray(featureLists.get(l));
+    } catch (Exception ex) {
+    //Badness... means that there is an error in this class.
+    Logger.getLogger(FeatureLearnerConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+    }
+
+    return r;
+    } */
+    public void writeToOutputStreamNew(ObjectOutputStream o) {
         try {
-            r.setAttributeIndicesArray(featureLists.get(l));
-        } catch (Exception ex) {
-            //Badness... means that there is an error in this class.
+            o.writeInt(numLearners);
+            o.writeInt(numFeatures);
+            o.writeObject(featureLists);
+        } catch (IOException ex) {
             Logger.getLogger(FeatureLearnerConfiguration.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        return r;
-    } */
+    }
+
+    static FeatureLearnerConfiguration loadFromInputStream(ObjectInputStream i) throws IOException, ClassNotFoundException {
+        int numLearners = i.readInt();
+        int numFeatures = i.readInt();
+        List<int[]> featureLists = (List<int[]>) i.readObject();
+
+        FeatureLearnerConfiguration flc = new FeatureLearnerConfiguration(numLearners, numFeatures);
+        for (int j = 0; j < numLearners; j++) {
+            try {
+                flc.setFeatureMappingForLearner(j, featureLists.get(j));
+            } catch (Exception ex) {
+                Logger.getLogger(FeatureLearnerConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+                throw new IOException("Invalid feature learner configuration feature list");
+            }
+        }
+        return flc;
+    }
 }
