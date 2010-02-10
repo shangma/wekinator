@@ -77,7 +77,11 @@ public class TrainRunPanel extends javax.swing.JPanel {
         c.show(layoutPanel, "cardBuild");
     }
 
-
+    public boolean canRun() {
+    return  (ls.getSystemTrainingState() == LearningSystemTrainingState.TRAINED
+                 && ls.getEvaluationState() != EvaluationState.EVALUTATING
+                 && ls.getInitializationState() == LearningAlgorithmsInitializationState.ALL_INITIALIZED );
+    }
 
     private void setButtonsEnabled() {
         LearningSystemTrainingState t = ls.getSystemTrainingState();
@@ -85,9 +89,8 @@ public class TrainRunPanel extends javax.swing.JPanel {
         DatasetState d = ls.getDatasetState();
         LearningAlgorithmsInitializationState i = ls.getInitializationState();
 
-        boolean enableRun = (t == LearningSystemTrainingState.TRAINED
-                 && e != EvaluationState.EVALUTATING
-                 && i == LearningAlgorithmsInitializationState.ALL_INITIALIZED );
+        boolean enableRun = canRun();
+
 
         boolean enableTrain = (d == DatasetState.HAS_DATA
                  && i == LearningAlgorithmsInitializationState.ALL_INITIALIZED);
@@ -271,9 +274,24 @@ public class TrainRunPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_buttonTrainActionPerformed
 
     private void buttonRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRunActionPerformed
-        CardLayout c = (CardLayout) layoutPanel.getLayout();
-        c.show(layoutPanel, "cardRun");
+       showRunPanel();
 }//GEN-LAST:event_buttonRunActionPerformed
+
+    public void startAutoRun() {
+        if (canRun()) {
+            showRunPanel();
+            WekinatorLearningManager.getInstance().startRunning();
+            OscHandler.getOscHandler().startSound();
+        } else {
+            System.out.println("Cannot run automatically: learning system not ready");
+        }
+    }
+
+    public void showRunPanel() {
+         CardLayout c = (CardLayout) layoutPanel.getLayout();
+        c.show(layoutPanel, "cardRun");
+    }
+
 
     private void buttonSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSaveActionPerformed
 

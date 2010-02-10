@@ -710,9 +710,6 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
             isDistArray[i] = isDist;
         }
         configuration.setOscUseDistribution(isDistArray);
-
-
-        
     }
 
     private void textNumCustomFeaturesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textNumCustomFeaturesActionPerformed

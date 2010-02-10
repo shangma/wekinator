@@ -25,11 +25,7 @@ import javax.swing.JOptionPane;
  * @author rebecca
  */
 public class ChuckRunnerPanel extends javax.swing.JPanel {
-    protected PropertyChangeListener configurationChangeListener = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                configurationPropertyChange(evt);
-            }
-        };
+ 
 
     /** Creates new form ChuckRunnerPanel */
     public ChuckRunnerPanel() {
@@ -38,9 +34,14 @@ public class ChuckRunnerPanel extends javax.swing.JPanel {
             public void propertyChange(PropertyChangeEvent evt) {
                 runnerPropertyChange(evt);
             }
-        });
-        updateConfigurationListeners(null, ChuckRunner.getConfiguration(), configurationChangeListener);
-        updateGUIForConfiguration(ChuckRunner.getConfiguration().isUsable());
+        }); 
+        updateConfigurationListeners(null, ChuckRunner.getConfiguration(), configurationChangeListener); 
+        if (ChuckRunner.getConfiguration() != null) {
+            updateGUIForConfiguration(ChuckRunner.getConfiguration().isUsable());
+        } else {
+                        updateGUIForConfiguration(false);
+
+        }
         updateRunnerState(ChuckRunner.getRunnerState());
     }
 
@@ -203,6 +204,12 @@ public class ChuckRunnerPanel extends javax.swing.JPanel {
     private javax.swing.JLabel labelStatus;
     private javax.swing.JLabel labelSynth;
     // End of variables declaration//GEN-END:variables
+
+       protected PropertyChangeListener configurationChangeListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                configurationPropertyChange(evt);
+            }
+        };
 
     private void runnerPropertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(ChuckRunner.PROP_RUNNERSTATE)) {

@@ -38,7 +38,6 @@ public class WekinatorInstance {
     public static final String PROP_CURRENTHIDSETUP = "currentHidSetup";
     private LinkedList<Handler> handlers;
     private static final String chuckConfigSaveFile = "lastChuckConfig";
-
     protected FeatureConfiguration featureConfiguration = null;
     public static final String PROP_FEATURECONFIGURATION = "featureConfiguration";
 
@@ -62,27 +61,26 @@ public class WekinatorInstance {
         propertyChangeSupport.firePropertyChange(PROP_FEATURECONFIGURATION, oldFeatureConfiguration, featureConfiguration);
 
         if (featureConfiguration == null) {
-          
-                setForOscState(); //TODO: check on this -- not sensible?
-               
-        
+
+            setForOscState(); //TODO: check on this -- not sensible?
+
+
         } else {
-                ChuckSystem.getChuckSystem().waitForNewSettings();
+            ChuckSystem.getChuckSystem().waitForNewSettings();
             try {
                 OscHandler.getOscHandler().sendFeatureConfiguration(featureConfiguration);
             } catch (IOException ex) {
                 Logger.getLogger(WekinatorInstance.class.getName()).log(Level.SEVERE, null, ex);
             }
-                OscHandler.getOscHandler().requestChuckSettingsArray();
+            OscHandler.getOscHandler().requestChuckSettingsArray();
             if (state == State.OSC_CONNECTION_MADE) {
-                   setState(State.FEATURE_SETUP_DONE);
+                setState(State.FEATURE_SETUP_DONE);
             }
         }
     }
 
-
-
     public enum State {
+
         INIT,
         OSC_CONNECTION_MADE,
         FEATURE_SETUP_DONE,
@@ -189,8 +187,10 @@ public class WekinatorInstance {
     }
 
     private WekinatorInstance() {
-        //TODO: Try loading settings from file
         FileInputStream fin = null;
+        boolean useChuckFromCL = (WekinatorRunner.chuckFile != null);
+
+
         try {
             fin = new FileInputStream(settingsSaveFile);
             ObjectInputStream sin = new ObjectInputStream(fin);
@@ -202,27 +202,18 @@ public class WekinatorInstance {
                 }
             });
 
-//            configuration = settings.loadLastConfiguration();
-           // configuration = ChuckConfiguration.readFromFile(new File(settings.getLastLocation(ChuckConfiguration.getFileExtension())));
-            //load last configuration
-            String cLoc = settings.getDefaultSettingsDirectory()
-                 + File.separator
-                 + ChuckConfiguration.getDefaultLocation() + File.separator
-                 + chuckConfigSaveFile + "." + ChuckConfiguration.getFileExtension();
-            configuration = ChuckConfiguration.readFromFile(new File(cLoc));
-            System.out.println("read chuck config from " + cLoc );
+            if (!useChuckFromCL) {
+                String cLoc = settings.getDefaultSettingsDirectory() + File.separator + ChuckConfiguration.getDefaultLocation() + File.separator + chuckConfigSaveFile + "." + ChuckConfiguration.getFileExtension();
+                configuration = ChuckConfiguration.readFromFile(new File(cLoc));
+                System.out.println("read chuck config from " + cLoc);
+            }
             sin.close();
             fin.close();
             System.out.println("Loaded user settings");
         } catch (Exception ex) {
             System.out.println("No user settings found");
             settings = new WekinatorSettings();
-           // String dLoc = settings.getDefaultSettingsDirectory()
-           //         + File.separator + ChuckConfiguration.getDefaultLocation()
-           //         + File.separator + "chuckConfig" + ChuckConfiguration.getFileExtension();
-           // settings.setLastLocation(ChuckConfiguration.getFileExtension(), dLoc);
-           // System.out.println("Default chuck loc is " + dLoc);
-            //Save settings now.
+            //Save 1st settings now.
             FileOutputStream fout = null;
             boolean fail = false;
             try {
@@ -245,8 +236,6 @@ public class WekinatorInstance {
                     Logger.getLogger(WekinatorSettings.class.getName()).log(Level.INFO, null, ex2);
                 }
             }
-
-
             configuration = new ChuckConfiguration();
         } finally {
             try {
@@ -255,6 +244,17 @@ public class WekinatorInstance {
                 }
             } catch (IOException ex) {
                 Logger.getLogger(WekinatorInstance.class.getName()).log(Level.INFO, null, ex);
+            }
+        }
+
+        if (useChuckFromCL) {
+            try {
+                configuration = ChuckConfiguration.readFromFile(WekinatorRunner.getChuckConfigFile());
+                Logger.getLogger(WekinatorInstance.class.getName()).log(Level.INFO, null, "Loaded chuck configuration file successfully");
+            } catch (IOException ex) {
+                configuration = new ChuckConfiguration();
+                Logger.getLogger(WekinatorInstance.class.getName()).log(Level.SEVERE, null, "Could not load chuck configuration from specified file");
+                Logger.getLogger(WekinatorInstance.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 
@@ -291,7 +291,7 @@ public class WekinatorInstance {
             }
         });
 
-       // TODO RAF add check for valid model state
+    // TODO RAF add check for valid model state
     }
 
     private void oscPropertyChanged(PropertyChangeEvent evt) {
@@ -300,26 +300,24 @@ public class WekinatorInstance {
         }
     }
 
-    private void setForOscState()  {
-            if (OscHandler.getOscHandler().getConnectionState() != OscHandler.ConnectionState.CONNECTED) {
-                setState(State.INIT);
-            } else if (state == State.INIT && OscHandler.getOscHandler().getConnectionState() == OscHandler.ConnectionState.CONNECTED) {
-                setState(State.OSC_CONNECTION_MADE);
-            }
+    private void setForOscState() {
+        if (OscHandler.getOscHandler().getConnectionState() != OscHandler.ConnectionState.CONNECTED) {
+            setState(State.INIT);
+        } else if (state == State.INIT && OscHandler.getOscHandler().getConnectionState() == OscHandler.ConnectionState.CONNECTED) {
+            setState(State.OSC_CONNECTION_MADE);
+        }
     }
 
-
-
     private void learningManagerPropertyChanged(PropertyChangeEvent evt) {
-     /*   if (evt.getPropertyName().equals(WekinatorLearningManager.PROP_FEATURECONFIGURATION)) {
-            if (WekinatorLearningManager.getInstance().getFeatureConfiguration() == null) {
-                setForOscState();
-            } else {
-                if (state == State.OSC_CONNECTION_MADE) {
-                    setState(State.FEATURE_SETUP_DONE);
-                }
+        /*   if (evt.getPropertyName().equals(WekinatorLearningManager.PROP_FEATURECONFIGURATION)) {
+        if (WekinatorLearningManager.getInstance().getFeatureConfiguration() == null) {
+        setForOscState();
+        } else {
+        if (state == State.OSC_CONNECTION_MADE) {
+        setState(State.FEATURE_SETUP_DONE);
+        }
 
-            }
+        }
 
         } */
     }
@@ -358,12 +356,9 @@ public class WekinatorInstance {
 
     public void useConfigurationNextSession() {
         try {
-         //   settings.saveConfiguration(configuration);
-         String cLoc = WekinatorInstance.getWekinatorInstance().getSettings().getDefaultSettingsDirectory()
-                 + File.separator
-                 + ChuckConfiguration.getDefaultLocation() + File.separator
-                 + chuckConfigSaveFile + "." + ChuckConfiguration.getFileExtension();
-         configuration.writeToFile(new File(cLoc));
+            //   settings.saveConfiguration(configuration);
+            String cLoc = WekinatorInstance.getWekinatorInstance().getSettings().getDefaultSettingsDirectory() + File.separator + ChuckConfiguration.getDefaultLocation() + File.separator + chuckConfigSaveFile + "." + ChuckConfiguration.getFileExtension();
+            configuration.writeToFile(new File(cLoc));
 
         } catch (IOException ex) {
             System.out.println("Could not save configuration to use next session");

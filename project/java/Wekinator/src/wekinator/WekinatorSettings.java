@@ -7,17 +7,9 @@ package wekinator;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import wekinator.util.Util;
 
 /**
@@ -29,29 +21,10 @@ public class WekinatorSettings implements Serializable {
     //This should persist between sessions
 
     protected HashMap<String, String> lastLocations = null;
-    protected String defaultDir;
-
- /*   protected String lastConfigurationFileLocation = null;
-    protected String lastFeatureFileLocation = null;
-    protected String lastClassifierFileLocation = null;
-    protected String defaultFeatureFileLocation = null;
-    protected String defaultClassifierFileLocation = null;
-    protected String lastHidFileLocation = null;
-    protected String defaultHidFileLocation =null;
-    private String lastLearnerFileLocation = null;
-    private String defaultLearnerFileLocation = null; */
-    
+    protected String defaultDir;   
     protected String logFile = "wekinator.log";
     protected Level logLevel = Level.WARNING;
     public static final String PROP_LOGLEVEL = "logLevel";
-
-    public static enum FileTypes {
-        FEATURE_CONFIGURATION_FILE,
-        CLASSIFIER_FILE,
-        HID_CONFIGURATION_FILE,
-        
-    }
-
 
     public WekinatorSettings() {
         lastLocations = new HashMap<String, String>();
@@ -62,15 +35,10 @@ public class WekinatorSettings implements Serializable {
         if (projectDirString.length > 0 && projectDirString[projectDirString.length - 1].equals("java")) {
             projectDir = projectDir.getParentFile();
         }
-      //  defaultDir = Util.getCanonicalPath(projectDir+File.separator + "mySavedSettings");
         defaultDir = Util.getCanonicalPath(projectDir) + File.separator + "mySavedSettings";
         System.out.println("default dir is " + defaultDir);
 
-      /*  System.out.println("Set default feature location to " + defaultFeatureFileLocation);
-        defaultClassifierFileLocation = projectDir + File.separator + "mySavedSettings";
-        defaultHidFileLocation = projectDir + File.separator + "mySavedSettings";
-        defaultLearnerFileLocation = projectDir + File.separator + "mySavedSettings"; */
-    }
+  }
 
     public String getDefaultSettingsDirectory() {
         return defaultDir;
@@ -83,30 +51,6 @@ public class WekinatorSettings implements Serializable {
     public void setLastLocation(String key, String value) {
         lastLocations.put(key, value);
     }
-
-   /* public String getDefaultClassifierFileLocation() {
-        return defaultClassifierFileLocation;
-    }
-
-    public String getDefaultFeatureFileLocation() {
-        return defaultFeatureFileLocation;
-    }
-
-    public String getLastClassifierFileLocation() {
-        return lastClassifierFileLocation;
-    }
-
-    public void setLastClassifierFileLocation(String lastClassifierFileLocation) {
-        this.lastClassifierFileLocation = lastClassifierFileLocation;
-    }
-
-    public String getLastFeatureFileLocation() {
-        return lastFeatureFileLocation;
-    }
-
-    public void setLastFeatureFileLocation(String lastFeatureFileLocation) {
-        this.lastFeatureFileLocation = lastFeatureFileLocation;
-    } */
 
     /**
      * Get the value of logLevel
@@ -164,91 +108,5 @@ public class WekinatorSettings implements Serializable {
     public void setLogFile(String logFile) {
         this.logFile = logFile;
     }
-
-
-  /*  public String getLastConfigurationFileLocation() {
-        return lastConfigurationFileLocation;
-    }
-
-
-    public void setLastConfigurationFileLocation(String lastConfigurationFileLocation) {
-        this.lastConfigurationFileLocation = lastConfigurationFileLocation;
-    } */
-
-   /* public ChuckConfiguration loadLastConfiguration() throws IOException {
-        ChuckConfiguration c;
-        if (lastConfigurationFileLocation == null) {
-            throw new IOException("No previous configuration found");
-        }
-
-        FileInputStream fin = null;
-        try {
-            fin = new FileInputStream(lastConfigurationFileLocation);
-            ObjectInputStream sin = new ObjectInputStream(fin);
-            c = (ChuckConfiguration) sin.readObject();
-            sin.close();
-            fin.close();
-        } catch (Exception ex) {
-            throw new IOException("Could not load configuration from file\n");
-        } finally {
-            try {
-                if (fin != null) {
-                    fin.close();
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(WekinatorInstance.class.getName()).log(Level.INFO, null, ex);
-            }
-        }
-        return c;
-    } */
-
-  /*  public void saveConfiguration(ChuckConfiguration c) throws IOException {
-        FileOutputStream fout = null;
-        boolean fail = false;
-        try {
-            fout = new FileOutputStream(lastConfigurationFileLocation);
-            ObjectOutputStream out = new ObjectOutputStream(fout);
-            out.writeObject(c);
-            out.close();
-            fout.close();
-        } catch (IOException ex) {
-            fail = true;
-        } finally {
-            try {
-                if (fout != null) {
-                    fout.close();
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(WekinatorSettings.class.getName()).log(Level.INFO, null, ex);
-            }
-        }
-        if (fail) {
-            throw new IOException("Could not write to file");
-        }
-    } */
-
- /*   public String getLastHidFileLocation() {
-        return lastHidFileLocation;
-    }
-
-    public void setLastHidFileLocation(String lastHidFileLocation) {
-        this.lastHidFileLocation = lastHidFileLocation;
-    }
-
-    public String getDefaultHidFileLocation() {
-        return defaultHidFileLocation;
-    }
-
-    public void setLastLearnerFileLocation(String lastLearnerFileLocation) {
-        this.lastLearnerFileLocation = lastLearnerFileLocation;
-    }
-
-    public String getLastLearnerFileLocation() {
-        return lastLearnerFileLocation;
-    }
-
-        public String getDefaultLearnerFileLocation() {
-        return defaultLearnerFileLocation;
-    } */
 
 }

@@ -6,13 +6,8 @@
 package wekinator.util;
 
 import java.awt.Component;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JFileChooser;
-import wekinator.ChuckConfigurationForm;
 import wekinator.WekinatorInstance;
 
 /**
@@ -106,6 +101,8 @@ public class Util {
     public static void setLastFile(String fileExtension, File file) {
         WekinatorInstance.getWekinatorInstance().getSettings().setLastLocation(fileExtension, getCanonicalPath(file));
     }
+
+
     
 
 }
