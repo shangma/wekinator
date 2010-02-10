@@ -20,6 +20,25 @@ import wekinator.util.SerializedFileUtil;
  */
 public class FeatureConfiguration implements Serializable {
 
+    public static boolean equal(FeatureConfiguration fc1, FeatureConfiguration fc2) {
+        if (fc1 == fc2)
+            return true;
+
+        if (fc1 == null || fc2 == null)
+            return false;
+
+        String[] s1 = fc1.getAllEnabledFeatureNames();
+        String[] s2 = fc2.getAllEnabledFeatureNames();
+        if (s1.length != s2.length)
+            return false;
+
+        for (int i = 0; i < s1.length; i++) {
+            if (! s1[i].equals(s2[i]))
+                return false;
+        }
+        return true;
+    }
+
     public enum WindowType {
         HAMMING,
         HANN,
@@ -652,8 +671,29 @@ public class FeatureConfiguration implements Serializable {
     //Doesn't affect features not in the HashMap!
     public void setMetaFeaturesFromMatrix(HashMap<String, ArrayList<LinkedList<MetaFeature>>> list) {
         for (String fname : list.keySet()) {
-            features.get(fname).metaFeatures = list.get(fname);
+            ArrayList<LinkedList<MetaFeature>> l = list.get(fname);
+            ArrayList<LinkedList<MetaFeature>> m = features.get(fname).metaFeatures;
+            if (l != null) {
+                if (l.size() == m.size()) {
+
+                  //  m = l;
+                    features.get(fname).metaFeatures = l;
+                } else {
+                    for (int i = 0; (i < m.size() && i < l.size()); i++) {
+                        m.set(i, l.get(i));
+                    }
+                }
+
+            }
         }
+    }
+
+    public HashMap<String, ArrayList<LinkedList<MetaFeature>>> getMetaFeatureMatrix() {
+        HashMap<String, ArrayList<LinkedList<MetaFeature>>> list = new HashMap<String, ArrayList<LinkedList<MetaFeature>>>();
+        for (String fname : features.keySet()) {
+            list.put(fname, features.get(fname).metaFeatures);
+        }
+        return list;
     }
 
     public String[] getBaseEnabledFeatureNames() {

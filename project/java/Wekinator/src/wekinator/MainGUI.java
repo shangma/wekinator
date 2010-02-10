@@ -11,6 +11,8 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import wekinator.ChuckRunner.ChuckRunnerState;
 
 /**
@@ -128,7 +130,6 @@ public class MainGUI extends javax.swing.JFrame {
         panelTabLearningSystemConfiguration = new javax.swing.JPanel();
         learningSystemConfigurationPanel = new wekinator.LearningSystemConfigurationPanel();
         trainRunPanel1 = new wekinator.TrainRunPanel();
-        labelGlobalStatus = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         wekMenu = new javax.swing.JMenu();
         preferencesMenuItem = new javax.swing.JMenuItem();
@@ -305,12 +306,10 @@ public class MainGUI extends javax.swing.JFrame {
             panelTabFeatureConfigurationLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(panelTabFeatureConfigurationLayout.createSequentialGroup()
                 .add(featureConfigurationPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(107, Short.MAX_VALUE))
+                .addContainerGap(109, Short.MAX_VALUE))
         );
 
         panelMainTabs.addTab("Features Setup", panelTabFeatureConfiguration);
-
-        panelTabLearningSystemConfiguration.setEnabled(false);
 
         org.jdesktop.layout.GroupLayout panelTabLearningSystemConfigurationLayout = new org.jdesktop.layout.GroupLayout(panelTabLearningSystemConfiguration);
         panelTabLearningSystemConfiguration.setLayout(panelTabLearningSystemConfigurationLayout);
@@ -322,7 +321,7 @@ public class MainGUI extends javax.swing.JFrame {
             panelTabLearningSystemConfigurationLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(panelTabLearningSystemConfigurationLayout.createSequentialGroup()
                 .add(learningSystemConfigurationPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 551, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(71, Short.MAX_VALUE))
+                .addContainerGap(73, Short.MAX_VALUE))
         );
 
         panelMainTabs.addTab("Learning Setup", panelTabLearningSystemConfiguration);
@@ -428,26 +427,20 @@ public class MainGUI extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .add(20, 20, 20)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(buttonQuit)
-                            .add(labelGlobalStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 493, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(20, 20, 20)
-                        .add(panelMainTabs, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 839, Short.MAX_VALUE)))
+                        .add(21, 21, 21)
+                        .add(buttonQuit))
+                    .add(panelMainTabs, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 839, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(10, Short.MAX_VALUE)
-                .add(panelMainTabs, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 668, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(panelMainTabs, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 670, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(buttonQuit)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(labelGlobalStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 32, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(buttonQuit))
         );
 
         pack();
@@ -477,7 +470,7 @@ private void buttonOscConnectActionPerformed(java.awt.event.ActionEvent evt) {//
         receivePort = Integer.parseInt(textOscReceive.getText());
         OscHandler.getOscHandler().startHandshake(receivePort, sendPort);
     } catch (IOException ex) {
-        labelGlobalStatus.setText("Error setting up: " + ex.getMessage());
+       // labelGlobalStatus.setText("Error setting up: " + ex.getMessage());
     }
 }//GEN-LAST:event_buttonOscConnectActionPerformed
 
@@ -557,7 +550,6 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel8;
-    private javax.swing.JLabel labelGlobalStatus;
     private javax.swing.JLabel labelOscStatus;
     private javax.swing.JLabel labelOscStatus1;
     private wekinator.LearningSystemConfigurationPanel learningSystemConfigurationPanel;
@@ -583,9 +575,21 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
 
     private void oscHandlerPropertyChange(PropertyChangeEvent evt) {
         updateGUIforOscStatus();
+        if (evt.getPropertyName().equals(OscHandler.PROP_CONNECTIONSTATE)) {
+            OscHandler.ConnectionState o = (OscHandler.ConnectionState) evt.getOldValue();
+            OscHandler.ConnectionState n = (OscHandler.ConnectionState) evt.getNewValue();
+
+            if (n == OscHandler.ConnectionState.CONNECTED) {
+                panelMainTabs.setSelectedComponent(panelTabFeatureConfiguration);
+
+            }
+
+        }
     }
 
     protected void updateGUIforOscStatus() {
+
+
         OscHandler h = OscHandler.getOscHandler();
         labelOscStatus.setText("OSC status: " + h.getStatusMessage());
         if (h.getConnectionState() == OscHandler.ConnectionState.CONNECTED ||
@@ -606,7 +610,9 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
         setFeatureConfigurationPanelEnabled(isConnected);
         if (!isConnected) {
             setLearningSystemConfigurationPanelEnabled(false);
+         //   setTrainRunPanelEnabled(false);
         }
+        
 
     }
 
@@ -622,7 +628,7 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
             ((HidSetup) evt.getOldValue()).removePropertyChangeListener(hidSetupChangeListener);
             ((HidSetup) evt.getNewValue()).addPropertyChangeListener(hidSetupChangeListener);
         } else if (evt.getPropertyName().equals(WekinatorInstance.PROP_FEATURECONFIGURATION)) {
-            boolean e = (WekinatorInstance.getWekinatorInstance().getFeatureConfiguration() != null);
+                boolean e = (WekinatorInstance.getWekinatorInstance().getFeatureConfiguration() != null);
             System.out.println("enabling feat " + e);
             menuItemViewFeatures.setEnabled(e);
         }
@@ -654,6 +660,11 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
         panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelTabLearningSystemConfiguration), enabled);
     }
 
+    private void setTrainRunPanelEnabled(boolean enabled) {
+        panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(trainRunPanel1), enabled);
+
+    }
+
     private void learningManagerPropertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(WekinatorLearningManager.PROP_LEARNINGSYSTEM)) {
             boolean e = (WekinatorLearningManager.getInstance().getLearningSystem() != null);
@@ -671,7 +682,18 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        System.setProperty("apple.laf.useScreenMenuBar", "true");
+    /*    System.setProperty("apple.laf.useScreenMenuBar", "true");
+        try {
+            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+        } */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 MainGUI b = new MainGUI();

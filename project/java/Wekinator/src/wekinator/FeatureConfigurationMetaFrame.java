@@ -28,6 +28,8 @@ import wekinator.FeatureConfiguration.Feature;
 public class FeatureConfigurationMetaFrame extends javax.swing.JFrame {
 
     FeatureConfiguration fc = null;
+    protected FeatureConfigurationPanel parent = null;
+
     String[] baseFeatureClassNames = null;
     // JCheckBox[][] parentBoxArray; //index by feat #, meta #
     JCheckBox[][][] childBoxArray; //index by feat #, dimension #, meta #
@@ -39,9 +41,10 @@ public class FeatureConfigurationMetaFrame extends javax.swing.JFrame {
         initComponents();
     }
 
-    public FeatureConfigurationMetaFrame(FeatureConfiguration fc) {
+    public FeatureConfigurationMetaFrame(FeatureConfiguration fc, FeatureConfigurationPanel p) {
         initComponents();
         this.fc = fc;
+        parent = p;
         featuresInOrder = fc.featuresInOrder;
         baseFeatureClassNames = fc.getEnabledBaseFeatureClassNames();
         int numBaseEnabled = fc.getNumBaseFeaturesEnabled();
@@ -71,6 +74,8 @@ public class FeatureConfigurationMetaFrame extends javax.swing.JFrame {
                         JCheckBox b = new JCheckBox(MetaFeature.nameForType(mfTypes[j]));
                         childBoxArray[featNum][i][j] = b;
                         //Is checked?
+                        //TODO: this causes error: i may be out of bounds (custom chuck features?)
+                        //f.metaFeatures is not initialized yet!!
                         for (MetaFeature mf : f.metaFeatures.get(i)) { //causes error for hid device
                             if (mf.myName.equals(MetaFeature.nameForType(mfTypes[j]))) {
                                 b.setSelected(true);
@@ -153,12 +158,11 @@ public class FeatureConfigurationMetaFrame extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         commit();
-        this.dispose();
+        this.dispose();     
     }//GEN-LAST:event_jButton1ActionPerformed
 
     protected void commit() {
         HashMap<String, ArrayList<LinkedList<MetaFeature>>> allMetaFeatures = new HashMap<String, ArrayList<LinkedList<MetaFeature>>>();
-
         MetaFeature.Type[] mfTypes = MetaFeature.Type.values();
         int i = 0;
         for (Feature f : featuresInOrder) {
@@ -176,12 +180,13 @@ public class FeatureConfigurationMetaFrame extends javax.swing.JFrame {
                     }
                 }
                 f.metaFeatures = flist;
-            i++;
+                i++;
             }
           
         }
 
-        fc.setMetaFeaturesFromMatrix(allMetaFeatures);
+      //  fc.setMetaFeaturesFromMatrix(allMetaFeatures);
+        parent.setMetaFeatureMatrix(allMetaFeatures);
     }
 
     private void addTestFeatures() {
@@ -225,7 +230,7 @@ public class FeatureConfigurationMetaFrame extends javax.swing.JFrame {
                 fc.addMetaFeature(FeatureConfiguration.MOTION, MetaFeature.Type.DELTA_1s, 0);
                 try {
                     fc.validate();
-                    FeatureConfigurationMetaFrame f = new FeatureConfigurationMetaFrame(fc);
+                    FeatureConfigurationMetaFrame f = new FeatureConfigurationMetaFrame(fc, null);
                     f.setVisible(true);
                 } catch (Exception ex) {
                     Logger.getLogger(FeatureConfigurationMetaFrame.class.getName()).log(Level.SEVERE, null, ex);

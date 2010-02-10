@@ -14,14 +14,14 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import wekinator.FeatureConfiguration.WindowType;
-import wekinator.util.DeepCopy;
-import wekinator.util.OverwritePromptingFileChooser;
 import wekinator.util.Util;
 
 /**
@@ -30,60 +30,21 @@ import wekinator.util.Util;
  */
 public class FeatureConfigurationPanel extends javax.swing.JPanel {
 
-    FeatureConfiguration featureConfiguration = null;
-    FeatureConfiguration backup = null;
-    FeatureConfigurationMetaFrame mf = null;
-    protected HidSetup newHidSetup = null;
+    protected FeatureConfigurationMetaFrame mf = null;
+    protected HidSetup hidSetup = null;
+    protected HashMap<String, ArrayList<LinkedList<MetaFeature>>> metaFeatureMatrix = null;
 
-    /**
-     * Get the value of newHidSetup
-     *
-     * @return the value of newHidSetup
-     */
-    public HidSetup getNewHidSetup() {
-        return newHidSetup;
-    }
-
-    /**
-     * Set the value of newHidSetup
-     *
-     * @param newHidSetup new value of newHidSetup
-     */
-    public void setNewHidSetup(HidSetup newHidSetup) {
-        this.newHidSetup = newHidSetup;
-        if (newHidSetup != null) {
-            labelHidDescription.setText(newHidSetup.getDescription());
-        }
+    protected void setMetaFeatureMatrix(HashMap<String, ArrayList<LinkedList<MetaFeature>>> m) {
+        metaFeatureMatrix = m;
     }
 
     /** Creates new form FeatureConfigurationPanel */
     public FeatureConfigurationPanel() {
         initComponents();
-        setFeatureConfiguration(new FeatureConfiguration());
-    }
+        //    setFormFromConfiguration(new FeatureConfiguration
+        setHidSetup(hidSetup);
+        clearForm();
 
-    private File findFeatureSetupFileToSave() {
-        JFileChooser fc = new OverwritePromptingFileChooser();
-        fc.setDialogType(JFileChooser.SAVE_DIALOG);
-        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastLocation(FeatureConfiguration.getFileExtension());
-        if (location == null || location.equals("")) {
-            location = FeatureConfiguration.getDefaultLocation();
-        }
-        fc.setCurrentDirectory(new File(location));
-
-        File file = null;
-
-        int returnVal = fc.showSaveDialog(this);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-
-            file = fc.getSelectedFile();
-
-            if (file != null) {
-                WekinatorInstance.getWekinatorInstance().getSettings().setLastLocation(FeatureConfiguration.getFileExtension(), Util.getCanonicalPath(file));
-            }
-        }
-        return file;
     }
 
     /** This method is called from within the constructor to
@@ -131,49 +92,24 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
         textMotionExtractionRate = new javax.swing.JFormattedTextField();
         jLabel1 = new javax.swing.JLabel();
         labelFeatureStatus = new javax.swing.JLabel();
-        jButton2 = new javax.swing.JButton();
+        buttonAddMeta = new javax.swing.JButton();
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Chuck audio input features"));
 
-        checkFFT.setFont(new java.awt.Font("Lucida Grande", 0, 12));
+        checkFFT.setFont(new java.awt.Font("Lucida Grande", 0, 12)); // NOI18N
         checkFFT.setText("FFT");
-        checkFFT.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                checkFFTActionPerformed(evt);
-            }
-        });
 
-        checkRMS.setFont(new java.awt.Font("Lucida Grande", 0, 12));
+        checkRMS.setFont(new java.awt.Font("Lucida Grande", 0, 12)); // NOI18N
         checkRMS.setText("RMS");
-        checkRMS.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                checkRMSActionPerformed(evt);
-            }
-        });
 
-        checkCentroid.setFont(new java.awt.Font("Lucida Grande", 0, 12));
+        checkCentroid.setFont(new java.awt.Font("Lucida Grande", 0, 12)); // NOI18N
         checkCentroid.setText("Centroid");
-        checkCentroid.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                checkCentroidActionPerformed(evt);
-            }
-        });
 
-        checkFlux.setFont(new java.awt.Font("Lucida Grande", 0, 12));
+        checkFlux.setFont(new java.awt.Font("Lucida Grande", 0, 12)); // NOI18N
         checkFlux.setText("Flux");
-        checkFlux.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                checkFluxActionPerformed(evt);
-            }
-        });
 
-        checkRolloff.setFont(new java.awt.Font("Lucida Grande", 0, 12));
+        checkRolloff.setFont(new java.awt.Font("Lucida Grande", 0, 12)); // NOI18N
         checkRolloff.setText("Rolloff");
-        checkRolloff.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                checkRolloffActionPerformed(evt);
-            }
-        });
 
         jLabel6.setFont(new java.awt.Font("Lucida Grande", 0, 12));
         jLabel6.setText("Rate / Hop size (ms):");
@@ -384,10 +320,10 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
 
         labelFeatureStatus.setText("No feature configuration set.");
 
-        jButton2.setText("Add meta-features from these features...");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        buttonAddMeta.setText("Add meta-features from these features...");
+        buttonAddMeta.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                buttonAddMetaActionPerformed(evt);
             }
         });
 
@@ -397,7 +333,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(47, 47, 47)
-                .add(labelHidDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 505, Short.MAX_VALUE))
+                .add(labelHidDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -438,7 +374,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
                 .add(buttonGo)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(labelFeatureStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 379, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(72, Short.MAX_VALUE))
+                .addContainerGap(77, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(buttonLoad)
@@ -446,11 +382,11 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
                 .add(buttonSave)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(buttonUndo)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(22, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jButton2)
-                .addContainerGap(233, Short.MAX_VALUE))
+                .add(buttonAddMeta)
+                .addContainerGap(238, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -488,7 +424,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jButton2)
+                .add(buttonAddMeta)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 52, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(buttonLoad)
@@ -502,85 +438,40 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void checkFFTActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkFFTActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_checkFFTActionPerformed
-
-    private void checkCentroidActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkCentroidActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_checkCentroidActionPerformed
-
-    private void checkFluxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkFluxActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_checkFluxActionPerformed
-
-    private void checkRMSActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkRMSActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_checkRMSActionPerformed
-
-    private void checkRolloffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkRolloffActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_checkRolloffActionPerformed
-
-    private void setComboWindowFromFeatureConfiguration() {
-        switch (featureConfiguration.windowType) {
-            case RECTANGULAR:
-                comboWindowType.setSelectedItem("Rectangular");
-                break;
-            case HANN:
-                comboWindowType.setSelectedItem("Hann");
-                break;
-            case HAMMING:
-                comboWindowType.setSelectedItem("Hamming");
-                break;
-
-        }
-    }
-
     private void textFftSizeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textFftSizeActionPerformed
-        // TODO add your handling code here:
 }//GEN-LAST:event_textFftSizeActionPerformed
 
     private void textFftSizePropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_textFftSizePropertyChange
 }//GEN-LAST:event_textFftSizePropertyChange
 
     private void textAudioRateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textAudioRateActionPerformed
-        // TODO add your handling code here:
 }//GEN-LAST:event_textAudioRateActionPerformed
 
     private void textAudioRatePropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_textAudioRatePropertyChange
-        // TODO add your handling code here:
 }//GEN-LAST:event_textAudioRatePropertyChange
 
     private void textWindowSizeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textWindowSizeActionPerformed
-        // TODO add your handling code here:
 }//GEN-LAST:event_textWindowSizeActionPerformed
 
     private void textWindowSizePropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_textWindowSizePropertyChange
-        // TODO add your handling code here:
 }//GEN-LAST:event_textWindowSizePropertyChange
 
     private void comboWindowTypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboWindowTypeActionPerformed
     }//GEN-LAST:event_comboWindowTypeActionPerformed
 
     private void checkCustomChuckActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkCustomChuckActionPerformed
-        // TODO add your handling code here:
 }//GEN-LAST:event_checkCustomChuckActionPerformed
 
     private void textNumCustomChuckFeaturesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textNumCustomChuckFeaturesActionPerformed
-        // TODO add your handling code here:
 }//GEN-LAST:event_textNumCustomChuckFeaturesActionPerformed
 
     private void textNumCustomChuckFeaturesPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_textNumCustomChuckFeaturesPropertyChange
-        // TODO add your handling code here:
 }//GEN-LAST:event_textNumCustomChuckFeaturesPropertyChange
 
     private void textMotionExtractionRateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textMotionExtractionRateActionPerformed
-        // TODO add your handling code here:
 }//GEN-LAST:event_textMotionExtractionRateActionPerformed
 
     private void textMotionExtractionRatePropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_textMotionExtractionRatePropertyChange
-        // TODO add your handling code here:
 }//GEN-LAST:event_textMotionExtractionRatePropertyChange
     PropertyChangeListener currentHidSetupChangeListener = new PropertyChangeListener() {
 
@@ -595,12 +486,12 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void buttonLoadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonLoadActionPerformed
-         File file = Util.findLoadFile(FeatureConfiguration.getFileExtension(),
+        File file = Util.findLoadFile(FeatureConfiguration.getFileExtension(),
                 FeatureConfiguration.getFileTypeDescription(),
                 FeatureConfiguration.getDefaultLocation(),
                 this);
         if (file != null) {
-                FeatureConfiguration newF = null;
+            FeatureConfiguration newF = null;
 
             try {
                 newF = FeatureConfiguration.readFromFile(file);
@@ -609,30 +500,15 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
                 Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
             }
             if (newF != null) {
-                setFeatureConfiguration(newF); //TODO: Problematic: What do we do w/ backup?; make usre to deal with hid there
+                setFormFromConfiguration(newF); //TODO: Problematic: What do we do w/ backup?; make usre to deal with hid there
                 Util.setLastFile(FeatureConfiguration.getFileExtension(), file);
             }
         }
-        
-        /* File f = findFeatureSetupFile();
-        boolean success = false;
-        if (f != null) {
-            FeatureConfiguration newF = null;
-            try {
-                newF = FeatureConfiguration.readFromFile(f);
-            } catch (Exception ex) {
-                System.out.println("Unable to load from file"); //TODO: nicer message
-                Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            if (newF != null) {
-                setFeatureConfiguration(newF); //TODO: Problematic: What do we do w/ backup?; make usre to deal with hid there
-            }
-        }*/
     }//GEN-LAST:event_buttonLoadActionPerformed
 
     private void buttonSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSaveActionPerformed
-         try {
-            setConfigurationFromForm();
+        try {
+            FeatureConfiguration featureConfiguration = setConfigurationFromForm();
             featureConfiguration.validate();
             File file = Util.findSaveFile(FeatureConfiguration.getFileExtension(),
                     FeatureConfiguration.getFileTypeDescription(),
@@ -640,38 +516,37 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
                     this);
             if (file != null) {
                 try {
-                    featureConfiguration.writeToFile(file); //TODOTODOTODO: update last path on this.
+                    featureConfiguration.writeToFile(file);
                     Util.setLastFile(FeatureConfiguration.getFileExtension(), file);
                 } catch (Exception ex) {
                     Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.INFO, null, ex);
                     System.out.println("Could not save feature configuration to file");
                 }
             }
-        /*   try {
-            setConfigurationFromForm();
-            featureConfiguration.validate();
-            File file = findFeatureSetupFileToSave();
-            if (file != null) {
-                try {
-                    featureConfiguration.writeToFile(file);
-                } catch (Exception ex) {
-                    //TODO: handle:
-                    System.out.println("Could not save to file");
-                }
-            } */
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid feature configuration; cannot save.", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_buttonSaveActionPerformed
 
+    private void clearForm() {
+        setFormFromConfiguration(new FeatureConfiguration());
+    }
+
     private void buttonUndoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonUndoActionPerformed
-        setFeatureConfiguration(backup);
+        //  setFormFromConfiguration(backup);
+        if (WekinatorInstance.getWekinatorInstance().getFeatureConfiguration() != null) {
+            setFormFromConfiguration(WekinatorInstance.getWekinatorInstance().getFeatureConfiguration());
+        } else {
+            clearForm();
+        }
+
     }//GEN-LAST:event_buttonUndoActionPerformed
 
     private void buttonGoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonGoActionPerformed
+        FeatureConfiguration featureConfiguration = null;
         try {
             //Zeroth, check this is valid
-            setConfigurationFromForm();
+            featureConfiguration = setConfigurationFromForm();
             featureConfiguration.validate();
 
         } catch (Exception ex) {
@@ -682,79 +557,49 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
 
 
         //First, prompt the user to overwrite
-        if (WekinatorInstance.getWekinatorInstance().getFeatureConfiguration() != null && ChuckSystem.getChuckSystem().getState() == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID) {
-            int lResponse = JOptionPane.showConfirmDialog(this, "Are you sure you want to change your feature configuration?\n" + "This could destroy your existing trained models...", "", JOptionPane.YES_NO_OPTION);
-            if (lResponse != JOptionPane.YES_OPTION) {
-                return;
+        //TODO: what does this have to do with chuck system?
+        //TODO: allow to continue if # features same?
+        //Ideally need a map ID kind of thing here... or at min a name/hash-based way of keeping track of feats, independent of global order?
+        //This is low priority: min behavior should just destroy models if feats change AT ALL (i.e. names & nums not identical)
+        //Best hting here is to compare names of features; if they match, then we're really identical.
+
+        boolean areEqual = FeatureConfiguration.equal(featureConfiguration, WekinatorInstance.getWekinatorInstance().getFeatureConfiguration());
+
+        if (!areEqual) {
+
+            if (WekinatorInstance.getWekinatorInstance().getFeatureConfiguration() != null) {
+                int lResponse = JOptionPane.showConfirmDialog(this, "Are you sure you want to change your feature configuration?\n" + "This will destroy any existing trained models...", "", JOptionPane.YES_NO_OPTION);
+                if (lResponse != JOptionPane.YES_OPTION) {
+                    return;
+                }
             }
+                //Then, set backup to the current configuration, and set the WekInst current to it as well
+                WekinatorInstance.getWekinatorInstance().setFeatureConfiguration(featureConfiguration);
+                labelFeatureStatus.setText("Feature configuration set; using " + featureConfiguration.getNumFeaturesEnabled() + " features.");
+            
         }
-        //Then, set backup to the current configuration, and set the WekInst current to it as well
-        backup = featureConfiguration;
-        WekinatorInstance.getWekinatorInstance().setFeatureConfiguration(featureConfiguration);
-        labelFeatureStatus.setText("Feature configuration set; using " + featureConfiguration.getNumFeaturesEnabled() + " features.");
-        //Finally, set the current configuration to a deep copy of itself, so that we can edit a non-running copy
-        // setFeatureConfiguration(featureConfiguration);
-        try {
-            FeatureConfiguration next = (FeatureConfiguration) DeepCopy.copy(featureConfiguration);
-        } catch (IOException ex) {
-            Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
-            //Now communicate features to chuck
-            ChuckSystem.getChuckSystem().waitForNewSettings();
-            OscHandler.getOscHandler().sendFeatureConfiguration(featureConfiguration);
-            OscHandler.getOscHandler().requestChuckSettingsArray();
-
-        } catch (IOException ex) {
-            Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
     }//GEN-LAST:event_buttonGoActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void buttonAddMetaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAddMetaActionPerformed
         try {
             //Zeroth, check this is valid
-            setConfigurationFromForm();
+            FeatureConfiguration fc = setConfigurationFromForm();
+            //ABC: add metafeatures existing.
+
             /*   HidSetup tmptmp = new HidSetup();
             tmptmp.usable = true;
             featureConfiguration.setHidSetup(tmptmp); */
-
-            featureConfiguration.validate();
-            mf = new FeatureConfigurationMetaFrame(featureConfiguration);
+            fc.validate();
+            mf = new FeatureConfigurationMetaFrame(fc, this);
             mf.setVisible(true);
-
         } catch (Exception ex) {
             Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.INFO, null, ex);
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid feature configuration", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid feature configuration; fix before adding meta features", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
-    }//GEN-LAST:event_jButton2ActionPerformed
-
-    private File findFeatureSetupFile() {
-        JFileChooser fc = new JFileChooser();
-        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastLocation(FeatureConfiguration.getFileExtension());
-        if (location == null || location.equals("")) {
-            location = FeatureConfiguration.getDefaultLocation();
-        }
-        fc.setCurrentDirectory(new File(location)); //TODO: Could set directory vs file here according to above results
-        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        boolean success = true;
-        File file = null;
-        int returnVal = fc.showOpenDialog(this);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            file = fc.getSelectedFile();
-        }
-
-        if (file != null) {
-            WekinatorInstance.getWekinatorInstance().getSettings().setLastLocation(FeatureConfiguration.getFileExtension(), Util.getCanonicalPath(file));
-        }
-        return file;
-    }
-
+}//GEN-LAST:event_buttonAddMetaActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton buttonAddMeta;
     private javax.swing.JButton buttonGo;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton buttonLoad;
@@ -773,7 +618,6 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox checkWebcam;
     private javax.swing.JComboBox comboWindowType;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -794,34 +638,41 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
     private javax.swing.JFormattedTextField textWindowSize;
     // End of variables declaration//GEN-END:variables
 
-    public FeatureConfiguration getFeatureConfiguration() {
-        return featureConfiguration;
+    protected void updateHidChangeListener(HidSetup o, HidSetup n, PropertyChangeListener l) {
+        if (o != null) {
+            o.removePropertyChangeListener(l);
+        }
+        if (n != null) {
+            n.addPropertyChangeListener(l);
+        }
     }
 
-    public void setFeatureConfiguration(FeatureConfiguration featureConfiguration1) {
-        //TODO: Make property
-
-        if (this.backup == null) {
-            try {
-                this.backup = (FeatureConfiguration) DeepCopy.copy(featureConfiguration1);
-            } catch (IOException ex) {
-                Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (ClassNotFoundException ex) {
-                Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
-            }
+    public void setHidSetup(HidSetup h) {
+        HidSetup oldSetup = hidSetup;
+        if (hidSetup != null) {
+            labelHidDescription.setText(hidSetup.getDescription());
+        } else {
+            labelHidDescription.setText("No HID configured.");
         }
-        if (this.featureConfiguration != null && this.featureConfiguration.getHidSetup() != null) {
-            this.featureConfiguration.getHidSetup().removePropertyChangeListener(currentHidSetupChangeListener);
-        }
-        this.featureConfiguration = featureConfiguration1;
-        this.featureConfiguration.getHidSetup().addPropertyChangeListener(currentHidSetupChangeListener);
-        System.out.println("Added property change listener");
-        setFormFromConfiguration();
-
+        updateHidChangeListener(oldSetup, hidSetup, currentHidSetupChangeListener);
     }
-    // End of variables declaration
 
-    protected void setFormFromConfiguration() {
+    public void setFormFromConfiguration(FeatureConfiguration featureConfiguration) {
+        if (featureConfiguration != null) {
+            setHidSetup(featureConfiguration.getHidSetup());
+        } else {
+            setHidSetup(null);
+        }
+
+        //PROBLEM: we're discarding this featureConfiguration and relying on the form...
+        //we still need it, or its metafeature info in a new representation, to load metafeature pane.
+        //this is inefficient but should owrk:
+
+        metaFeatureMatrix = featureConfiguration.getMetaFeatureMatrix();
+
+        //      HashMap<String, ArrayList<LinkedList<MetaFeature>>> allMetaFeatures = new HashMap<String, ArrayList<LinkedList<MetaFeature>>>();
+        // featureConfiguration.setMetaFeaturesFromMatrix(allMetaFeatures)
+
         textAudioRate.setValue(new Integer(featureConfiguration.getAudioExtractionRate()));
         textFftSize.setValue(new Integer(featureConfiguration.getFftSize()));
         textWindowSize.setValue(new Integer(featureConfiguration.getFftWindowSize()));
@@ -841,17 +692,11 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
         checkFlux.setSelected(featureConfiguration.isUseFlux());
         checkMotion.setSelected(featureConfiguration.isUseMotionSensor());
         checkHid.setSelected(featureConfiguration.isUseOtherHid());
-        //TODO: Add property listeners for other hid object, like maingui has
-        if (featureConfiguration.getHidSetup() != null) {
-            labelHidDescription.setText(featureConfiguration.getHidSetup().getDescription());
-        } else {
-            labelHidDescription.setText("No HID configured.");
-        }
+
         checkWebcam.setSelected(featureConfiguration.isUseProcessing());
         checkTrackpad.setSelected(featureConfiguration.isUseTrackpad());
         checkRMS.setSelected(featureConfiguration.isUseRMS());
         checkRolloff.setSelected(featureConfiguration.isUseRolloff());
-
 
         switch (featureConfiguration.getWindowType()) {
             case HAMMING:
@@ -865,14 +710,15 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
                 break;
             default:
                 System.out.println("problem");
-            //TODO LOG
         }
     }
 
-    protected void setConfigurationFromForm() throws Exception {
+    protected FeatureConfiguration setConfigurationFromForm() throws Exception {
+        FeatureConfiguration featureConfiguration = null;
         try {
-            if (newHidSetup != null) {
-                featureConfiguration.setHidSetup(newHidSetup);
+            featureConfiguration = new FeatureConfiguration();
+            if (hidSetup != null) {
+                featureConfiguration.setHidSetup(hidSetup);
             }
             featureConfiguration.setAudioExtractionRate(Integer.parseInt(textAudioRate.getText()));
             featureConfiguration.setFftSize(Integer.parseInt(textFftSize.getText()));
@@ -915,12 +761,17 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
                 System.out.println("Problem");
             //TODO: log severe
             }
+
+            if (metaFeatureMatrix != null) {
+                featureConfiguration.setMetaFeaturesFromMatrix(metaFeatureMatrix);
+            }
         } catch (Exception ex) {
             System.out.println("STUPID");
             ex.printStackTrace();
             System.out.println(ex.getMessage());
             throw new Exception("Invalid formatting in number box" + ex.getMessage());
         }
+        return featureConfiguration;
 
     }
 
@@ -936,8 +787,8 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
                 JFrame frame = new JFrame();
                 FeatureConfigurationPanel panel = new FeatureConfigurationPanel();
                 FeatureConfiguration fc = new FeatureConfiguration();
-                fc.setWindowType(WindowType.RECTANGULAR);
-                panel.setFeatureConfiguration(fc);
+                //    fc.setWindowType(WindowType.RECTANGULAR);
+                //   panel.setFormFromConfiguration(fc);
                 //fc.setNumCustomChuckFeatures(10);
                 //fc.setTmp(53);
                 //panel.getFeatureConfiguration1().setTmp(53);
@@ -963,6 +814,6 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
 
     private void currentHidSetupPropertyChanged(PropertyChangeEvent evt) {
         System.out.println("Received hid change event");
-        labelHidDescription.setText(newHidSetup.getDescription());
+        labelHidDescription.setText(hidSetup.getDescription());
     }
 }

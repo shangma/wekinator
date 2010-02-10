@@ -225,7 +225,7 @@ public class HidSetupForm extends javax.swing.JFrame {
     private void buttonOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonOKActionPerformed
         //TODO: Check if currently has valid hid setup -- if so, kill it somehow?
         if (this.parent != null) {
-            parent.setNewHidSetup(mySetup);
+            parent.setHidSetup(mySetup);
         }
         /* else {
         WekinatorInstance.getWekinatorInstance().setCurrentHidSetup(mySetup);

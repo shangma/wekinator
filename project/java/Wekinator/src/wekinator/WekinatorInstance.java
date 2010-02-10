@@ -62,8 +62,18 @@ public class WekinatorInstance {
         propertyChangeSupport.firePropertyChange(PROP_FEATURECONFIGURATION, oldFeatureConfiguration, featureConfiguration);
 
         if (featureConfiguration == null) {
-                setForOscState();
+          
+                setForOscState(); //TODO: check on this -- not sensible?
+               
+        
         } else {
+                ChuckSystem.getChuckSystem().waitForNewSettings();
+            try {
+                OscHandler.getOscHandler().sendFeatureConfiguration(featureConfiguration);
+            } catch (IOException ex) {
+                Logger.getLogger(WekinatorInstance.class.getName()).log(Level.SEVERE, null, ex);
+            }
+                OscHandler.getOscHandler().requestChuckSettingsArray();
             if (state == State.OSC_CONNECTION_MADE) {
                    setState(State.FEATURE_SETUP_DONE);
             }
@@ -73,7 +83,6 @@ public class WekinatorInstance {
 
 
     public enum State {
-
         INIT,
         OSC_CONNECTION_MADE,
         FEATURE_SETUP_DONE,
