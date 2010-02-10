@@ -649,6 +649,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
 
     public void setHidSetup(HidSetup h) {
         HidSetup oldSetup = hidSetup;
+        hidSetup = h;
         if (hidSetup != null) {
             labelHidDescription.setText(hidSetup.getDescription());
         } else {

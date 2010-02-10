@@ -79,6 +79,32 @@ public class WekinatorInstance {
         }
     }
 
+    boolean canUse(LearningSystem ls) {
+        if (ls == null || featureConfiguration == null)
+            return false;
+
+        SimpleDataset sd = ls.getDataset();
+        if (sd != null) {
+            int sF = sd.getNumFeatures();
+            int tF = featureConfiguration.getNumFeaturesEnabled();
+            int sP = sd.getNumParameters();
+
+
+            if (sd.getNumFeatures() != featureConfiguration.getNumFeaturesEnabled()
+            || sd.getNumParameters() != ChuckSystem.getChuckSystem().getNumParams()) {
+                return false;
+            }
+
+            //TODO check that each param type is same
+            // ?? uhh ?
+            return true;
+
+        }
+
+        return false;
+
+    }
+
     public enum State {
 
         INIT,

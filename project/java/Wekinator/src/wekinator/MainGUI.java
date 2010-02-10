@@ -78,9 +78,18 @@ public class MainGUI extends javax.swing.JFrame {
                 runnerPropertyChange(evt);
             }
         });
+        runOscIfNeeded();
         runChuckIfNeeded();
     }
 
+    private void runOscIfNeeded() {
+        if (WekinatorRunner.chuckFile == null &&
+                WekinatorRunner.connectAutomatically &&
+                OscHandler.getOscHandler().getConnectionState() == OscHandler.ConnectionState.NOT_CONNECTED) {
+
+                connectOSC();
+        } 
+    }
     private void runChuckIfNeeded() {
         if (WekinatorRunner.chuckFile != null &&
                 ChuckRunner.getConfiguration() != null &&
@@ -675,17 +684,24 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
                 if (WekinatorRunner.getLearningSystemFile() != null) {
                     try {
                         LearningSystem ls = LearningSystem.readFromFile(WekinatorRunner.getLearningSystemFile());
+                       if (WekinatorInstance.getWekinatorInstance().canUse(ls))
+                        {
                         WekinatorLearningManager.getInstance().setLearningSystem(ls);
-                        learningSystemConfigurationPanel.setLearningSystem(ls);
-                         panelMainTabs.setSelectedComponent(trainRunPanel1);
-                         if (WekinatorRunner.runAutomatically) {
+                        
+                            learningSystemConfigurationPanel.setLearningSystem(ls);
+                            panelMainTabs.setSelectedComponent(trainRunPanel1);
+                            if (WekinatorRunner.runAutomatically) {
                             //trainRunPanel1.
                              //if can run:
                              //TODO
                                 trainRunPanel1.startAutoRun(); //put elsewhere
                              //trainRunPanel1.showRunPanel();
 
-                         }
+                            }
+                        } else {
+                            //TODO: more info
+                            System.out.println("This learning system is not configured correctly");
+                        }
                     } catch (Exception ex) {
                                                 Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, "Could not load learning system from file");
 

@@ -95,7 +95,7 @@ public class OscHandler {
         NOT_CONNECTED, CONNECTING, CONNECTED, FAIL
     };
     private String myStatusMessage = "Not initialized";
-    protected ConnectionState connectionState;
+    protected ConnectionState connectionState = ConnectionState.NOT_CONNECTED;
     public static final String PROP_CONNECTIONSTATE = "connectionState";
 
     /**

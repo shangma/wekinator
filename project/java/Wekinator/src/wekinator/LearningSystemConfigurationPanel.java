@@ -266,10 +266,14 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
             }
             if (newS != null) {
                 //TODO TODO TODO:
-                //CHeck: newS # params
-                //Check newS # features
                 // check newS param types
                 //check newS feature names & param names (warn if disagree)
+                if (!WekinatorInstance.getWekinatorInstance().canUse(newS)) {
+                   JOptionPane.showMessageDialog(this, "Incompatible learning system", "Cannot load", JOptionPane.ERROR_MESSAGE);
+
+                    logger.log(Level.WARNING, "Incompatible learning system");
+                    return;
+                }
 
                 setLearningSystem(newS); //TODO: Problematic: What do we do w/ backup?; make usre to deal with hid there
                 WekinatorLearningManager.getInstance().setLearningSystem(newS);
@@ -289,41 +293,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
             }
         }
 
-      /*  File f = findLearningSystemFile();
-        boolean success = false;
-        if (f != null) {
-            LearningSystem newS = null;
-            try {
-                // newS = LearningSystem.readFromFile(f);
-                newS = LearningSystem.readFromFile(f);
-            } catch (Exception ex) {
-                System.out.println("Unable to load from file"); //TODO: nicer message
-
-                Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            if (newS != null) {
-                //TODO TODO TODO:
-                //CHeck: newS # params
-                //Check newS # features
-                // check newS param types
-                //check newS feature names & param names (warn if disagree)
-
-                setLearningSystem(newS); //TODO: Problematic: What do we do w/ backup?; make usre to deal with hid there
-                WekinatorLearningManager.getInstance().setLearningSystem(newS);
-                labelLearningSystemStatus.setText("Learning system loaded successfully.");
-
-                System.out.println("Sanity check:");
-                for (int i = 0; i < newS.getNumParams(); i++) {
-                        int[] mapping = newS.getDataset().getFeatureLearnerConfiguration().getFeatureMappingForLearner(i);
-                        System.out.println("mapping " + i + " is: ");
-                        for (int j = 0; j < mapping.length; j++) {
-                            System.out.print(mapping[j] + " ");
-                        }
-                        System.out.println("");
-                }
-
-            }
-        } */
+ 
 }//GEN-LAST:event_buttonLoadActionPerformed
 //TODO: enable GO button depending on init state.
 
