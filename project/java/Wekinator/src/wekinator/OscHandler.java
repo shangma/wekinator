@@ -529,10 +529,14 @@ public class OscHandler {
     }
 
     public void end() {
+        if (receiver != null) {
         receiver.stopListening();
         receiver.close(); //this line causes errors!!
+        }
 
-        sender.close();
+        if (sender != null) {
+            sender.close();
+        }
         //  oldState = ConnectionState.NOT_CONNECTED;
         //  notifyObservers();
         setConnectionState(ConnectionState.NOT_CONNECTED);
