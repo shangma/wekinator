@@ -278,13 +278,11 @@ public class TrainRunPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_buttonRunActionPerformed
 
     public void startAutoRun() {
-        if (canRun()) {
+       
             showRunPanel();
             WekinatorLearningManager.getInstance().startRunning();
             OscHandler.getOscHandler().startSound();
-        } else {
-            System.out.println("Cannot run automatically: learning system not ready");
-        }
+        
     }
 
     public void showRunPanel() {

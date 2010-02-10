@@ -6,6 +6,7 @@
 //Update.
 package wekinator;
 
+import java.awt.Frame;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -35,7 +36,7 @@ public class MainGUI extends javax.swing.JFrame {
         initComponents();
         //Anywhere we add a listener, also update to current property.
 
-        FeatureManager fm = wek.getFeatureManager();
+       // FeatureManager fm = wek.getFeatureManager();
         ChuckSystem.getChuckSystem().addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {
@@ -52,7 +53,7 @@ public class MainGUI extends javax.swing.JFrame {
             }
         });
         updateGUIforOscStatus();
-        fm.hidSetup = wek.getCurrentHidSetup(); //TODO: put in fm
+      //  fm.hidSetup = wek.getCurrentHidSetup(); //TODO: put in fm
         wek.getCurrentHidSetup().addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {
@@ -694,9 +695,15 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
                             //trainRunPanel1.
                              //if can run:
                              //TODO
-                                trainRunPanel1.startAutoRun(); //put elsewhere
-                             //trainRunPanel1.showRunPanel();
-
+                                if (trainRunPanel1.canRun()) {
+                                    trainRunPanel1.startAutoRun(); //put elsewhere
+                                    if (WekinatorRunner.isMinimizeOnRun()) {
+                                         this.setState(Frame.ICONIFIED);
+                                    }
+                                    } else {
+                                        System.out.println("Cannot run automatically: learning system not ready");
+                                        }
+                            
                             }
                         } else {
                             //TODO: more info

@@ -26,12 +26,18 @@ public class WekinatorRunner {
     protected static OptionParser parser = null;
     protected static boolean runAutomatically = false;
     protected static boolean connectAutomatically = false;
+    protected static boolean minimizeOnRun = false;
     protected static OptionSpec<String> feat;
     protected static OptionSpec<String> ls;
     protected static OptionSpec<String> ck;
     protected static OptionSpec<Void> run;
     protected static OptionSpec<Void> connect;
+    protected static OptionSpec<Void> min;
     private static final WekinatorRunner ref = new WekinatorRunner();
+
+    public static boolean isMinimizeOnRun() {
+        return minimizeOnRun;
+    }
 
     /**
      * Get the value of connectAutomatically
@@ -90,6 +96,7 @@ public class WekinatorRunner {
         ck = parser.accepts("ck", "followed by chuck configuration file (only if not running chuck separately)").withRequiredArg().ofType(String.class);
         run = parser.accepts("run", "start running on load (no argument necessary)"); //run automatically
         connect = parser.accepts("connect", "start OSC connection on load (used only when running chuck separately");
+        min = parser.accepts("min", "minimize after running (no argument; used only with --run)");
     }
 
     private static File getFeatureFile(String filename) {
@@ -196,6 +203,12 @@ public class WekinatorRunner {
             if (options.has(feat) && options.has(ls) && options.has(run)) {
                 runAutomatically = true;
                 System.out.println("Automatically running");
+
+                if (options.has(min)) {
+                    minimizeOnRun = true;
+                    System.out.println("Minimizing on run");
+                }
+
             } else if (options.has(run)) {
                 System.out.println("Warning: Will not automatically run: no feature configuration and/or learning system files have been specified");
             }

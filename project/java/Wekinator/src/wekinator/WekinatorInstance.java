@@ -80,8 +80,10 @@ public class WekinatorInstance {
     }
 
     boolean canUse(LearningSystem ls) {
-        if (ls == null || featureConfiguration == null)
+        if (ls == null || featureConfiguration == null) {
+            System.out.println("Cannot use: ls or featconfig null");
             return false;
+        }
 
         SimpleDataset sd = ls.getDataset();
         if (sd != null) {
@@ -92,6 +94,8 @@ public class WekinatorInstance {
 
             if (sd.getNumFeatures() != featureConfiguration.getNumFeaturesEnabled()
             || sd.getNumParameters() != ChuckSystem.getChuckSystem().getNumParams()) {
+                System.out.println("cannot use: feature/param mismatch");
+                System.out.println(sF + "/" + tF + ", " + sP + "/" + ChuckSystem.getChuckSystem().getNumParams());
                 return false;
             }
 
@@ -140,20 +144,20 @@ public class WekinatorInstance {
      *
      * @return the value of featureManager
      */
-    public FeatureManager getFeatureManager() {
+   /* public FeatureManager getFeatureManager() {
         return featureManager;
-    }
+    } */
 
     /**
      * Set the value of featureManager
      *
      * @param featureManager new value of featureManager
      */
-    public void setFeatureManager(FeatureManager featureManager) {
+  /*  public void setFeatureManager(FeatureManager featureManager) {
         FeatureManager oldFeatureManager = this.featureManager;
         this.featureManager = featureManager;
         propertyChangeSupport.firePropertyChange(PROP_FEATUREMANAGER, oldFeatureManager, featureManager);
-    }
+    } */
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     /**
@@ -171,9 +175,17 @@ public class WekinatorInstance {
      * @param currentHidSetup new value of currentHidSetup
      */
     public void setCurrentHidSetup(HidSetup currentHidSetup) {
-        HidSetup oldCurrentHidSetup = this.currentHidSetup;
-        this.currentHidSetup = currentHidSetup;
-        propertyChangeSupport.firePropertyChange(PROP_CURRENTHIDSETUP, oldCurrentHidSetup, currentHidSetup);
+        try {
+            HidSetup oldCurrentHidSetup = this.currentHidSetup;
+            this.currentHidSetup = currentHidSetup;
+            if (currentHidSetup != null) {
+            currentHidSetup.startHidRun();
+            currentHidSetup.startHidInit();
+            }
+            propertyChangeSupport.firePropertyChange(PROP_CURRENTHIDSETUP, oldCurrentHidSetup, currentHidSetup);
+        } catch (IOException ex) {
+            Logger.getLogger(WekinatorInstance.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**

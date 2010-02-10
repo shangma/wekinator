@@ -280,6 +280,7 @@ public class FeatureManager {
                 try {
                     hidSetup = (HidSetup) objin.readObject();
                     WekinatorInstance.getWekinatorInstance().setCurrentHidSetup(hidSetup); //TODO: Do I really want to do this? Or wait until I "apply" this feature set?
+                    
                 } catch (ClassNotFoundException ex) {
                     System.out.println("Problem loading hidset");
                 }
@@ -319,7 +320,7 @@ public class FeatureManager {
     
     public void sendToChuck(OscHandler h) throws IOException {
         //TODO: send audio
-        h.setUseAudio(useAudio, useFFT, useRMS, useCentroid, useRolloff, useFlux, fftSize, windowSize, windowType, audioExtractionRate);
+    //    h.setUseAudio(useAudio, useFFT, useRMS, useCentroid, useRolloff, useFlux, fftSize, windowSize, windowType, audioExtractionRate);
         h.setUseTrackpad(useTrackpad);
         h.setUseMotion(useMotionSensor, motionExtractionRate);
         h.setUseOtherHid(useOtherHid); //ok??

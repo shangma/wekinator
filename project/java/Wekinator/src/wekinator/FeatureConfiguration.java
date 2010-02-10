@@ -619,6 +619,15 @@ public class FeatureConfiguration implements Serializable {
         FeatureConfiguration fc = (FeatureConfiguration) SerializedFileUtil.readFromFile(f);
         fc.committedNumTotalFeatures = fc.getNumFeaturesEnabled();
         fc.committedNumBaseFeatures = fc.getNumBaseFeaturesEnabled();
+
+        //hack: ABC
+        if (fc.isUseOtherHid()) {
+            
+                    HidSetup h = fc.getHidSetup();
+                    WekinatorInstance.getWekinatorInstance().setCurrentHidSetup(h); //TODO: Do I really want to do this? Or wait until I "apply" this feature set?
+
+
+            }
         return fc;
     }
 

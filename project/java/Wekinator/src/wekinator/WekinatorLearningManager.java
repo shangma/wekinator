@@ -293,23 +293,21 @@ public class WekinatorLearningManager {
 
 
     public void updateFeatures(double[] features) {
-        System.out.println("java received feature");
-        if (mode == Mode.DATASET_CREATION) {
+        if (mode == Mode.RUNNING) {
+            try {
+               setOutputs(learningSystem.classify(features));
+
+                //TODO RAF important TODO TODO TODO: issue of displaying output for dist features
+               OscHandler.getOscHandler().sendParamsToSynth(outputs);
+
+            } catch (Exception ex) {
+                Logger.getLogger(WekinatorLearningManager.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else if (mode == Mode.DATASET_CREATION) {
           
               learningSystem.addToTraining(features, params);
               
 
-        } else if (mode == Mode.RUNNING) {
-            System.out.println("in run mode");
-            try {
-               setOutputs(learningSystem.classify(features));
-               
-                //TODO RAF important TODO TODO TODO: issue of displaying output for dist features
-               OscHandler.getOscHandler().sendParamsToSynth(outputs);
-                
-            } catch (Exception ex) {
-                Logger.getLogger(WekinatorLearningManager.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }
     }
 

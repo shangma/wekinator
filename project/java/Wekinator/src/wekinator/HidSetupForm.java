@@ -234,31 +234,6 @@ public class HidSetupForm extends javax.swing.JFrame {
     }//GEN-LAST:event_buttonOKActionPerformed
 
     private void buttonLoadOtherHIDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonLoadOtherHIDActionPerformed
-        // checkOtherHID.setSelected(true);
-      /*  File f = findHidSetupFile();
-        boolean success = false;
-        HidSetup loadedHs = null;
-        if (f != null) {
-            loadedHs = HidSetup.readFromFile(f);
-            if (loadedHs != null) {
-                try {
-                    setMyCurrentSetup(loadedHs);
-                    WekinatorInstance.getWekinatorInstance().setCurrentHidSetup(mySetup);
-                    mySetup.startHidRun();
-                    mySetup.startHidInit();
-                    // displayHidSettings();
-                    success = true;
-                } catch (Exception ex) {
-                    success = false;
-                    Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }
-
-        if (!success) {
-            labelStatus.setText("Could not load settings successfully.");
-            System.out.println("Could not succeed in loading settings");
-        } */
         boolean success = false;
         File file = Util.findLoadFile(HidSetup.getFileExtension(),
                 HidSetup.getFileTypeDescription(),
@@ -273,8 +248,8 @@ public class HidSetupForm extends javax.swing.JFrame {
            try {
                 setMyCurrentSetup(loadedHs);
                 WekinatorInstance.getWekinatorInstance().setCurrentHidSetup(mySetup);
-                 mySetup.startHidRun();
-                 mySetup.startHidInit();
+                // mySetup.startHidRun();
+                // mySetup.startHidInit();
                  success = true;
                  Util.setLastFile(HidSetup.getFileExtension(), file);
 

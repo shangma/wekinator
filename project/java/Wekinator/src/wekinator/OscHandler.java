@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import wekinator.FeatureManager.*;
 
 /**
  * //TODO here: fix  handling of backup, and of HID setup.
@@ -367,7 +366,7 @@ public class OscHandler {
         sender.send(msg);
     }
 
-    void setUseAudio(boolean useAudio, boolean useFFT, boolean useRMS, boolean useCentroid, boolean useRolloff, boolean useFlux, int fftSize, int windowSize, WindowTypes windowType, int audioExtractionRate) throws IOException {
+    void setUseAudio(boolean useAudio, boolean useFFT, boolean useRMS, boolean useCentroid, boolean useRolloff, boolean useFlux, int fftSize, int windowSize, FeatureConfiguration.WindowType windowType, int audioExtractionRate) throws IOException {
         System.out.println("Setting use audio: " + useAudio);
         Object[] o = new Object[10];
         o[0] = new Integer(useAudio ? 1 : 0);
@@ -378,9 +377,9 @@ public class OscHandler {
         o[5] = new Integer(useFlux ? 1 : 0);
         o[6] = new Integer(fftSize);
         o[7] = new Integer(windowSize);
-        if (windowType == WindowTypes.Hamming) {
+        if (windowType == FeatureConfiguration.WindowType.HAMMING) {
             o[8] = new Integer(3);
-        } else if (windowType == WindowTypes.Hann) {
+        } else if (windowType == FeatureConfiguration.WindowType.HANN) {
             o[8] = new Integer(2);
         } else {
             o[8] = new Integer(0);
@@ -844,7 +843,6 @@ public class OscHandler {
         OSCListener listener = new OSCListener() {
 
             public void acceptMessage(java.util.Date time, OSCMessage message) {
-                 System.out.println("Feature received!");
                 Object[] o = message.getArguments();
                 double d[]  = new double[o.length];
                 for (int i = 0; i < o.length; i++) {
@@ -945,25 +943,6 @@ public class OscHandler {
         receiver.addListener(sendHidInitValuesString, listener);
     }
 
-    /* private void addHidSettingsNumsListener() {
-    OSCListener listener = new OSCListener() {
-
-    public void acceptMessage(java.util.Date time, OSCMessage message) {
-    System.out.println("Received hid settings nums");
-    Object[] o = message.getArguments();
-    if (o.length == 3) {
-    Integer a = (Integer) o[0];
-    Integer b = (Integer) o[1];
-    Integer c = (Integer) o[2];
-    WekinatorInstance.getWekinatorInstance().getCurrentHidSetup().receivedHidSettingsNums(a, b, c);
-    } else {
-    System.out.println("Wrong number of nums received");
-    }
-    }
-    };
-    receiver.addListener(hidSettingsNumsString, listener);
-
-    } */
     private void addHidSettingsAllListener() {
         OSCListener listener = new OSCListener() {
 
