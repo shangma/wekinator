@@ -648,7 +648,7 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
 
         setFeatureConfigurationPanelEnabled(isConnected);
         if (!isConnected) {
-            setLearningSystemConfigurationPanelEnabled(false);
+          //  setLearningSystemConfigurationPanelEnabled(false);
         //   setTrainRunPanelEnabled(false);
         }
 
@@ -721,12 +721,16 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
     }
 
     private void updateGUIforChuckSystem() {
-        setLearningSystemConfigurationPanelEnabled(ChuckSystem.getChuckSystem().getState() == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID);
+      //  setLearningSystemConfigurationPanelEnabled(ChuckSystem.getChuckSystem().getState() == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID); //TODO ABC
+            setLearningSystemConfigurationPanelEnabled(true);
     }
 
     private void setFeatureConfigurationPanelEnabled(boolean enabled) {
-        panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelTabFeatureConfiguration), enabled);
+        //panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelTabFeatureConfiguration), enabled);
+         panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelTabFeatureConfiguration), true);
+
     }
+
 
     private void setLearningSystemConfigurationPanelEnabled(boolean enabled) {
         panelMainTabs.setEnabledAt(panelMainTabs.indexOfComponent(panelTabLearningSystemConfiguration), enabled);

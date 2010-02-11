@@ -565,7 +565,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
 
         boolean areEqual = FeatureConfiguration.equal(featureConfiguration, WekinatorInstance.getWekinatorInstance().getFeatureConfiguration());
 
-        if (!areEqual) {
+        //if (!areEqual) { //TODO: put this check back in; make sure appropriate panels still visible when they are equal and we don't change.
 
             if (WekinatorInstance.getWekinatorInstance().getFeatureConfiguration() != null) {
                 int lResponse = JOptionPane.showConfirmDialog(this, "Are you sure you want to change your feature configuration?\n" + "This will destroy any existing trained models...", "", JOptionPane.YES_NO_OPTION);
@@ -577,7 +577,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
                 WekinatorInstance.getWekinatorInstance().setFeatureConfiguration(featureConfiguration);
                 labelFeatureStatus.setText("Feature configuration set; using " + featureConfiguration.getNumFeaturesEnabled() + " features.");
             
-        }
+       // }
     }//GEN-LAST:event_buttonGoActionPerformed
 
     private void buttonAddMetaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAddMetaActionPerformed
