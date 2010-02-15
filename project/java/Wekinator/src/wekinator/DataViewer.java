@@ -10,20 +10,24 @@
  */
 package wekinator;
 
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JFileChooser;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.table.AbstractTableModel;
-import wekinator.util.OverwritePromptingFileChooser;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 
 /**
  *
@@ -108,7 +112,7 @@ public class DataViewer extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(scrollTable, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 604, Short.MAX_VALUE)
+            .add(scrollTable, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 628, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(buttonDelete)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -151,6 +155,7 @@ public class DataViewer extends javax.swing.JFrame {
 }//GEN-LAST:event_buttonAddActionPerformed
 
     private void buttonListenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonListenActionPerformed
+
         if (table.getSelectedRow() == -1) {
             return;
         }
@@ -256,9 +261,13 @@ public class DataViewer extends javax.swing.JFrame {
 
                 boolean isDiscrete[] = {true, false};
                 int numVals[] = {3, 3};
-                String featureNames[] = {"F1", "f2", "F3", "f4", "f5"};
+                //String featureNames[] = {"F1", "f2", "F3", "f4", "f5"};
+                String featureNames[] = new String[100];
+                for (int i = 0; i < featureNames.length; i++) {
+                    featureNames[i] = "F" + i;
+                }
                 String paramNames[] = {"P1", "p2"};
-                SimpleDataset s = new SimpleDataset(5, 2, isDiscrete, numVals, featureNames, paramNames);
+                SimpleDataset s = new SimpleDataset(featureNames.length, 2, isDiscrete, numVals, featureNames, paramNames);
 
 
                 new DataViewer(s).setVisible(true);
@@ -309,8 +318,32 @@ public class DataViewer extends javax.swing.JFrame {
     private void populateTable(SimpleDataset data) {
         model = new DataTableModel(data);
         table = new JTable(model);
+        setTableColumns();
+
+
+        //table.setPreferredScrollableViewportSize(new Dimension(1000,1000));
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         scrollTable.setViewportView(table);
 
+        table.repaint();
+        //scrollTable.setVie
+        //scrollTable.repaint();
+
+    }
+
+    private void setTableColumns() {
+       // table.getColumnModel().get
+       table.getColumnModel().getColumn(0).setPreferredWidth(30);
+       table.getColumnModel().getColumn(1).setPreferredWidth(40);
+         table.getColumnModel().getColumn(2).setPreferredWidth(100); 
+        for (int i = 3; i < table.getColumnCount(); i++) {
+            TableColumn c = table.getColumnModel().getColumn(i);
+            c.setPreferredWidth(50);
+           c.setMinWidth(20);
+        
+            c.setResizable(true);
+
+        }
     }
 }
 
@@ -575,5 +608,9 @@ class DataTableModel extends AbstractTableModel {
         }
         return f;
     }
+
+    
+
+
 }
 

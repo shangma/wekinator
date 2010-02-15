@@ -33,8 +33,6 @@ public class WekinatorInstance {
     private WekinatorSettings settings = null;
     protected HidSetup currentHidSetup;
     private static final String settingsSaveFile = "wekinator.usersettings";
-    protected FeatureManager featureManager;
-    public static final String PROP_FEATUREMANAGER = "featureManager";
     public static final String PROP_CURRENTHIDSETUP = "currentHidSetup";
     private LinkedList<Handler> handlers;
     private static final String chuckConfigSaveFile = "lastChuckConfig";
@@ -298,7 +296,7 @@ public class WekinatorInstance {
 
         ChuckRunner.setConfiguration(configuration);
 
-        featureManager = new FeatureManager();
+       // featureManager = new FeatureManager();
 
         handlers = new LinkedList<Handler>();
         try {

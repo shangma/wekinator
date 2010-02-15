@@ -27,7 +27,6 @@ public class WekinatorLearningManager {
 
     private ChangeEvent changeEvent = null;
 
-
     private static WekinatorLearningManager ref = null;
     protected double[] params;
     protected boolean[] mask;
@@ -108,8 +107,6 @@ public class WekinatorLearningManager {
         }
     };
 
-
-
     public enum InitializationState {
         NOT_INITIALIZED,
         INITIALIZED
@@ -155,56 +152,6 @@ public class WekinatorLearningManager {
     }
 
 
-    /**
-     * Get the value of outputs
-     *
-     * @return the value of outputs
-     */
-    /*public double[] getOutputs() {
-        return outputs;
-    } */
-
-    /**
-     * Set the value of outputs
-     *
-     * @param outputs new value of outputs
-     */
-/*    public void setOutputs(double[] outputs) {
-        synchronized(this) {
-            double[] oldparams = this.outputs;
-            this.outputs = outputs;
-            for (int i = 0; i < outputs.length; i++) {
-                System.out.print(outputs[i] + " ");
-            }
-            System.out.println("");
-            double[] newValue = outputs;
-            System.out.println("Test: " + (oldparams != null && newValue != null && oldparams.equals(newValue)));
-            propertyChangeSupport.firePropertyChange(PROP_OUTPUTS, oldparams, outputs);
-          //  propertyChangeSupport.fire
-        }
-    } */
-
-    /**
-     * Get the value of outputs at specified index
-     *
-     * @param index
-     * @return the value of outputs at specified index
-     */
-  /*  public double getOutputs(int index) {
-        return this.outputs[index];
-    } */
-
-    /**
-     * Set the value of outputs at specified index.
-     *
-     * @param index
-     * @param newOutputs new value of outputs at specified index
-     */
-  /*  protected void setOutputs(int index, double newOutputs) {
-        double oldOutputs = this.outputs[index];
-        this.outputs[index] = newOutputs;
-        propertyChangeSupport.fireIndexedPropertyChange(PROP_OUTPUTS, index, oldOutputs, newOutputs);
-    } */
 
     /**
      * Get the value of mode
@@ -240,7 +187,6 @@ public class WekinatorLearningManager {
             params = new double[learningSystem.getNumParams()];
         }
 
-        //OscHandler.getOscHandler().initiateRecord();
         FeatureExtractionController.startExtracting();
         setMode(Mode.DATASET_CREATION);
         }
@@ -287,10 +233,6 @@ public class WekinatorLearningManager {
         setMode(Mode.TRAINING);
         learningSystem.trainInBackground(paramNum);
     }
-
-
- //   public void stopEvaluating()
-
 
     public void updateFeatures(double[] features) {
         if (mode == Mode.RUNNING) {
@@ -415,10 +357,6 @@ public class WekinatorLearningManager {
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventPostProcessor(processor);
     }
 
-    static Object getWekinatorManager() {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
     @Override
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
@@ -433,7 +371,6 @@ public class WekinatorLearningManager {
                 setMode(Mode.NONE);
             }
         }
-
     }
 
     protected void updateMyInitState() {
@@ -444,7 +381,6 @@ public class WekinatorLearningManager {
             setInitState(InitializationState.INITIALIZED);
         }   
     }
-
  
     protected void fireOutputChanged() {
         Object[] listeners = listenerList.getListenerList();
@@ -457,5 +393,4 @@ public class WekinatorLearningManager {
             }
         }
     }
-
 }

@@ -22,7 +22,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="scrollTable" alignment="0" pref="604" max="32767" attributes="0"/>
+          <Component id="scrollTable" alignment="0" pref="628" max="32767" attributes="0"/>
           <Group type="102" alignment="1" attributes="0">
               <Component id="buttonDelete" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>

@@ -280,7 +280,9 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
         if (s != null) {
             //TODO: Ultimately ensure no null problems here! (e.g. null featureconfiguration)
             if (s.getNumFeatures() != WekinatorInstance.getWekinatorInstance().getFeatureConfiguration().getNumFeaturesEnabled()) {
-                JOptionPane.showMessageDialog(this, "The number of features of this dataset does not match the number of features currently being extracted.", "Dataset not usable", JOptionPane.ERROR_MESSAGE);
+               // JOptionPane.showMessageDialog(this, "The number of features of this dataset does not match the number of features currently being extracted.", "Dataset not usable", JOptionPane.ERROR_MESSAGE);
+                
+
                 return;
             }
 
