@@ -7,6 +7,12 @@ package wekinator;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,25 +27,30 @@ import wekinator.util.SerializedFileUtil;
 public class FeatureConfiguration implements Serializable {
 
     public static boolean equal(FeatureConfiguration fc1, FeatureConfiguration fc2) {
-        if (fc1 == fc2)
+        if (fc1 == fc2) {
             return true;
+        }
 
-        if (fc1 == null || fc2 == null)
+        if (fc1 == null || fc2 == null) {
             return false;
+        }
 
         String[] s1 = fc1.getAllEnabledFeatureNames();
         String[] s2 = fc2.getAllEnabledFeatureNames();
-        if (s1.length != s2.length)
+        if (s1.length != s2.length) {
             return false;
+        }
 
         for (int i = 0; i < s1.length; i++) {
-            if (! s1[i].equals(s2[i]))
+            if (!s1[i].equals(s2[i])) {
                 return false;
+            }
         }
         return true;
     }
 
     public enum WindowType {
+
         HAMMING,
         HANN,
         RECTANGULAR
@@ -447,7 +458,7 @@ public class FeatureConfiguration implements Serializable {
      * @return the value of fftSize
      */
     public int getFftSize() {
-        return features.get(FFT).getDimensionality()*2;
+        return features.get(FFT).getDimensionality() * 2;
     }
 
     /**
@@ -456,7 +467,7 @@ public class FeatureConfiguration implements Serializable {
      * @param fftSize new value of fftSize
      */
     public void setFftSize(int fftSize) {
-        features.get(FFT).setDimensionality(fftSize/2);
+        features.get(FFT).setDimensionality(fftSize / 2);
     }
 
     /**
@@ -615,29 +626,50 @@ public class FeatureConfiguration implements Serializable {
         committedNumBaseFeatures = getNumBaseFeaturesEnabled();
     }
 
-    public static FeatureConfiguration readFromFile(File f) throws Exception {
+    public static FeatureConfiguration readFromFile(File f) throws FileNotFoundException, IOException, ClassNotFoundException {
+                  FileInputStream fin = new FileInputStream(f);
+        ObjectInputStream in = new ObjectInputStream(fin);
+        FeatureConfiguration fc = FeatureConfiguration.readFromInputStream(in);
+
+         //hack: ABC
+        if (fc.isUseOtherHid()) {
+            HidSetup h = fc.getHidSetup();
+            WekinatorInstance.getWekinatorInstance().setCurrentHidSetup(h); //TODO: fix this; it sets up some background communication that happens immediately. Ideally would wait for this before "go" finishes.
+        }
+        in.close();
+        fin.close();
+        return fc;
+
+    }
+
+
+    public static FeatureConfiguration readFromFileOld(File f) throws Exception {
         FeatureConfiguration fc = (FeatureConfiguration) SerializedFileUtil.readFromFile(f);
         fc.committedNumTotalFeatures = fc.getNumFeaturesEnabled();
         fc.committedNumBaseFeatures = fc.getNumBaseFeaturesEnabled();
 
-        //hack: ABC
         if (fc.isUseOtherHid()) {
-            
-                    HidSetup h = fc.getHidSetup();
-                    WekinatorInstance.getWekinatorInstance().setCurrentHidSetup(h); //TODO: Do I really want to do this? Or wait until I "apply" this feature set?
-
-
-            }
+            HidSetup h = fc.getHidSetup();
+            WekinatorInstance.getWekinatorInstance().setCurrentHidSetup(h); //TODO: Do I really want to do this? Or wait until I "apply" this feature set?
+        }
         return fc;
     }
 
-    void writeToFile(File file) throws Exception {
+    void writeToFileOld(File file) throws Exception {
         SerializedFileUtil.writeToFile(file, this);
+    }
+
+    public void writeToFile(File file) throws IOException {
+        FileOutputStream fout = new FileOutputStream(file);
+        ObjectOutputStream out = new ObjectOutputStream(fout);
+        this.writeToOutputStreamNew(out);
+        out.close();
+        fout.close();
     }
 
     public String[] getEnabledBaseFeatureClassNames() {
         //Problem: Could result in different order every time!
-       // String s[] = new String[getNumBaseFeaturesEnabled()]; //Problem: is base feature # dimensons or # features?
+        // String s[] = new String[getNumBaseFeaturesEnabled()]; //Problem: is base feature # dimensons or # features?
         LinkedList<String> s = new LinkedList<String>();
 
         int i = 0;
@@ -685,7 +717,7 @@ public class FeatureConfiguration implements Serializable {
             if (l != null) {
                 if (l.size() == m.size()) {
 
-                  //  m = l;
+                    //  m = l;
                     features.get(fname).metaFeatures = l;
                 } else {
                     for (int i = 0; (i < m.size() && i < l.size()); i++) {
@@ -720,7 +752,7 @@ public class FeatureConfiguration implements Serializable {
     }
 
     public String[] getAllEnabledFeatureNames() {
-        if (getNumMetaFeaturesEnabled() ==0) {
+        if (getNumMetaFeaturesEnabled() == 0) {
             return getBaseEnabledFeatureNames();
         }
 
@@ -809,6 +841,19 @@ public class FeatureConfiguration implements Serializable {
         public int getDimensionality() {
             return dimensionality;
         }
+
+        public void writeToOutputStream(ObjectOutputStream o) throws IOException {
+            o.writeObject(name);
+            o.writeBoolean(enabled);
+            o.writeInt(getDimensionality());
+            for (int i = 0; i < metaFeatures.size(); i++) {
+                LinkedList<MetaFeature> list = metaFeatures.get(i);
+                o.writeInt(list.size());
+                for (MetaFeature f : list) {
+                    o.writeObject(f.getType());
+                }
+            }
+        }
     }
 
     protected class HidFeature extends Feature {
@@ -825,5 +870,149 @@ public class FeatureConfiguration implements Serializable {
 
             return hidSetup.getNumFeaturesUsed();
         }
+    }
+
+
+
+    public void writeToOutputStreamNew(ObjectOutputStream o) throws IOException {
+        //each feature
+        o.writeInt(features.size());
+
+        for (Feature f : features.values()) {
+          o.writeObject(f.name);
+          o.writeBoolean(f.enabled);
+          o.writeInt(f.getDimensionality());
+
+            if (f.enabled) {
+                for (int i = 0; i < f.metaFeatures.size(); i++) {
+                    LinkedList<MetaFeature> list = f.metaFeatures.get(i);
+                    o.writeInt(list.size());
+                    for (MetaFeature m : list) {
+                        o.writeObject(m.getType());
+                    }
+                }
+            }
+        }
+        o.writeInt(motionSensorExtractionRate);
+        o.writeInt(fftWindowSize);
+       // o.writeObject(windowType);
+        switch (windowType) {
+            case HAMMING:
+                o.writeInt(1);
+                break;
+            case HANN:
+                o.writeInt(2);
+                break;
+            case RECTANGULAR:
+                o.writeInt(3);
+                break;
+            default:
+                o.writeInt(-1);
+        }
+
+        o.writeInt(audioExtractionRate);
+       // o.writeObject(processingExtractorType);
+        switch (processingExtractorType) {
+            case COLOR_6:
+                o.writeInt(1);
+                break;
+            case DOWNSAMPLED_100:
+                o.writeInt(2);
+                break;
+            default:
+                o.writeInt(-1);
+                break;
+        }
+
+        if (hidSetup == null) {
+            o.writeInt(0);
+        } else {
+            o.writeInt(1);
+            hidSetup.writeToOutputStream(o);
+        }
+
+     }
+
+    public static FeatureConfiguration readFromInputStream(ObjectInputStream i) throws IOException, ClassNotFoundException {
+        FeatureConfiguration fc = new FeatureConfiguration();
+        int numFeats = i.readInt();
+        for (int n = 0; n < numFeats; n++) {
+            String name = (String)i.readObject();
+            boolean enabled = i.readBoolean();
+            int dim = i.readInt();
+            Feature feat = fc.features.get(name);
+            if (enabled) {
+                if (feat != null) {
+                    feat.enabled = true;
+                    feat.setDimensionality(dim); //updates metaFeatures arraylist
+
+                    for (int d = 0; d < dim; d++) {
+                        LinkedList<MetaFeature> list = new LinkedList<MetaFeature>();
+                        int numMeta = i.readInt();
+                        for (int m = 0; m < numMeta; m++) {
+                            MetaFeature.Type t = (MetaFeature.Type) i.readObject();
+                            MetaFeature mf = MetaFeature.createForType(t, feat);
+                            list.add(mf);
+                        }
+                        feat.metaFeatures.set(d, list);
+                    }
+
+                } else {
+                    throw new IOException("Not sure what to do with feature " + name );
+                }
+            } else {
+                if (feat != null) {
+                    feat.enabled = false;
+                    feat.setDimensionality(dim);
+                }
+            }
+        }
+
+        int x = i.readInt();
+        fc.setMotionSensorExtractionRate(x);
+        x = i.readInt();
+        fc.setFftWindowSize(x);
+       // WindowType type = (WindowType)i.readObject();
+        x = i.readInt();
+        switch (x) {
+            case 1:
+                fc.setWindowType(WindowType.HAMMING);
+                break;
+            case 2:
+                fc.setWindowType(WindowType.HANN);
+                break;
+            case 3:
+                fc.setWindowType(WindowType.RECTANGULAR);
+                        break;
+            default:
+                System.out.println("Info: bad window type; using hamming");
+                fc.setWindowType(WindowType.HAMMING);
+
+        }
+
+        x = i.readInt();
+        fc.setAudioExtractionRate(x);
+        x = i.readInt();
+        switch (x) {
+            case 1:
+                fc.setProcessingExtractorType(ProcessingExractorType.COLOR_6);
+                break;
+            case 2:
+                fc.setProcessingExtractorType(ProcessingExractorType.DOWNSAMPLED_100);
+                break;
+            default:
+                System.out.println("Info: bad processing type; using color6");
+                fc.setProcessingExtractorType(ProcessingExractorType.COLOR_6);
+        }
+        x = i.readInt();
+        if (x == 0) {
+          //  fc.setHidSetup(null);
+            //do nothing
+        } else {
+            HidSetup h = HidSetup.readFromInputStream(i);
+            fc.setHidSetup(h);
+        }
+
+        return fc;
     }
 }

@@ -14,6 +14,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -243,7 +244,15 @@ public class HidSetupForm extends javax.swing.JFrame {
             return;
 
         HidSetup loadedHs = null;
-        loadedHs = HidSetup.readFromFile(file);
+        try {
+            loadedHs = HidSetup.readFromFile(file);
+        } catch (FileNotFoundException ex) {
+            System.out.println("Error: no such file found"); //todo; pop up box
+            Logger.getLogger(HidSetupForm.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            System.out.println("Error: can't read HidSetup from this file");
+            Logger.getLogger(HidSetupForm.class.getName()).log(Level.SEVERE, null, ex);
+         }
         if (loadedHs != null) {
            try {
                 setMyCurrentSetup(loadedHs);

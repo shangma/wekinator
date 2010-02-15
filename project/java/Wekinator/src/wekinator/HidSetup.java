@@ -31,11 +31,7 @@ public class HidSetup implements Serializable {
     private int[] initButtons = new int[0];
     private int[] axesMask = new int[0];
     private int[] hatsMask = new int[0];
-    private int[] buttonsMask = new int[0];
-
-    public HidSetup() {
-        setHidState(HidState.NONE);
-    }
+    private int[] buttonsMask = new int[0]; 
     
     public enum HidState {
 
@@ -48,6 +44,10 @@ public class HidSetup implements Serializable {
     public static final String PROP_HIDSTATE = "hidState";
     protected boolean usable = false;
     public static final String PROP_USABLE = "usable";
+
+    public HidSetup() {
+        setHidState(HidState.NONE);
+    }
 
     public static String getFileExtension() {
         return "whid";
@@ -69,7 +69,7 @@ public class HidSetup implements Serializable {
      * @return the value of usable
      */
     public boolean isUsable() {
-        return usable;
+        return usable; //must set this!!
     }
 
     /**
@@ -232,7 +232,15 @@ public class HidSetup implements Serializable {
         OscHandler.getOscHandler().startHidRun();
     }
 
-    public boolean writeToFile(File f) {
+    public void writeToFile(File f) throws IOException {
+        FileOutputStream fout = new FileOutputStream(f);
+        ObjectOutputStream out = new ObjectOutputStream(fout);
+        this.writeToOutputStream(out);
+        out.close();
+        fout.close();
+    }
+
+    public boolean writeToFileOld(File f) {
         FileOutputStream outstream = null;
         ObjectOutputStream objout = null;
         boolean success = false;
@@ -260,7 +268,16 @@ public class HidSetup implements Serializable {
         return success;
     }
 
-    public static HidSetup readFromFile(File f) {
+    public static HidSetup readFromFile(File f) throws FileNotFoundException, IOException, ClassNotFoundException {
+      FileInputStream fin = new FileInputStream(f);
+        ObjectInputStream in = new ObjectInputStream(fin);
+        HidSetup h = readFromInputStream(in);
+        in.close();
+        fin.close();
+        return h;
+    }
+
+    public static HidSetup readFromFileOld(File f) {
         FileInputStream instream = null;
         ObjectInputStream objin = null;
         HidSetup setup = null;
@@ -449,4 +466,33 @@ public class HidSetup implements Serializable {
             return "No HID set up.";
         }
     }
+
+    public void writeToOutputStream(ObjectOutputStream o) throws IOException {
+        o.writeInt(numAxes);
+        o.writeInt(numHats);
+        o.writeInt(numButtons);
+        o.writeObject(initAxes);
+        o.writeObject(initHats);
+        o.writeObject(initButtons);
+        o.writeObject(axesMask);
+        o.writeObject(hatsMask);
+        o.writeObject(buttonsMask);
+        o.writeBoolean(usable);
+    }
+
+    public static HidSetup readFromInputStream(ObjectInputStream i) throws IOException, ClassNotFoundException {
+       HidSetup h = new HidSetup();
+       h.numAxes = i.readInt();
+       h.numHats = i.readInt();
+       h.numButtons = i.readInt();
+       h.initAxes = (float[]) i.readObject();
+       h.initHats = (int[]) i.readObject();
+       h.initButtons = (int[]) i.readObject();
+       h.axesMask = (int[]) i.readObject();
+       h.hatsMask = (int[]) i.readObject();
+       h.buttonsMask = (int[]) i.readObject();
+       h.setUsable(i.readBoolean());
+       return h;
+    }
+
 }
