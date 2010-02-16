@@ -627,7 +627,7 @@ public class FeatureConfiguration implements Serializable {
     }
 
     public static FeatureConfiguration readFromFile(File f) throws FileNotFoundException, IOException, ClassNotFoundException {
-                  FileInputStream fin = new FileInputStream(f);
+        FileInputStream fin = new FileInputStream(f);
         ObjectInputStream in = new ObjectInputStream(fin);
         FeatureConfiguration fc = FeatureConfiguration.readFromInputStream(in);
 
@@ -1012,6 +1012,8 @@ public class FeatureConfiguration implements Serializable {
             HidSetup h = HidSetup.readFromInputStream(i);
             fc.setHidSetup(h);
         }
+        fc.committedNumTotalFeatures = fc.getNumFeaturesEnabled();
+        fc.committedNumBaseFeatures = fc.getNumBaseFeaturesEnabled();
 
         return fc;
     }

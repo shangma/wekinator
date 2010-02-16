@@ -609,8 +609,11 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
                 if (WekinatorRunner.getFeatureFile() != null) {
                     try {
                         FeatureConfiguration fc = FeatureConfiguration.readFromFile(WekinatorRunner.getFeatureFile());
-                        WekinatorInstance.getWekinatorInstance().setFeatureConfiguration(fc);
                         featureConfigurationPanel1.setFormFromConfiguration(fc);
+
+                       // Thread.sleep(5000);
+                      //  fc.validate(); //does this do it? ABC
+                        WekinatorInstance.getWekinatorInstance().setFeatureConfiguration(fc);
                     } catch (Exception ex) {
                         // Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, "Unable to load feature configuration from file");
                         Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, "Unable to load feature configuration from file");
