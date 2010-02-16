@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 /**
  * //TODO here: fix  handling of backup, and of HID setup.
@@ -192,7 +193,12 @@ public class OscHandler {
         setReceivePort(rPort);
         setSendPort(sPort);
 
+        try {
         receiver = new OSCPortIn(receivePort);
+        } catch (Exception ex) {
+           JOptionPane.showMessageDialog(null, "Could not bind to port " + receivePort + ". Please quit all other instances of Wekiantor or change the receive port.", "Could not start listening", JOptionPane.ERROR_MESSAGE);
+           return;
+        }
         //  System.out.println("Java listening on " + receivePort);
         sender = new OSCPortOut(InetAddress.getLocalHost(), sendPort);
         // System.out.println("Java sending on " + sendPort);

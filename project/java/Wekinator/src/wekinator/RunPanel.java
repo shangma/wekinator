@@ -161,9 +161,11 @@ public class RunPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton11ActionPerformed
-        if (learningSystem != null) {
-            learningSystem.getScore().addParams(WekinatorLearningManager.getInstance().getOutputs(), 1.0);
+        if (WekinatorInstance.getWekinatorInstance().getPlayalongScore() == null) {
+            WekinatorInstance.getWekinatorInstance().setPlayalongScore(new PlayalongScore(WekinatorInstance.getWekinatorInstance().getLearningSystem().getNumParams()));
         }
+            WekinatorInstance.getWekinatorInstance().getPlayalongScore().addParams(WekinatorLearningManager.getInstance().getOutputs(), 1.0);
+        
 }//GEN-LAST:event_jButton11ActionPerformed
 
     private void buttonRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRunActionPerformed

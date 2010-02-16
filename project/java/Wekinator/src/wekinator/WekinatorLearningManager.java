@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package wekinator;
 
 import java.awt.KeyEventPostProcessor;
@@ -23,24 +22,22 @@ import javax.swing.event.EventListenerList;
  * @author rebecca
  */
 public class WekinatorLearningManager {
-
-
+    protected PropertyChangeListener learningSystemPropertyChange = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            learningSystemPropertyChanged(evt);
+        }
+    };
     private ChangeEvent changeEvent = null;
-
     private static WekinatorLearningManager ref = null;
     protected double[] params;
     protected boolean[] mask;
-    protected LearningSystem learningSystem = null;
-    public static final String PROP_LEARNINGSYSTEM = "learningSystem";
-
+    //   protected LearningSystem learningSystem = null;
+    // public static final String PROP_LEARNINGSYSTEM = "learningSystem";
     public static final String PROP_PARAMS = "params";
-
-    
-
     protected double[] outputs = null;
+    protected EventListenerList listenerList = new EventListenerList();
 
-       protected EventListenerList listenerList = new EventListenerList();
-       public void addOutputChangeListener(ChangeListener l) {
+    public void addOutputChangeListener(ChangeListener l) {
         listenerList.add(ChangeListener.class, l);
     }
 
@@ -64,7 +61,7 @@ public class WekinatorLearningManager {
      */
     public void setOutputs(double[] outputs) {
         this.outputs = outputs;
-       fireOutputChanged();
+        fireOutputChanged();
     }
 
     /**
@@ -88,7 +85,6 @@ public class WekinatorLearningManager {
         fireOutputChanged();
     }
 
-
     /**
      * Set the value of p2
      *
@@ -100,32 +96,24 @@ public class WekinatorLearningManager {
         propertyChangeSupport.firePropertyChange(PROP_PARAMS, oldparams, params);
     }
 
-    protected PropertyChangeListener learningSystemPropertyChange = new PropertyChangeListener() {
 
-        public void propertyChange(PropertyChangeEvent evt) {
-            learningSystemPropertyChanged(evt);
-        }
-    };
-
-    public enum InitializationState {
-        NOT_INITIALIZED,
-        INITIALIZED
+    /*    public enum InitializationState {
+    NOT_INITIALIZED,
+    INITIALIZED
     };
     protected InitializationState initState = InitializationState.NOT_INITIALIZED;
-    public static final String PROP_INITSTATE = "initState";
-
+    public static final String PROP_INITSTATE = "initState"; */
     public enum Mode {
+
         DATASET_CREATION,
         TRAINING,
         RUNNING,
         NONE
     };
-
     protected Mode mode = Mode.NONE;
     public static final String PROP_MODE = "mode";
-  //  protected double[] outputs = null;
-  //  public static final String PROP_OUTPUTS = "outputs";
-
+    //  protected double[] outputs = null;
+    //  public static final String PROP_OUTPUTS = "outputs";
 
     /**
      * Get the value of params
@@ -138,9 +126,11 @@ public class WekinatorLearningManager {
 
     public void setParamsAndMask(double[] params, boolean[] mask) {
         setParams(params);
-        learningSystem.setParamMask(mask);
+        //Need to check if null?
+        WekinatorInstance.getWekinatorInstance().getLearningSystem().setParamMask(mask);
         this.mask = mask;
     }
+
     /**
      * Get the value of params at specified index
      *
@@ -150,8 +140,6 @@ public class WekinatorLearningManager {
     public double getParams(int index) {
         return this.params[index];
     }
-
-
 
     /**
      * Get the value of mode
@@ -174,9 +162,15 @@ public class WekinatorLearningManager {
     }
 
     public void startDatasetCreation() {
-        if (initState == InitializationState.INITIALIZED) {
-        if (mode == Mode.DATASET_CREATION)
+        LearningSystem ls = WekinatorInstance.getWekinatorInstance().getLearningSystem();
+        if (ls == null || ls.getInitializationState() != LearningSystem.LearningAlgorithmsInitializationState.ALL_INITIALIZED) {
             return;
+        }
+
+        //if (initState == InitializationState.INITIALIZED) {
+        if (mode == Mode.DATASET_CREATION) {
+            return;
+        }
 
         if (mode == Mode.TRAINING) {
             stopTraining();
@@ -184,37 +178,39 @@ public class WekinatorLearningManager {
         //if mode = running, don't stop extracting features, just change what I do with them
 
         if (params == null) {
-            params = new double[learningSystem.getNumParams()];
+            params = new double[WekinatorInstance.getWekinatorInstance().getLearningSystem().getNumParams()];
         }
 
         FeatureExtractionController.startExtracting();
         setMode(Mode.DATASET_CREATION);
-        }
+
     }
 
     public void stopRunning() {
-       // OscHandler.getOscHandler().stopExtractingFeatures();
+        // OscHandler.getOscHandler().stopExtractingFeatures();
         FeatureExtractionController.stopExtracting();
         setMode(Mode.NONE);
     }
 
-    public void startRunning()  {
+    //todo; stuck in training mode here!
+    public void startRunning() {
         if (mode == Mode.TRAINING) {
             return;
         }
         if (mode == Mode.DATASET_CREATION) {
             stopDatasetCreation();
         }
-       // OscHandler.getOscHandler().initiateRecord();
+        // OscHandler.getOscHandler().initiateRecord();
         FeatureExtractionController.startExtracting();
         setMode(Mode.RUNNING);
     }
 
-    public void stopDatasetCreation()  {
-        if (mode != Mode.DATASET_CREATION)
+    public void stopDatasetCreation() {
+        if (mode != Mode.DATASET_CREATION) {
             return;
+        }
 
-       // OscHandler.getOscHandler().stopExtractingFeatures();
+        // OscHandler.getOscHandler().stopExtractingFeatures();
         FeatureExtractionController.stopExtracting();
         setMode(Mode.NONE);
     }
@@ -226,84 +222,59 @@ public class WekinatorLearningManager {
 
     public void startTraining() {
         setMode(Mode.TRAINING);
-        learningSystem.trainInBackground();
+        WekinatorInstance.getWekinatorInstance().getLearningSystem().trainInBackground();
     }
 
     public void startTraining(int paramNum) {
         setMode(Mode.TRAINING);
-        learningSystem.trainInBackground(paramNum);
+        WekinatorInstance.getWekinatorInstance().getLearningSystem().trainInBackground(paramNum);
     }
 
     public void updateFeatures(double[] features) {
         if (mode == Mode.RUNNING) {
             try {
-               setOutputs(learningSystem.classify(features));
+                setOutputs(WekinatorInstance.getWekinatorInstance().getLearningSystem().classify(features));
 
                 //TODO RAF important TODO TODO TODO: issue of displaying output for dist features
-               OscHandler.getOscHandler().sendParamsToSynth(outputs);
+                OscHandler.getOscHandler().sendParamsToSynth(outputs);
 
             } catch (Exception ex) {
                 Logger.getLogger(WekinatorLearningManager.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else if (mode == Mode.DATASET_CREATION) {
-          
-              learningSystem.addToTraining(features, params);
-              
+
+            WekinatorInstance.getWekinatorInstance().getLearningSystem().addToTraining(features, params);
+
 
         }
     }
-
-    /**
-     * Get the value of initState
-     *
-     * @return the value of initState
-     */
-    public InitializationState getInitState() {
-        return initState;
-    }
-
-    /**
-     * Set the value of initState
-     *
-     * @param initState new value of initState
-     */
-    protected void setInitState(InitializationState initState) {
-        InitializationState oldInitState = this.initState;
-        this.initState = initState;
-        propertyChangeSupport.firePropertyChange(PROP_INITSTATE, oldInitState, initState);
-    }
-
-
-
- 
     /**
      * Get the value of learningSystem
      *
      * @return the value of learningSystem
      */
-    public LearningSystem getLearningSystem() {
-        return learningSystem;
-    }
-
+    /*  public LearningSystem getLearningSystem() {
+    return learningSystem;
+    } */
     /**
      * Set the value of learningSystem
      *
      * @param learningSystem new value of learningSystem
      */
-    public void setLearningSystem(LearningSystem learningSystem) {
+    /*  public void setLearningSystem(LearningSystem learningSystem) {
 
-        LearningSystem oldLearningSystem = this.learningSystem;
-        if (oldLearningSystem != null) {
-            oldLearningSystem.removePropertyChangeListener(learningSystemPropertyChange);
-        }
-        this.learningSystem = learningSystem;
-        if (learningSystem != null) {
-            learningSystem.addPropertyChangeListener(learningSystemPropertyChange);
-            
-        }
-        updateMyInitState();
-        propertyChangeSupport.firePropertyChange(PROP_LEARNINGSYSTEM, oldLearningSystem, learningSystem);
+    LearningSystem oldLearningSystem = this.learningSystem;
+    if (oldLearningSystem != null) {
+    oldLearningSystem.removePropertyChangeListener(learningSystemPropertyChange);
     }
+    this.learningSystem = learningSystem;
+    if (learningSystem != null) {
+    learningSystem.addPropertyChangeListener(learningSystemPropertyChange);
+
+    }
+    updateMyInitState();
+    propertyChangeSupport.firePropertyChange(PROP_LEARNINGSYSTEM, oldLearningSystem, learningSystem);
+    } */
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     /**
@@ -324,7 +295,6 @@ public class WekinatorLearningManager {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
-
     public static synchronized WekinatorLearningManager getInstance() {
         if (ref == null) {
             ref = new WekinatorLearningManager();
@@ -332,8 +302,26 @@ public class WekinatorLearningManager {
         return ref;
     }
 
+    private void wekinatorInstancePropChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(WekinatorInstance.PROP_LEARNINGSYSTEM)) {
+            updateLearningSystemListener((LearningSystem) evt.getOldValue(), (LearningSystem) evt.getNewValue());
+        }
+    }
+
+
+    //Problem here: WekinatorInstance and learning manager have constructors that reference each other!
     private WekinatorLearningManager() {
+        updateLearningSystemListener(null, WekinatorInstance.getWekinatorInstance().getLearningSystem());
+
+        WekinatorInstance.getWekinatorInstance().setWekinatorLearningManager(this);
+        WekinatorInstance.getWekinatorInstance().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                wekinatorInstancePropChange(evt);
+            }
+        });
+
         KeyEventPostProcessor processor = new KeyEventPostProcessor() {
+
             public boolean postProcessKeyEvent(KeyEvent e) {
                 if (e.getID() == KeyEvent.KEY_PRESSED) {
                     if (e.getKeyCode() == KeyEvent.VK_PAGE_DOWN) {
@@ -341,14 +329,13 @@ public class WekinatorLearningManager {
                         System.out.println("pg down start");
                         startDatasetCreation();
                     } else if (e.getKeyCode() == KeyEvent.VK_PAGE_UP) {
-                         //TODO in future: integrate playalong here.
-
+                        //TODO in future: integrate playalong here.
                     }
                 } else if (e.getID() == KeyEvent.KEY_RELEASED) {
                     if (e.getKeyCode() == KeyEvent.VK_PAGE_DOWN) {
-                                                System.out.println("pg down stop");
+                        System.out.println("pg down stop");
 
-                       stopDatasetCreation();
+                        stopDatasetCreation();
                     }
                 }
                 return true;
@@ -362,34 +349,37 @@ public class WekinatorLearningManager {
         throw new CloneNotSupportedException();
     }
 
+
+    //ABC: This is waht I need to fix: no longer listening for this on learning system
+    //Do I try to synch? Or just have learning system keep state? (probably latter)
     private void learningSystemPropertyChanged(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(LearningSystem.PROP_INITIALIZATIONSTATE)) {
-            updateMyInitState();
+            //   updateMyInitState();
         } else if (evt.getPropertyName().equals(LearningSystem.PROP_SYSTEMTRAININGSTATE)) {
-                   LearningSystem.LearningSystemTrainingState ts = learningSystem.getSystemTrainingState();
+            LearningSystem.LearningSystemTrainingState ts = WekinatorInstance.getWekinatorInstance().getLearningSystem().getSystemTrainingState();
             if (mode == Mode.TRAINING && ts != LearningSystem.LearningSystemTrainingState.TRAINING) {
                 setMode(Mode.NONE);
             }
         }
     }
 
-    protected void updateMyInitState() {
-        if (learningSystem != null
-                && learningSystem.getInitializationState() != LearningSystem.LearningAlgorithmsInitializationState.ALL_INITIALIZED) {
-            setInitState(InitializationState.NOT_INITIALIZED);
-        } else {
-            setInitState(InitializationState.INITIALIZED);
-        }   
+    private void updateLearningSystemListener(LearningSystem o, LearningSystem n) {
+        if (o != null) {
+            o.removePropertyChangeListener(learningSystemPropertyChange);
+        }
+        if (n != null) {
+            n.addPropertyChangeListener(learningSystemPropertyChange);
+        }
     }
- 
+
     protected void fireOutputChanged() {
         Object[] listeners = listenerList.getListenerList();
-        for (int i = listeners.length - 2; i >= 0; i -=2 ) {
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
             if (listeners[i] == ChangeListener.class) {
                 if (changeEvent == null) {
                     changeEvent = new ChangeEvent(this);
                 }
-                ((ChangeListener)listeners[i+1]).stateChanged(changeEvent);
+                ((ChangeListener) listeners[i + 1]).stateChanged(changeEvent);
             }
         }
     }

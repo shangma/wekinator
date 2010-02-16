@@ -26,8 +26,6 @@ import java.util.logging.SimpleFormatter;
  * @author rebecca
  */
 public class WekinatorInstance {
-    //Make singleton
-
     private static WekinatorInstance ref = null;
     protected ChuckConfiguration configuration = null;
     private WekinatorSettings settings = null;
@@ -38,6 +36,51 @@ public class WekinatorInstance {
     private static final String chuckConfigSaveFile = "lastChuckConfig";
     protected FeatureConfiguration featureConfiguration = null;
     public static final String PROP_FEATURECONFIGURATION = "featureConfiguration";
+    protected LearningSystem learningSystem = null;
+    public static final String PROP_LEARNINGSYSTEM = "learningSystem";
+    protected PlayalongScore playalongScore = null;
+    public static final String PROP_PLAYALONGSCORE = "playalongScore";
+
+    /**
+     * Get the value of playalongScore
+     *
+     * @return the value of playalongScore
+     */
+    public PlayalongScore getPlayalongScore() {
+        return playalongScore;
+    }
+
+    /**
+     * Set the value of playalongScore
+     *
+     * @param playalongScore new value of playalongScore
+     */
+    public void setPlayalongScore(PlayalongScore playalongScore) {
+        PlayalongScore oldPlayalongScore = this.playalongScore;
+        this.playalongScore = playalongScore;
+        propertyChangeSupport.firePropertyChange(PROP_PLAYALONGSCORE, oldPlayalongScore, playalongScore);
+    }
+
+
+    /**
+     * Get the value of learningSystem
+     *
+     * @return the value of learningSystem
+     */
+    public LearningSystem getLearningSystem() {
+        return learningSystem;
+    }
+
+    /**
+     * Set the value of learningSystem
+     *
+     * @param learningSystem new value of learningSystem
+     */
+    public void setLearningSystem(LearningSystem learningSystem) {
+        LearningSystem oldLearningSystem = this.learningSystem;
+        this.learningSystem = learningSystem;
+        propertyChangeSupport.firePropertyChange(PROP_LEARNINGSYSTEM, oldLearningSystem, learningSystem);
+    }
 
     /**
      * Get the value of featureConfiguration
@@ -320,14 +363,16 @@ public class WekinatorInstance {
             }
         });
 
-        WekinatorLearningManager.getInstance().addPropertyChangeListener(new PropertyChangeListener() {
 
+    // TODO RAF add check for valid model state
+    }
+
+    public void setWekinatorLearningManager(WekinatorLearningManager m) {
+       m.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 learningManagerPropertyChanged(evt);
             }
         });
-
-    // TODO RAF add check for valid model state
     }
 
     private void oscPropertyChanged(PropertyChangeEvent evt) {

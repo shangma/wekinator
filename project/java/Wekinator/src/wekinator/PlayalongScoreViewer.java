@@ -358,7 +358,7 @@ class ScoreTableModel extends AbstractTableModel {
             }
         });
         this.numParams = score.getNumParams();
-        LearningSystem ls = WekinatorLearningManager.getInstance().getLearningSystem();
+        LearningSystem ls = WekinatorInstance.getWekinatorInstance().getLearningSystem();
         SimpleDataset ds = null;
         if (ls != null) {
             ds = ls.getDataset();

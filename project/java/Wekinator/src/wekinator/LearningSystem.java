@@ -48,8 +48,7 @@ public class LearningSystem implements Serializable {
     protected int learnerToTrain = -1;
     protected int numFolds = 2;
     protected EvaluationType evaluationType = EvaluationType.CV;
-    //TODO: why is this score here?
-    protected PlayalongScore score = null;
+
     public static final String PROP_SCORE = "score";
     protected SimpleDataset dataset = null;
     protected int numParams = 0;
@@ -189,14 +188,12 @@ public class LearningSystem implements Serializable {
     }
 
     public enum LearningAlgorithmsInitializationState {
-
         NOT_INITIALIZED,
         SOME_INITIALIZED,
         ALL_INITIALIZED
     };
 
     public enum LearningSystemTrainingState {
-
         NOT_TRAINED,
         TRAINING,
         TRAINED,
@@ -204,7 +201,6 @@ public class LearningSystem implements Serializable {
     };
 
     public enum EvaluationState {
-
         NOT_EVALUATED,
         EVALUTATING,
         DONE_EVALUATING
@@ -217,7 +213,6 @@ public class LearningSystem implements Serializable {
     };
 
     protected enum EvaluationType {
-
         CV,
         TRAINING
     };
@@ -354,7 +349,7 @@ public class LearningSystem implements Serializable {
         synchronized (this) {
             //See http://www.j2ee.me/javase/6/docs/api/javax/swing/SwingWorker.html
             if (trainingWorker != null && trainingWorker.getState() != SwingWorker.StateValue.DONE) {
-                //TODO: Cancel?
+                //TODO: ability to Cancel?
                 //trainingWorker.cancel(true);
                 return;
             }
@@ -609,7 +604,7 @@ public class LearningSystem implements Serializable {
             paramMask[i] = true;
         }
 
-        setScore(new PlayalongScore(numParams));
+      //  setScore(new PlayalongScore(numParams));
     }
 
     /**
@@ -856,20 +851,20 @@ public class LearningSystem implements Serializable {
      *
      * @return the value of score
      */
-    public PlayalongScore getScore() {
+ /*   public PlayalongScore getScore() {
         return score;
-    }
+    } */
 
     /**
      * Set the value of score
      *
      * @param score new value of score
      */
-    public void setScore(PlayalongScore score) {
+/*    public void setScore(PlayalongScore score) {
         PlayalongScore oldScore = this.score;
         this.score = score;
         propertyChangeSupport.firePropertyChange(PROP_SCORE, oldScore, score);
-    }
+    } */
 
     public void addLearnerChangeListener(ChangeListener l) {
         listenerList.add(ChangeListener.class, l);
@@ -885,7 +880,6 @@ public class LearningSystem implements Serializable {
             if (listeners[i] == ChangeListener.class) {
                 if (changeEvent == null) {
                     changeEvent = new ChangeEvent(this);
-
                 }
                 ((ChangeListener) listeners[i + 1]).stateChanged(changeEvent);
             }

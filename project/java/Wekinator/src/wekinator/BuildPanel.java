@@ -15,6 +15,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.basic.BasicComboBoxUI.PropertyChangeHandler;
 import wekinator.WekinatorLearningManager.Mode;
 
 /**
@@ -31,12 +32,9 @@ public class BuildPanel extends javax.swing.JPanel {
     boolean isPlayalongChuck = false;
     LearningSystem learningSystem = null;
     PropertyChangeListener scoreChangeListener = new PropertyChangeListener() {
-
         public void propertyChange(PropertyChangeEvent evt) {
             scorePropertyChanged(evt);
         }
-
-
     };
 
     PropertyChangeListener lsDatasetChangeListener = new PropertyChangeListener() {
@@ -68,8 +66,33 @@ public class BuildPanel extends javax.swing.JPanel {
             public void propertyChange(PropertyChangeEvent evt) {
                 learningManagerChange(evt);
             }
-        });
+        }); 
+
+       WekinatorInstance.getWekinatorInstance().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                wekinatorInstanceChange(evt);
+            }
+        }); 
+
+        updateScoreListener(null, WekinatorInstance.getWekinatorInstance().getPlayalongScore());
     }
+
+    private void updateScoreListener(PlayalongScore o, PlayalongScore n) {
+        if (o != null) {
+            o.removePropertyChangeListener(scoreChangeListener);
+        }
+
+        if (n != null) {
+            n.addPropertyChangeListener(scoreChangeListener);
+        }
+
+    }
+        private void wekinatorInstanceChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(WekinatorInstance.PROP_PLAYALONGSCORE)) {
+                    updateScoreListener((PlayalongScore) evt.getOldValue(), (PlayalongScore)evt.getNewValue());
+                }
+            }
+
 
     void setLearningSystem(LearningSystem ls) {
         if (learningSystem == ls) {
@@ -86,7 +109,7 @@ public class BuildPanel extends javax.swing.JPanel {
                 dataset.removeChangeListener(datasetChangeListener);
             }
 
-           learningSystem.getScore().removePropertyChangeListener(scoreChangeListener);
+           // WekinatorInstance.getWekinatorInstance().getPlayalongScore().removePropertyChangeListener(scoreChangeListener);
            learningSystem.removePropertyChangeListener(lsDatasetChangeListener);
         }
 
@@ -107,7 +130,7 @@ public class BuildPanel extends javax.swing.JPanel {
             updateForDataset();
         }
 
-        learningSystem.getScore().addPropertyChangeListener(scoreChangeListener);
+     //   learningSystem.getScore().addPropertyChangeListener(scoreChangeListener);
         ls.addPropertyChangeListener(lsDatasetChangeListener);
 
         for (int i = 0; i < numParams; i++) {
@@ -403,9 +426,9 @@ public class BuildPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_comboSynthActionActionPerformed
 
     private void buttonAddClipboardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAddClipboardActionPerformed
-        if (learningSystem != null) {
-            learningSystem.getScore().addParams(getParams(), 1.0);
-        }
+        if (WekinatorInstance.getWekinatorInstance().getPlayalongScore() != null)
+            WekinatorInstance.getWekinatorInstance().getPlayalongScore().addParams(getParams(), 1.0);
+        
 }//GEN-LAST:event_buttonAddClipboardActionPerformed
 
     private void buttonRecordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRecordActionPerformed
@@ -417,8 +440,8 @@ public class BuildPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_buttonRecordActionPerformed
 
     private void buttonAddClipboard1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAddClipboard1ActionPerformed
-        if (learningSystem != null && learningSystem.getScore() != null) {
-            learningSystem.getScore().view();
+        if (WekinatorInstance.getWekinatorInstance().getPlayalongScore() != null) {
+           WekinatorInstance.getWekinatorInstance().getPlayalongScore().view();
         }
     }//GEN-LAST:event_buttonAddClipboard1ActionPerformed
 
@@ -484,8 +507,8 @@ public class BuildPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_checkOSCRecordActionPerformed
 
     private void startPlayalongJava() {
-        if (learningSystem.getScore() != null) {
-                  learningSystem.getScore().play();
+        if (WekinatorInstance.getWekinatorInstance().getPlayalongScore() != null) {
+                  WekinatorInstance.getWekinatorInstance().getPlayalongScore().play();
                  }
     }
 
@@ -498,7 +521,8 @@ public class BuildPanel extends javax.swing.JPanel {
     }
 
     private void stopPlayalongJava() {
-        learningSystem.getScore().stop();
+        if (WekinatorInstance.getWekinatorInstance().getPlayalongScore() != null)
+        WekinatorInstance.getWekinatorInstance().getPlayalongScore().stop();
     }
 
     private void stopPlayalongChuck() {
@@ -661,7 +685,7 @@ public class BuildPanel extends javax.swing.JPanel {
 
     private void scorePropertyChanged(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(PlayalongScore.PROP_ISPLAYING)) {
-                boolean playing = learningSystem.getScore().isPlaying();
+                boolean playing = WekinatorInstance.getWekinatorInstance().getPlayalongScore().isPlaying();
                      setButtonPlayalong(playing);
                      isPlayalongJava = playing;
            

@@ -266,7 +266,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
                 }
 
                 setLearningSystem(newS); //TODO: Problematic: What do we do w/ backup?; make usre to deal with hid there
-                WekinatorLearningManager.getInstance().setLearningSystem(newS);
+                WekinatorInstance.getWekinatorInstance().setLearningSystem(newS);
                 labelLearningSystemStatus.setText("Learning system loaded successfully.");
 
                 System.out.println("Sanity check:");
@@ -293,7 +293,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
 
     protected void reset() {
         //Set from current learning system, or new...
-        LearningSystem current = WekinatorLearningManager.getInstance().getLearningSystem();
+        LearningSystem current = WekinatorInstance.getWekinatorInstance().getLearningSystem();
         if (current != null) {
 
             setLearningSystem(current);
@@ -306,7 +306,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
     private void buttonGoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonGoActionPerformed
 
         //First, prompt the user to overwrite
-        if (WekinatorLearningManager.getInstance().getLearningSystem() != null) {
+        if (WekinatorInstance.getWekinatorInstance().getLearningSystem() != null) {
             int lResponse = JOptionPane.showConfirmDialog(this, "Are you sure you want to change your model configurations?\n" + "This could destroy your existing trained models...", "", JOptionPane.YES_NO_OPTION);
             if (lResponse != JOptionPane.YES_OPTION) {
                 return;
@@ -324,8 +324,8 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
         }
 
         //If no errors, apply changes globally
-        if (learningSystem != WekinatorLearningManager.getInstance().getLearningSystem()) {
-            WekinatorLearningManager.getInstance().setLearningSystem(learningSystem);
+        if (learningSystem != WekinatorInstance.getWekinatorInstance().getLearningSystem()) {
+            WekinatorInstance.getWekinatorInstance().setLearningSystem(learningSystem);
         }
 
         labelLearningSystemStatus.setText("Learning system configured.");

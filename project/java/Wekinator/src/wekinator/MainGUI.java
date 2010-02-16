@@ -478,7 +478,7 @@ private void buttonQuitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         FeatureExtractionController.stopExtracting();
     }
 
-
+    
     OscHandler.getOscHandler().end();
 
     if (ChuckRunner.getRunnerState() == ChuckRunner.ChuckRunnerState.RUNNING) {
@@ -489,6 +489,7 @@ private void buttonQuitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
     //Want to save settings here!
     wek.saveCurrentSettings();
+    
     System.exit(0);
 }//GEN-LAST:event_buttonQuitActionPerformed
 
@@ -538,13 +539,13 @@ private void aboutMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GE
 }//GEN-LAST:event_aboutMenuItem1ActionPerformed
 
 private void menuItemViewDatasetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemViewDatasetActionPerformed
-    WekinatorLearningManager.getInstance().getLearningSystem().getDataset().showViewer();
+    WekinatorInstance.getWekinatorInstance().getLearningSystem().getDataset().showViewer();
 }//GEN-LAST:event_menuItemViewDatasetActionPerformed
 
 private void menuItemOtfScoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemOtfScoreActionPerformed
-    LearningSystem learningSystem = WekinatorLearningManager.getInstance().getLearningSystem();
-    if (learningSystem != null && learningSystem.getScore() != null) {
-        learningSystem.getScore().view();
+    LearningSystem learningSystem = WekinatorInstance.getWekinatorInstance().getLearningSystem();
+    if (WekinatorInstance.getWekinatorInstance().getPlayalongScore() != null) {
+        WekinatorInstance.getWekinatorInstance().getPlayalongScore().view();
     }
 
 }//GEN-LAST:event_menuItemOtfScoreActionPerformed
@@ -687,7 +688,7 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
                         LearningSystem ls = LearningSystem.readFromFile(WekinatorRunner.getLearningSystemFile());
                        if (WekinatorInstance.getWekinatorInstance().canUse(ls))
                         {
-                        WekinatorLearningManager.getInstance().setLearningSystem(ls);
+                        WekinatorInstance.getWekinatorInstance().setLearningSystem(ls);
                         
                             learningSystemConfigurationPanel.setLearningSystem(ls);
                             panelMainTabs.setSelectedComponent(trainRunPanel1);
@@ -742,8 +743,8 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
     }
 
     private void learningManagerPropertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(WekinatorLearningManager.PROP_LEARNINGSYSTEM)) {
-            boolean e = (WekinatorLearningManager.getInstance().getLearningSystem() != null);
+        if (evt.getPropertyName().equals(WekinatorInstance.PROP_LEARNINGSYSTEM)) {
+            boolean e = (WekinatorInstance.getWekinatorInstance().getLearningSystem() != null);
             System.out.println("enabling otf data " + e);
             menuItemOtfScore.setEnabled(e);
             menuItemViewDataset.setEnabled(e);

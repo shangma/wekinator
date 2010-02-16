@@ -49,11 +49,22 @@ public class TrainRunPanel extends javax.swing.JPanel {
           WekinatorLearningManager.getInstance().addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(WekinatorLearningManager.PROP_LEARNINGSYSTEM)) {
-                    setLearningSystem(WekinatorLearningManager.getInstance().getLearningSystem());
+                if (evt.getPropertyName().equals(WekinatorInstance.PROP_LEARNINGSYSTEM)) {
+                    setLearningSystem(WekinatorInstance.getWekinatorInstance().getLearningSystem());
                 }
             }
         });
+
+         WekinatorInstance.getWekinatorInstance().addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(WekinatorInstance.PROP_LEARNINGSYSTEM)) {
+                    setLearningSystem(WekinatorInstance.getWekinatorInstance().getLearningSystem());
+                }
+
+            }
+        });
+
 
     }
 

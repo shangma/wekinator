@@ -30,6 +30,10 @@ public class WekinatorSettings implements Serializable {
         lastLocations = new HashMap<String, String>();
         String currentDir = Util.getCanonicalPath(new File(""));
         //projectDir will be "" if invalid:
+        File t = new File(currentDir);
+        if (t != null && t.getParentFile() != null && t.getParentFile().getParentFile() != null) {
+
+
         File projectDir = (new File(currentDir)).getParentFile().getParentFile();
         String projectDirString[] = projectDir.getAbsolutePath().split(File.separator);
         if (projectDirString.length > 0 && projectDirString[projectDirString.length - 1].equals("java")) {
@@ -38,6 +42,9 @@ public class WekinatorSettings implements Serializable {
         defaultDir = Util.getCanonicalPath(projectDir) + File.separator + "mySavedSettings";
         System.out.println("default dir is " + defaultDir);
 
+        } else {
+            defaultDir = Util.getCanonicalPath(new File(""));
+        }
   }
 
     public String getDefaultSettingsDirectory() {
