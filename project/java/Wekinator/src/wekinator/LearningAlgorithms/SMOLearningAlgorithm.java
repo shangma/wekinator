@@ -7,15 +7,13 @@ package wekinator.LearningAlgorithms;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import weka.classifiers.Classifier;
 import weka.classifiers.functions.SMO;
 import weka.classifiers.functions.supportVector.Kernel;
 import weka.classifiers.functions.supportVector.PolyKernel;
 import weka.classifiers.functions.supportVector.RBFKernel;
-import weka.core.Instance;
-import weka.core.Instances;
 import wekinator.LearningAlgorithms.LearningAlgorithm.TrainingState;
 
 
@@ -23,9 +21,7 @@ import wekinator.LearningAlgorithms.LearningAlgorithm.TrainingState;
  *
  * @author rebecca
  */
-public class SMOLearningAlgorithm implements ClassifierLearningAlgorithm {
-    protected SMO classifier = null;
-    protected TrainingState trainingState = TrainingState.NOT_TRAINED;
+public class SMOLearningAlgorithm extends ClassifierLearningAlgorithm {
     protected transient SMOSettingsPanel myPanel = null;
 //    protected int defaultNumRounds = 100; Any default params?
 
@@ -44,51 +40,14 @@ public class SMOLearningAlgorithm implements ClassifierLearningAlgorithm {
         classifier = new SMO();
         PolyKernel k = new PolyKernel();
         k.setExponent(2.0);
-        classifier.setKernel(k);
+        ((SMO)classifier).setKernel(k);
     }
 
-    /**
-     * Get the value of trainingState
-     *
-     * @return the value of trainingState
-     */
-    public TrainingState getTrainingState() {
-        return trainingState;
-    }
-
-    /**
-     * Set the value of trainingState
-     *
-     * @param trainingState new value of trainingState
-     */
-    protected void setTrainingState(TrainingState trainingState) {
-        TrainingState oldTrainingState = this.trainingState;
-        this.trainingState = trainingState;
-        propertyChangeSupport.firePropertyChange(PROP_TRAININGSTATE, oldTrainingState, trainingState);
-    }
-    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-
-    /**
-     * Add PropertyChangeListener.
-     *
-     * @param listener
-     */
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        propertyChangeSupport.addPropertyChangeListener(listener);
-    }
-
-    /**
-     * Remove PropertyChangeListener.
-     *
-     * @param listener
-     */
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        propertyChangeSupport.removePropertyChangeListener(listener);
-    }
-
+    @Override
     public SMO getClassifier() {
-        return classifier;
+        return (SMO)classifier;
     }
+
 
     public SMOLearningAlgorithm copy() {
         try {
@@ -107,19 +66,6 @@ public class SMOLearningAlgorithm implements ClassifierLearningAlgorithm {
         return "Support Vector Machine";
     }
 
-    public void setFastAccurate(double value) {
-         return; //TODO?
-    }
-
-    public boolean implementsFastAccurate() {
-        return false;
-    }
-
-    public void forget() {
-        initClassifier();
-        setTrainingState(trainingState.NOT_TRAINED);
-    }
-
     public SMOSettingsPanel getSettingsPanel() {
                 if (myPanel == null) {
             myPanel = new SMOSettingsPanel(this);
@@ -127,51 +73,21 @@ public class SMOLearningAlgorithm implements ClassifierLearningAlgorithm {
         return myPanel;
     }
 
-    public void train(Instances instances) throws Exception {
-        if (instances.numInstances() == 0) {
-            return;
-        }
-        setTrainingState(TrainingState.TRAINING);
-        try {
-            ClassifierLearningAlgorithmUtil.train(this, instances);
-        } catch (Exception ex) {
-            Logger.getLogger(SMOLearningAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
-            setTrainingState(trainingState.NOT_TRAINED);
-            throw new Exception(ex);
-        }
-        setTrainingState(TrainingState.TRAINED);
-    }
-
-    public double classify(Instance instance) throws Exception {
-        return ClassifierLearningAlgorithmUtil.classify(this, instance);
-    }
-
-    public double computeAccuracy(Instances instances) throws Exception {
-        return ClassifierLearningAlgorithmUtil.computeAccuracy(this, instances);
-    }
-
-    public double computeCVAccuracy(int numFolds, Instances instances) throws Exception {
-        return ClassifierLearningAlgorithmUtil.computeCVAccuracy(this, numFolds, instances);
-    }
-
-    public double[] distributionForInstance(Instance instance) throws Exception {
-        return ClassifierLearningAlgorithmUtil.distributionForInstance(this, instance);
-    }
-
+    
     public void setLinearKernel() {
-        Kernel k = classifier.getKernel();
+        Kernel k = getClassifier().getKernel();
         if (k instanceof PolyKernel && ((PolyKernel)k).getExponent() == 1.0) {
             return; // already got it
         }
         else {
             PolyKernel nk = new PolyKernel();
             nk.setExponent(1.0);
-            classifier.setKernel(nk);
+            getClassifier().setKernel(nk);
         }
     }
 
     public void setPolyKernel(double e, boolean useLowerOrder) {
-        Kernel k = classifier.getKernel();
+        Kernel k = getClassifier().getKernel();
         if (k instanceof PolyKernel) {
             ((PolyKernel)k).setExponent(e);
             ((PolyKernel)k).setUseLowerOrder(useLowerOrder);
@@ -181,12 +97,12 @@ public class SMOLearningAlgorithm implements ClassifierLearningAlgorithm {
             PolyKernel nk = new PolyKernel();
             nk.setExponent(e);
             nk.setUseLowerOrder(useLowerOrder);
-            classifier.setKernel(nk);
+            getClassifier().setKernel(nk);
         }
     }
 
     public void setRbfKernel(double gamma) {
-        Kernel k = classifier.getKernel();
+        Kernel k = getClassifier().getKernel();
         if (k instanceof RBFKernel) {
             ((RBFKernel)k).setGamma(gamma);
             return;
@@ -194,7 +110,14 @@ public class SMOLearningAlgorithm implements ClassifierLearningAlgorithm {
         else {
             RBFKernel nk = new RBFKernel();
             nk.setGamma(gamma);
-            classifier.setKernel(nk);
+            getClassifier().setKernel(nk);
         }
+    }
+
+    public static SMOLearningAlgorithm readFromInputStream(ObjectInputStream i) throws IOException, ClassNotFoundException {
+        SMOLearningAlgorithm a = new SMOLearningAlgorithm();
+        a.classifier = (SMO) i.readObject();
+        a.setTrainingState((TrainingState) i.readObject());
+        return a;
     }
 }

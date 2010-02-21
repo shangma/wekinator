@@ -2,16 +2,13 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package wekinator.LearningAlgorithms;
 
+import java.io.ObjectInputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import weka.classifiers.Classifier;
-import weka.core.Instance;
-import weka.core.Instances;
 import wekinator.LearningAlgorithms.LearningAlgorithm.TrainingState;
 import weka.classifiers.meta.AdaBoostM1;
 import weka.classifiers.trees.DecisionStump;
@@ -20,10 +17,9 @@ import weka.classifiers.trees.DecisionStump;
  *
  * @author rebecca
  */
-public class AdaboostM1LearningAlgorithm implements ClassifierLearningAlgorithm {
-    protected AdaBoostM1 classifier = null;
-    protected TrainingState trainingState = TrainingState.NOT_TRAINED;
-    protected transient AdaboostM1SettingsPanel myPanel = null;
+public class AdaboostM1LearningAlgorithm extends ClassifierLearningAlgorithm {
+
+    protected AdaboostM1SettingsPanel myPanel = null;
     protected int defaultNumRounds = 100;
 
     public AdaboostM1LearningAlgorithm() {
@@ -37,51 +33,8 @@ public class AdaboostM1LearningAlgorithm implements ClassifierLearningAlgorithm 
 
     protected void initClassifier() {
         classifier = new AdaBoostM1();
-        classifier.setClassifier(new DecisionStump());
-        classifier.setNumIterations(defaultNumRounds);
-    }
-
-    /**
-     * Get the value of trainingState
-     *
-     * @return the value of trainingState
-     */
-    public TrainingState getTrainingState() {
-        return trainingState;
-    }
-
-    /**
-     * Set the value of trainingState
-     *
-     * @param trainingState new value of trainingState
-     */
-    protected void setTrainingState(TrainingState trainingState) {
-        TrainingState oldTrainingState = this.trainingState;
-        this.trainingState = trainingState;
-        propertyChangeSupport.firePropertyChange(PROP_TRAININGSTATE, oldTrainingState, trainingState);
-    }
-    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-
-    /**
-     * Add PropertyChangeListener.
-     *
-     * @param listener
-     */
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        propertyChangeSupport.addPropertyChangeListener(listener);
-    }
-
-    /**
-     * Remove PropertyChangeListener.
-     *
-     * @param listener
-     */
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        propertyChangeSupport.removePropertyChangeListener(listener);
-    }
-
-    public AdaBoostM1 getClassifier() {
-        return classifier;
+        ((AdaBoostM1) classifier).setClassifier(new DecisionStump());
+        ((AdaBoostM1) classifier).setNumIterations(defaultNumRounds);
     }
 
     public LearningAlgorithm copy() {
@@ -94,25 +47,23 @@ public class AdaboostM1LearningAlgorithm implements ClassifierLearningAlgorithm 
             Logger.getLogger(AdaboostM1LearningAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
-       
     }
 
-    public String getName() {
-        return "AdaboostM.1";
-    }
-
+    @Override
     public void setFastAccurate(double value) {
-        if (value >= 0 && value <= 1)
-            classifier.setNumIterations((int)(value * 490 + 10));
+        if (value >= 0 && value <= 1) {
+            ((AdaBoostM1) classifier).setNumIterations((int) (value * 490 + 10));
+        }
     }
 
+    @Override
     public boolean implementsFastAccurate() {
         return true;
     }
 
-    public void forget() {
-        initClassifier();
-        setTrainingState(trainingState.NOT_TRAINED);
+    @Override
+    public AdaBoostM1 getClassifier() {
+        return (AdaBoostM1) classifier;
     }
 
     public AdaboostM1SettingsPanel getSettingsPanel() {
@@ -122,35 +73,15 @@ public class AdaboostM1LearningAlgorithm implements ClassifierLearningAlgorithm 
         return myPanel;
     }
 
-    public void train(Instances instances) throws Exception {
-        if (instances.numInstances() == 0) {
-            return;
-        }
-        setTrainingState(TrainingState.TRAINING);
-        try {
-            ClassifierLearningAlgorithmUtil.train(this, instances);
-        } catch (Exception ex) {
-            Logger.getLogger(AdaboostM1LearningAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
-            setTrainingState(trainingState.ERROR); //TODO: fix everywhere
-            throw new Exception(ex);
-        }
-        setTrainingState(TrainingState.TRAINED);
+    public static AdaboostM1LearningAlgorithm readFromInputStream(ObjectInputStream i) throws IOException, ClassNotFoundException {
+        AdaboostM1LearningAlgorithm a = new AdaboostM1LearningAlgorithm();
+        a.classifier = (AdaBoostM1) i.readObject();
+        a.setTrainingState((TrainingState) i.readObject());
+        return a;
     }
 
-    public double classify(Instance instance) throws Exception {
-        return ClassifierLearningAlgorithmUtil.classify(this, instance);
+    @Override
+    public String getName() {
+        return "Adaboost.M1";
     }
-
-    public double computeAccuracy(Instances instances) throws Exception {
-        return ClassifierLearningAlgorithmUtil.computeAccuracy(this, instances);
-    }
-
-    public double computeCVAccuracy(int numFolds, Instances instances) throws Exception {
-        return ClassifierLearningAlgorithmUtil.computeCVAccuracy(this, numFolds, instances);
-    }
-
-    public double[] distributionForInstance(Instance instance) throws Exception {
-        return ClassifierLearningAlgorithmUtil.distributionForInstance(this, instance);
-    }
-
 }

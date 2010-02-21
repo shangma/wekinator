@@ -10,6 +10,9 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Random;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
@@ -22,11 +25,8 @@ import wekinator.LearningAlgorithms.LearningAlgorithm.TrainingState;
  *
  * @author rebecca
  */
-public class NNLearningAlgorithm implements ClassifierLearningAlgorithm {
-    protected MultilayerPerceptron classifier = null;
-    protected TrainingState trainingState = TrainingState.NOT_TRAINED;
+public class NNLearningAlgorithm extends ClassifierLearningAlgorithm {
     protected transient NNSettingsPanel myPanel = null;
-    protected int defaultNumNeighbors = 10;
 
     public NNLearningAlgorithm() {
         initClassifier();
@@ -45,50 +45,12 @@ public class NNLearningAlgorithm implements ClassifierLearningAlgorithm {
     }
 
     public void setUseGui(boolean use) {
-        classifier.setGUI(use);
+        getClassifier().setGUI(use);
     }
 
-    /**
-     * Get the value of trainingState
-     *
-     * @return the value of trainingState
-     */
-    public TrainingState getTrainingState() {
-        return trainingState;
-    }
-
-    /**
-     * Set the value of trainingState
-     *
-     * @param trainingState new value of trainingState
-     */
-    protected void setTrainingState(TrainingState trainingState) {
-        TrainingState oldTrainingState = this.trainingState;
-        this.trainingState = trainingState;
-        propertyChangeSupport.firePropertyChange(PROP_TRAININGSTATE, oldTrainingState, trainingState);
-    }
-    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-
-    /**
-     * Add PropertyChangeListener.
-     *
-     * @param listener
-     */
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        propertyChangeSupport.addPropertyChangeListener(listener);
-    }
-
-    /**
-     * Remove PropertyChangeListener.
-     *
-     * @param listener
-     */
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        propertyChangeSupport.removePropertyChangeListener(listener);
-    }
-
+    @Override
     public MultilayerPerceptron getClassifier() {
-        return classifier;
+        return (MultilayerPerceptron)classifier;
     }
 
     public LearningAlgorithm copy() {
@@ -104,21 +66,9 @@ public class NNLearningAlgorithm implements ClassifierLearningAlgorithm {
        
     }
 
+    protected static String name = "Neural Network";
     public String getName() {
-        return "Neural Network";
-    }
-
-    public void setFastAccurate(double value) {
-       return;
-    }
-
-    public boolean implementsFastAccurate() {
-        return false;
-    }
-
-    public void forget() {
-        initClassifier();
-        setTrainingState(trainingState.NOT_TRAINED);
+        return name;
     }
 
     public NNSettingsPanel getSettingsPanel() {
@@ -128,33 +78,17 @@ public class NNLearningAlgorithm implements ClassifierLearningAlgorithm {
         return myPanel;
     }
 
-    public void train(Instances instances) throws Exception {
-        if (instances.numInstances() == 0) {
-            return;
-        }
-        setTrainingState(TrainingState.TRAINING);
-        try {
-            ClassifierLearningAlgorithmUtil.train(this, instances);
-        } catch (Exception ex) {
-            Logger.getLogger(NNLearningAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
-            setTrainingState(trainingState.ERROR);
-            throw new Exception(ex);
-        }
-        setTrainingState(TrainingState.TRAINED);
-    }
-
-    public double classify(Instance instance) throws Exception {
-        return ClassifierLearningAlgorithmUtil.classify(this, instance);
-    }
-
+   
+    @Override
     public double computeAccuracy(Instances instances) throws Exception {
-         boolean oldUseGui = classifier.getGUI();
-            classifier.setGUI(false);
-       double accuracy =  ClassifierLearningAlgorithmUtil.computeAccuracy(this, instances);
-        classifier.setGUI(oldUseGui);
+       boolean oldUseGui = getClassifier().getGUI();
+       getClassifier().setGUI(false);
+       double accuracy =  computeAccuracy(instances);
+       getClassifier().setGUI(oldUseGui);
        return accuracy;
     }
 
+    @Override
     public double computeCVAccuracy(int numFolds, Instances instances) throws Exception {
       //  return ClassifierLearningAlgorithmUtil.computeCVAccuracy(this, numFolds, instances);
         double results;
@@ -165,11 +99,11 @@ public class NNLearningAlgorithm implements ClassifierLearningAlgorithm {
        // double sum = 0;
             Evaluation eval = new Evaluation(instances);
 
-            boolean oldUseGui = classifier.getGUI();
-            classifier.setGUI(false);
+            boolean oldUseGui = getClassifier().getGUI();
+            getClassifier().setGUI(false);
             eval.crossValidateModel(classifier, instances, numFolds, r);
 
-            classifier.setGUI(oldUseGui);
+            getClassifier().setGUI(oldUseGui);
             return eval.errorRate();
      /*   for (int j = 0; j < numFolds; j++) {
 
@@ -196,8 +130,11 @@ public class NNLearningAlgorithm implements ClassifierLearningAlgorithm {
  */
     }
 
-    public double[] distributionForInstance(Instance instance) throws Exception {
-        return ClassifierLearningAlgorithmUtil.distributionForInstance(this, instance);
+    public static NNLearningAlgorithm readFromInputStream(ObjectInputStream i) throws IOException, ClassNotFoundException {
+        NNLearningAlgorithm a = new NNLearningAlgorithm();
+        a.classifier = (MultilayerPerceptron) i.readObject();
+        a.setTrainingState((TrainingState) i.readObject());
+        return a;
     }
 
 }

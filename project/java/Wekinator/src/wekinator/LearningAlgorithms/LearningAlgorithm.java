@@ -6,10 +6,10 @@
 package wekinator.LearningAlgorithms;
 
 import java.beans.PropertyChangeListener;
-import java.io.File;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import javax.swing.JPanel;
 import weka.core.Instance;
 import weka.core.Instances;
 
@@ -21,53 +21,81 @@ import weka.core.Instances;
  *
  * @author rebecca
  */
-public interface LearningAlgorithm extends Serializable {
-    public String PROP_TRAININGSTATE = "trainingState";
+public abstract class LearningAlgorithm implements Serializable {
+    public static String PROP_TRAININGSTATE = "trainingState";
+    protected TrainingState trainingState = TrainingState.NOT_TRAINED;
+
 
     public enum TrainingState {
-        NOT_TRAINED, TRAINING, TRAINED, ERROR
+        NOT_TRAINED, TRAINING, TRAINED
     };
+
+        /**
+     * Get the value of trainingState
+     *
+     * @return the value of trainingState
+     */
+    public TrainingState getTrainingState() {
+        return trainingState;
+    }
+
+    /**
+     * Set the value of trainingState
+     *
+     * @param trainingState new value of trainingState
+     */
+    protected void setTrainingState(TrainingState trainingState) {
+        TrainingState oldTrainingState = this.trainingState;
+        this.trainingState = trainingState;
+        propertyChangeSupport.firePropertyChange(PROP_TRAININGSTATE, oldTrainingState, trainingState);
+    }
+    protected PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+
     /**
      * Add PropertyChangeListener.
      *
      * @param listener
      */
-    public void addPropertyChangeListener(PropertyChangeListener listener);
-
-    public LearningAlgorithm copy();
-
-    /**
-     * Get the value of trainingState
-     *
-     * @return the value of trainingState
-     */
-    public TrainingState getTrainingState();
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
 
     /**
      * Remove PropertyChangeListener.
      *
      * @param listener
      */
-    public void removePropertyChangeListener(PropertyChangeListener listener);
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
 
-    public LearningAlgorithmSettingsPanel getSettingsPanel();
+    public abstract LearningAlgorithm copy();
 
-    public void setFastAccurate(double value);
+    public abstract LearningAlgorithmSettingsPanel getSettingsPanel();
 
-    public boolean implementsFastAccurate();
+    public void setFastAccurate(double value) {
+        //Underling classes only implement if implementsFastAccurate is true
+    };
 
-    public String getName();
+    public boolean implementsFastAccurate() { return false; }
 
-    public double classify(Instance instance) throws Exception;
+    public abstract String getName();
 
-    public double[] distributionForInstance(Instance instance) throws Exception;
+    public abstract double classify(Instance instance) throws Exception;
 
-    public void train(Instances instances) throws Exception;
+    public abstract double[] distributionForInstance(Instance instance) throws Exception;
 
-    public void forget();
+    public abstract void train(Instances instances) throws Exception;
 
-    public double computeAccuracy(Instances instances) throws Exception;
+    public abstract void forget();
 
-    public double computeCVAccuracy(int numFolds, Instances instances) throws Exception;
+    public abstract double computeAccuracy(Instances instances) throws Exception;
+
+    public abstract double computeCVAccuracy(int numFolds, Instances instances) throws Exception;
+    
+    public abstract void writeToOutputStream(ObjectOutputStream o) throws IOException;
+
+   // public static LearningAlgorithm readFromInputStream(ObjectInputStream i) throws IOException, ClassNotFoundException;
 
 }

@@ -12,6 +12,7 @@
 package wekinator.LearningAlgorithms;
 
 import javax.swing.JPanel;
+import weka.classifiers.meta.AdaBoostM1;
 
 /**
  *
