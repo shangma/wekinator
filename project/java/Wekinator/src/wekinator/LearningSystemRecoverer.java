@@ -27,7 +27,16 @@ public class LearningSystemRecoverer {
                      o.writeInt(s.numParams);
             o.writeObject(s.paramUsingDistribution);
             o.writeObject(s.numMaxValsForParameter);
-            o.writeObject(s.learners);
+           // o.writeObject(s.learners);
+            if (s.learners != null) {
+                o.writeInt(s.learners.length);
+                for (int i = 0; i < s.learners.length; i++) {
+                    
+                }
+            } else {
+                o.writeInt(0);
+            }
+
             if (s.dataset == null) {
                 o.writeInt(0);
             } else {

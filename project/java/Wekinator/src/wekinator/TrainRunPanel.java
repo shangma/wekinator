@@ -14,20 +14,15 @@ import java.awt.CardLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import wekinator.LearningAlgorithms.*;
 import wekinator.LearningSystem.*;
 import wekinator.util.OverwritePromptingFileChooser;
-import wekinator.util.SerializedFileUtil;
 import wekinator.util.Util;
+
 /**
  *
  * @author rebecca
@@ -41,21 +36,13 @@ public class TrainRunPanel extends javax.swing.JPanel {
             learningSystemChange(evt);
         }
     };
-    
+
     /** Creates new form TrainRunPanel */
     public TrainRunPanel() {
         initComponents();
 
-          WekinatorLearningManager.getInstance().addPropertyChangeListener(new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(WekinatorInstance.PROP_LEARNINGSYSTEM)) {
-                    setLearningSystem(WekinatorInstance.getWekinatorInstance().getLearningSystem());
-                }
-            }
-        });
-
-         WekinatorInstance.getWekinatorInstance().addPropertyChangeListener(new PropertyChangeListener() {
+        setCurrentPane(Panes.COLLECT);
+        WekinatorInstance.getWekinatorInstance().addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(WekinatorInstance.PROP_LEARNINGSYSTEM)) {
@@ -68,8 +55,67 @@ public class TrainRunPanel extends javax.swing.JPanel {
 
     }
 
-    public void setLearningSystem(LearningSystem ls) {
-        System.out.println("setting learning system in train run pane");
+    public enum Panes {
+
+        COLLECT,
+        TRAIN,
+        RUN,
+        CONFIGURE
+    };
+    protected Panes currentPane = Panes.COLLECT;
+
+    /**
+     * Get the value of currentPane
+     *
+     * @return the value of currentPane
+     */
+    public Panes getCurrentPane() {
+        return currentPane;
+    }
+
+    /**
+     * Set the value of currentPane
+     *
+     * @param currentPane new value of currentPane
+     */
+    public void setCurrentPane(Panes currentPane) {
+        CardLayout c = (CardLayout) layoutPanel.getLayout();
+        switch (currentPane) {
+            case CONFIGURE:
+                toggleConfigure.setSelected(true);
+                toggleCollect.setSelected(false);
+                toggleRun.setSelected(false);
+                toggleTrain.setSelected(false);
+                c.show(layoutPanel, "cardEdit");
+                break;
+            case RUN:
+                toggleConfigure.setSelected(false);
+                toggleCollect.setSelected(false);
+                toggleRun.setSelected(true);
+                toggleTrain.setSelected(false);
+                c.show(layoutPanel, "cardRun");
+                break;
+            case TRAIN:
+                toggleConfigure.setSelected(false);
+                toggleCollect.setSelected(false);
+                toggleRun.setSelected(false);
+                toggleTrain.setSelected(true);
+                c.show(layoutPanel, "cardTrain");
+                break;
+            case COLLECT:
+            default:
+                toggleConfigure.setSelected(false);
+                toggleCollect.setSelected(true);
+                toggleRun.setSelected(false);
+                toggleTrain.setSelected(false);
+                c.show(layoutPanel, "cardBuild");
+                break;
+        }
+    }
+
+
+    //Called when WekinatorInstance learning system changes
+    protected void setLearningSystem(LearningSystem ls) {
         if (this.ls != null) {
             this.ls.removePropertyChangeListener(learningSystemChangeListener);
         }
@@ -77,25 +123,24 @@ public class TrainRunPanel extends javax.swing.JPanel {
         if (this.ls != null) {
             ls.addPropertyChangeListener(learningSystemChangeListener);
             setButtonsEnabled();
-        } else {
-            //TOOD: disable all
         }
         buildPanel.setLearningSystem(ls);
         trainPanel.setLearningSystem(ls);
         runPanel.setLearningSystem(ls);
         editPanel.setLearningSystem(ls);
-        CardLayout c = (CardLayout) layoutPanel.getLayout();
-        c.show(layoutPanel, "cardBuild");
+        setCurrentPane(Panes.COLLECT);
+        setButtonsEnabled();
     }
 
     public boolean canRun() {
-    return  (ls.getSystemTrainingState() == LearningSystemTrainingState.TRAINED
-                 && ls.getEvaluationState() != EvaluationState.EVALUTATING
-                 && ls.getInitializationState() == LearningAlgorithmsInitializationState.ALL_INITIALIZED );
+        /* return  (ls.getSystemTrainingState() == LearningSystemTrainingState.TRAINED
+        && ls.getEvaluationState() != EvaluationState.EVALUTATING
+        && ls.getInitializationState() == LearningAlgorithmsInitializationState.ALL_INITIALIZED );*/
+        return (ls != null && ls.isIsRunnable());
     }
 
     private void setButtonsEnabled() {
-        LearningSystemTrainingState t = ls.getSystemTrainingState();
+        /*  LearningSystemTrainingState t = ls.getSystemTrainingState();
         EvaluationState e = ls.getEvaluationState();
         DatasetState d = ls.getDatasetState();
         LearningAlgorithmsInitializationState i = ls.getInitializationState();
@@ -104,21 +149,43 @@ public class TrainRunPanel extends javax.swing.JPanel {
 
 
         boolean enableTrain = (d == DatasetState.HAS_DATA
-                 && i == LearningAlgorithmsInitializationState.ALL_INITIALIZED);
+        && i == LearningAlgorithmsInitializationState.ALL_INITIALIZED);
 
         boolean enableCollect = (i == LearningAlgorithmsInitializationState.ALL_INITIALIZED);
         boolean enableConfigure = (i == LearningAlgorithmsInitializationState.ALL_INITIALIZED);
+         */
+        boolean enableConfigure = ls != null;
+        boolean enableRun = canRun();
+        boolean enableTrain = ls != null && ls.isIsTrainable();
+        boolean enableCollect = ls != null;
 
-        buttonRun.setEnabled(enableRun);
-        buttonTrain.setEnabled(enableTrain);
-        buttonCollect.setEnabled(enableCollect);
-        buttonConfigure.setEnabled(enableConfigure);
+        toggleConfigure.setEnabled(enableConfigure);
+        toggleRun.setEnabled(canRun());
+        toggleTrain.setEnabled(enableTrain);
+        toggleCollect.setEnabled(enableCollect);
 
         //TODO: Also go back to another pane if current is bogus?
+        if (currentPane == Panes.CONFIGURE && !enableConfigure) {
+            setCurrentPane(Panes.TRAIN);
+        }
+        if (currentPane == Panes.RUN && !enableRun) {
+            setCurrentPane(Panes.TRAIN);
+        }
+        if (currentPane == Panes.TRAIN && !enableTrain) {
+            setCurrentPane(Panes.COLLECT);
+        }
+        if (currentPane == Panes.COLLECT && !enableCollect) {
+            System.out.println("TODO log error");
+        //Should request of main gui to go back somewhere else.
+        }
+
     }
 
     private void learningSystemChange(PropertyChangeEvent evt) {
-        setButtonsEnabled();
+        if (evt.getPropertyName().equals(LearningSystem.PROP_ISTRAINABLE) || evt.getPropertyName().equals(LearningSystem.PROP_ISRUNNABLE)) {
+
+            setButtonsEnabled();
+        }
     }
 
     /** This method is called from within the constructor to
@@ -134,51 +201,51 @@ public class TrainRunPanel extends javax.swing.JPanel {
         buttonGroup1 = new javax.swing.ButtonGroup();
         buttonGroup2 = new javax.swing.ButtonGroup();
         layoutPanel = new javax.swing.JPanel();
-        buildPanel = new wekinator.BuildPanel();
         trainPanel = new wekinator.TrainPanel();
         runPanel = new wekinator.RunPanel();
+        buildPanel = new wekinator.BuildPanel();
         editPanel = new wekinator.EditPanel();
         menuPanel = new javax.swing.JPanel();
-        buttonCollect = new javax.swing.JButton();
-        buttonTrain = new javax.swing.JButton();
-        buttonRun = new javax.swing.JButton();
-        buttonConfigure = new javax.swing.JButton();
+        toggleCollect = new javax.swing.JToggleButton();
+        toggleTrain = new javax.swing.JToggleButton();
+        toggleRun = new javax.swing.JToggleButton();
+        toggleConfigure = new javax.swing.JToggleButton();
         buttonShh = new javax.swing.JButton();
         buttonSave = new javax.swing.JButton();
 
         jLabel3.setText("jLabel3");
 
         layoutPanel.setLayout(new java.awt.CardLayout());
-        layoutPanel.add(buildPanel, "cardBuild");
         layoutPanel.add(trainPanel, "cardTrain");
         layoutPanel.add(runPanel, "cardRun");
+        layoutPanel.add(buildPanel, "cardBuild");
         layoutPanel.add(editPanel, "cardEdit");
 
-        buttonCollect.setText("COLLECT DATA");
-        buttonCollect.addActionListener(new java.awt.event.ActionListener() {
+        toggleCollect.setText("Collect data...");
+        toggleCollect.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonCollectActionPerformed(evt);
+                toggleCollectActionPerformed(evt);
             }
         });
 
-        buttonTrain.setText("TRAIN");
-        buttonTrain.addActionListener(new java.awt.event.ActionListener() {
+        toggleTrain.setText("Train...");
+        toggleTrain.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonTrainActionPerformed(evt);
+                toggleTrainActionPerformed(evt);
             }
         });
 
-        buttonRun.setText("RUN");
-        buttonRun.addActionListener(new java.awt.event.ActionListener() {
+        toggleRun.setText("Run...");
+        toggleRun.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonRunActionPerformed(evt);
+                toggleRunActionPerformed(evt);
             }
         });
 
-        buttonConfigure.setText("CONFIGURE & EVALUATE");
-        buttonConfigure.addActionListener(new java.awt.event.ActionListener() {
+        toggleConfigure.setText("Configure & evaluate...");
+        toggleConfigure.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonConfigureActionPerformed(evt);
+                toggleConfigureActionPerformed(evt);
             }
         });
 
@@ -186,27 +253,27 @@ public class TrainRunPanel extends javax.swing.JPanel {
         menuPanel.setLayout(menuPanelLayout);
         menuPanelLayout.setHorizontalGroup(
             menuPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(buttonTrain, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 236, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(buttonRun, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 236, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(buttonConfigure, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 236, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(buttonCollect, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
+            .add(menuPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(menuPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, toggleConfigure, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, toggleRun, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, toggleTrain, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, toggleCollect, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE))
+                .addContainerGap())
         );
-
-        menuPanelLayout.linkSize(new java.awt.Component[] {buttonConfigure, buttonRun, buttonTrain}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
         menuPanelLayout.setVerticalGroup(
             menuPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(menuPanelLayout.createSequentialGroup()
-                .add(buttonCollect, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(toggleCollect, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 37, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(buttonTrain, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 69, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(buttonRun, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 70, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(buttonConfigure, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(toggleTrain, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 37, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(toggleRun, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 37, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(toggleConfigure, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 37, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(172, Short.MAX_VALUE))
         );
-
-        menuPanelLayout.linkSize(new java.awt.Component[] {buttonConfigure, buttonRun, buttonTrain}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         buttonShh.setText("audio off");
         buttonShh.addActionListener(new java.awt.event.ActionListener() {
@@ -230,27 +297,26 @@ public class TrainRunPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(buttonShh)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(menuPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(buttonSave))
-                        .add(26, 26, 26)
-                        .add(layoutPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(buttonSave)
+                    .add(menuPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layoutPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 483, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layoutPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(layout.createSequentialGroup()
+                        .add(layoutPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 712, Short.MAX_VALUE)
+                        .addContainerGap())
                     .add(layout.createSequentialGroup()
                         .add(menuPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(buttonShh)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(buttonSave)))
-                .add(114, 114, 114))
+                        .add(buttonSave)
+                        .add(310, 310, 310))))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -258,58 +324,65 @@ public class TrainRunPanel extends javax.swing.JPanel {
         OscHandler.getOscHandler().stopSound();
 }//GEN-LAST:event_buttonShhActionPerformed
 
-    private void buttonConfigureActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonConfigureActionPerformed
-        CardLayout c = (CardLayout) layoutPanel.getLayout();
-        c.show(layoutPanel, "cardEdit");
-}//GEN-LAST:event_buttonConfigureActionPerformed
-
-    private void buttonCollectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCollectActionPerformed
-        CardLayout c = (CardLayout) layoutPanel.getLayout();
-        c.show(layoutPanel, "cardBuild");
-}//GEN-LAST:event_buttonCollectActionPerformed
-
-    private void buttonTrainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonTrainActionPerformed
-        CardLayout c = (CardLayout) layoutPanel.getLayout();
-        c.show(layoutPanel, "cardTrain");
-}//GEN-LAST:event_buttonTrainActionPerformed
-
-    private void buttonRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRunActionPerformed
-       showRunPanel();
-}//GEN-LAST:event_buttonRunActionPerformed
-
     public void startAutoRun() {
-       
-            showRunPanel();
-            WekinatorLearningManager.getInstance().startRunning();
-            OscHandler.getOscHandler().startSound();
-        
-    }
 
-    public void showRunPanel() {
-         CardLayout c = (CardLayout) layoutPanel.getLayout();
-        c.show(layoutPanel, "cardRun");
-    }
+        setCurrentPane(Panes.RUN);
+        WekinatorLearningManager.getInstance().startRunning();
+        OscHandler.getOscHandler().startSound();
 
+    }
 
     private void buttonSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSaveActionPerformed
 
 
-            File file = Util.findSaveFile(LearningSystem.getFileExtension(),
-                    LearningSystem.getFileTypeDescription(),
-                    LearningSystem.getDefaultLocation(),
-                    this);
-            if (file != null) {
-                try {
-                    ls.writeToFile(file); //TODOTODOTODO: update last path on this.
-                    Util.setLastFile(LearningSystem.getFileExtension(), file);
-                } catch (Exception ex) {
-                    Logger.getLogger(TrainRunPanel.class.getName()).log(Level.INFO, null, ex);
-                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Could not save to file", JOptionPane.ERROR_MESSAGE);
-                }
+        File file = Util.findSaveFile(LearningSystem.getFileExtension(),
+                LearningSystem.getFileTypeDescription(),
+                LearningSystem.getDefaultLocation(),
+                this);
+        if (file != null) {
+            try {
+                ls.writeToFile(file); //TODOTODOTODO: update last path on this.
+                Util.setLastFile(LearningSystem.getFileExtension(), file);
+            } catch (Exception ex) {
+                Logger.getLogger(TrainRunPanel.class.getName()).log(Level.INFO, null, ex);
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Could not save to file", JOptionPane.ERROR_MESSAGE);
             }
+        }
 }//GEN-LAST:event_buttonSaveActionPerformed
 
-        private File findLearningSystemFileToSave() {
+    private void toggleCollectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toggleCollectActionPerformed
+        if (toggleCollect.isSelected()) {
+            setCurrentPane(Panes.COLLECT);
+        } else {
+            toggleCollect.setSelected(true);
+        }
+}//GEN-LAST:event_toggleCollectActionPerformed
+
+    private void toggleTrainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toggleTrainActionPerformed
+        if (toggleTrain.isSelected()) {
+            setCurrentPane(Panes.TRAIN);
+        } else {
+            toggleTrain.setSelected(true);
+        }
+    }//GEN-LAST:event_toggleTrainActionPerformed
+
+    private void toggleRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toggleRunActionPerformed
+        if (toggleRun.isSelected()) {
+            setCurrentPane(Panes.RUN);
+        } else {
+            toggleRun.setSelected(true);
+        }
+    }//GEN-LAST:event_toggleRunActionPerformed
+
+    private void toggleConfigureActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toggleConfigureActionPerformed
+        if (toggleConfigure.isSelected()) {
+            setCurrentPane(Panes.CONFIGURE);
+        } else {
+            toggleConfigure.setSelected(true);
+        }
+    }//GEN-LAST:event_toggleConfigureActionPerformed
+
+    private File findLearningSystemFileToSave() {
         JFileChooser fc = new OverwritePromptingFileChooser();
         fc.setDialogType(JFileChooser.SAVE_DIALOG);
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -327,9 +400,9 @@ public class TrainRunPanel extends javax.swing.JPanel {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
 
             file = fc.getSelectedFile();
-        if (file != null) {
-            WekinatorInstance.getWekinatorInstance().getSettings().setLastLocation(LearningSystem.getFileExtension(), Util.getCanonicalPath(file));
-        }
+            if (file != null) {
+                WekinatorInstance.getWekinatorInstance().getSettings().setLastLocation(LearningSystem.getFileExtension(), Util.getCanonicalPath(file));
+            }
         }
         return file;
 
@@ -337,19 +410,19 @@ public class TrainRunPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private wekinator.BuildPanel buildPanel;
-    private javax.swing.JButton buttonCollect;
-    private javax.swing.JButton buttonConfigure;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
-    private javax.swing.JButton buttonRun;
     private javax.swing.JButton buttonSave;
     private javax.swing.JButton buttonShh;
-    private javax.swing.JButton buttonTrain;
     private wekinator.EditPanel editPanel;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel layoutPanel;
     private javax.swing.JPanel menuPanel;
     private wekinator.RunPanel runPanel;
+    private javax.swing.JToggleButton toggleCollect;
+    private javax.swing.JToggleButton toggleConfigure;
+    private javax.swing.JToggleButton toggleRun;
+    private javax.swing.JToggleButton toggleTrain;
     private wekinator.TrainPanel trainPanel;
     // End of variables declaration//GEN-END:variables
 

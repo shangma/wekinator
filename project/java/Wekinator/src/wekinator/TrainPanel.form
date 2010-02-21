@@ -12,10 +12,9 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="0" attributes="0">
+              <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="scrollPaneFeatures" alignment="0" pref="475" max="32767" attributes="1"/>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="buttonCancel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -26,6 +25,7 @@
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="jButton4" min="-2" max="-2" attributes="0"/>
                       </Group>
+                      <Component id="scrollPaneFeatures" alignment="1" pref="475" max="32767" attributes="1"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -34,7 +34,8 @@
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="1" attributes="0">
-                  <Component id="scrollPaneFeatures" pref="244" max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="scrollPaneFeatures" pref="238" max="32767" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="jButton3" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -90,9 +91,6 @@
                         <Property name="alignmentX" type="float" value="0.5"/>
                         <Property name="horizontalAlignment" type="int" value="0"/>
                       </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jCheckBox3ActionPerformed"/>
-                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -120,9 +118,6 @@
                         <Property name="alignmentX" type="float" value="0.5"/>
                         <Property name="horizontalAlignment" type="int" value="0"/>
                       </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jCheckBox4ActionPerformed"/>
-                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -150,9 +145,6 @@
                         <Property name="alignmentX" type="float" value="0.5"/>
                         <Property name="horizontalAlignment" type="int" value="0"/>
                       </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jCheckBox5ActionPerformed"/>
-                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -180,9 +172,6 @@
                         <Property name="alignmentX" type="float" value="0.5"/>
                         <Property name="horizontalAlignment" type="int" value="0"/>
                       </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jCheckBox6ActionPerformed"/>
-                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -540,27 +529,39 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="labelTrainingStatus" alignment="0" min="-2" pref="360" max="-2" attributes="0"/>
+                      <Component id="labelTrainingStatus1" alignment="0" min="-2" pref="360" max="-2" attributes="0"/>
                       <Component id="buttonCancelTrain" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace min="6" pref="6" max="6" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="labelTrainingStatus3" alignment="0" min="-2" pref="360" max="-2" attributes="0"/>
+                              <Component id="labelTrainingStatus2" alignment="0" min="-2" pref="360" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
                   </Group>
-                  <EmptySpace max="32767" attributes="0"/>
+                  <EmptySpace pref="19" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <Component id="labelTrainingStatus" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="labelTrainingStatus1" min="-2" pref="16" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
+                  <Component id="labelTrainingStatus2" min="-2" pref="16" max="-2" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
+                  <Component id="labelTrainingStatus3" min="-2" pref="16" max="-2" attributes="0"/>
+                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="buttonCancelTrain" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
       </Layout>
       <SubComponents>
-        <Component class="javax.swing.JLabel" name="labelTrainingStatus">
+        <Component class="javax.swing.JLabel" name="labelTrainingStatus1">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Finished training model 1 of 4"/>
+            <Property name="text" type="java.lang.String" value="Training model 3 of 4..."/>
           </Properties>
         </Component>
         <Component class="javax.swing.JButton" name="buttonCancelTrain">
@@ -571,6 +572,16 @@
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonCancelTrainActionPerformed"/>
           </Events>
+        </Component>
+        <Component class="javax.swing.JLabel" name="labelTrainingStatus2">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="2 models trained"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="labelTrainingStatus3">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="0 errors encountered"/>
+          </Properties>
         </Component>
       </SubComponents>
     </Container>
@@ -597,7 +608,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="buttonSelectModels" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Component id="buttonTrain" alignment="0" pref="383" max="32767" attributes="0"/>
+                      <Component id="buttonTrain" alignment="0" pref="385" max="32767" attributes="0"/>
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="21" pref="21" max="21" attributes="0"/>
                           <Component id="buttonUntrain" min="-2" max="-2" attributes="0"/>

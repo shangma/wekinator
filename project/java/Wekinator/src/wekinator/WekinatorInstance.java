@@ -40,6 +40,42 @@ public class WekinatorInstance {
     public static final String PROP_LEARNINGSYSTEM = "learningSystem";
     protected PlayalongScore playalongScore = null;
     public static final String PROP_PLAYALONGSCORE = "playalongScore";
+    public static final String PROP_NUMPARAMS = "numParams";
+
+    protected int numParams = -1;
+
+    /**
+     * Get the value of numParams
+     *
+     * @return the value of numParams
+     */
+    public int getNumParams() {
+        return numParams;
+    }
+
+    /**
+     * Set the value of numParams
+     *
+     * @param numParams new value of numParams
+     */
+    public void setNumParams(int numParams) {
+        int oldNum = this.numParams;
+        this.numParams = numParams;
+
+        PlayalongScore score = new PlayalongScore(numParams);
+        setPlayalongScore(score);
+        propertyChangeSupport.firePropertyChange(PROP_NUMPARAMS, oldNum, numParams);
+
+    }
+
+        private void chuckSystemUpdated(PropertyChangeEvent evt) {
+        ChuckSystem cs = ChuckSystem.getChuckSystem();
+        if (evt.getPropertyName().equals(ChuckSystem.PROP_STATE)) {
+            if (evt.getOldValue() != ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID && evt.getNewValue() == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID) {
+                this.setNumParams(cs.getNumParams());
+            }
+        }
+    }
 
     /**
      * Get the value of playalongScore
@@ -363,6 +399,12 @@ public class WekinatorInstance {
             }
         });
 
+        ChuckSystem.getChuckSystem().addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                chuckSystemUpdated(evt);
+            }
+        });
 
     // TODO RAF add check for valid model state
     }

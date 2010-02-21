@@ -18,6 +18,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
@@ -48,16 +49,46 @@ public class LearningSystem implements Serializable {
     protected int learnerToTrain = -1;
     protected int numFolds = 2;
     protected EvaluationType evaluationType = EvaluationType.CV;
-
-    public static final String PROP_SCORE = "score";
     protected SimpleDataset dataset = null;
     protected int numParams = 0;
     protected LearningAlgorithm[] learners;
-    protected boolean[] learnerEnabled;
+    //  protected boolean[] learnerEnabled;
+
+    protected TrainingStatus trainingProgress = new TrainingStatus();
+    public static final String PROP_TRAININGPROGRESS = "trainingProgress";
+
+    /**
+     * Get the value of trainingProgress
+     *
+     * @return the value of trainingProgress
+     */
+    public TrainingStatus getTrainingProgress() {
+        return trainingProgress;
+    }
+
+    /**
+     * Set the value of trainingProgress
+     *
+     * @param trainingProgress new value of trainingProgress
+     */
+    public void setTrainingProgress(TrainingStatus trainingProgress) {
+        TrainingStatus oldTrainingProgress = this.trainingProgress;
+        this.trainingProgress = trainingProgress;
+        propertyChangeSupport.firePropertyChange(PROP_TRAININGPROGRESS, oldTrainingProgress, trainingProgress);
+    }
+
+
+
     protected transient PropertyChangeListener learnerChangeListener = new PropertyChangeListener() {
 
         public void propertyChange(PropertyChangeEvent evt) {
             learnerPropertyChanged(evt);
+        }
+    };
+    protected PropertyChangeListener trainingWorkerListener = new PropertyChangeListener() {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            trainingWorkerChanged(evt);
         }
     };
     protected transient PropertyChangeListener datasetListener = new PropertyChangeListener() {
@@ -67,16 +98,55 @@ public class LearningSystem implements Serializable {
         }
     };
     protected transient Logger logger = Logger.getLogger(LearningSystem.class.getName());
-    protected LearningAlgorithmsInitializationState initializationState = LearningAlgorithmsInitializationState.NOT_INITIALIZED;
-    public static final String PROP_INITIALIZATIONSTATE = "initializationState";
+    //   protected LearningAlgorithmsInitializationState initializationState = LearningAlgorithmsInitializationState.NOT_INITIALIZED;
+    //   public static final String PROP_INITIALIZATIONSTATE = "initializationState";
     // protected LearningAlgorithmsTrainingState algorithmsTrainingState = LearningAlgorithmsTrainingState.NOT_TRAINED;
     protected DatasetState datasetState = DatasetState.NO_DATA;
     public static final String PROP_DATASETSTATE = "datasetState";
-    protected LearningSystemTrainingState systemTrainingState = LearningSystemTrainingState.NOT_TRAINED;
-    public static final String PROP_SYSTEMTRAININGSTATE = "systemTrainingState";
-    protected EvaluationState evaluationState = EvaluationState.NOT_EVALUATED;
-    public static final String PROP_EVALUATIONSTATE = "evaluationState";
+    // protected LearningSystemTrainingState systemTrainingState = LearningSystemTrainingState.NOT_TRAINED;
+    //  public static final String PROP_SYSTEMTRAININGSTATE = "systemTrainingState";
+    //  protected EvaluationState evaluationState = EvaluationState.NOT_EVALUATED;
+    //  public static final String PROP_EVALUATIONSTATE = "evaluationState";
 
+    //TODO: move into LearningManager
+    protected boolean isTraining = false;
+    public static final String PROP_ISTRAINING = "isTraining";
+
+    /**
+     * Get the value of isTraining
+     *
+     * @return the value of isTraining
+     */
+    public boolean isIsTraining() {
+        return isTraining;
+    }
+
+    /**
+     * Set the value of isTraining
+     *
+     * @param isTraining new value of isTraining
+     */
+    public void setIsTraining(boolean isTraining) {
+        boolean oldIsTraining = this.isTraining;
+        this.isTraining = isTraining;
+        propertyChangeSupport.firePropertyChange(PROP_ISTRAINING, oldIsTraining, isTraining);
+    }
+
+    void stopTraining() {
+        if (isTraining) {
+            trainingWorker.cancel(true);
+        }
+    }
+
+    private void trainingWorkerChanged(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals("state")) {
+            if (trainingWorker.getState() == SwingWorker.StateValue.DONE) {
+                System.out.println("should be setting training to false here");
+                setIsTraining(false);
+            }
+        } // else if = progress: save this for when extracted to learning manager.
+
+    }
 
     public static String getFileExtension() {
         return "wlsys";
@@ -89,6 +159,7 @@ public class LearningSystem implements Serializable {
     public static String getDefaultLocation() {
         return "learningSystems";
     }
+
     /**
      * Get the value of trainResults
      *
@@ -136,6 +207,28 @@ public class LearningSystem implements Serializable {
         double oldTrainResults = this.trainResults[index];
         this.trainResults[index] = newTrainResults;
         propertyChangeSupport.fireIndexedPropertyChange(PROP_TRAINRESULTS, index, oldTrainResults, newTrainResults);
+    }
+    protected boolean isRunnable = false;
+    public static final String PROP_ISRUNNABLE = "isRunnable";
+
+    /**
+     * Get the value of isRunnable
+     *
+     * @return the value of isRunnable
+     */
+    public boolean isIsRunnable() {
+        return isRunnable;
+    }
+
+    /**
+     * Set the value of isRunnable
+     *
+     * @param isRunnable new value of isRunnable
+     */
+    protected void setIsRunnable(boolean isRunnable) {
+        boolean oldIsRunnable = this.isRunnable;
+        this.isRunnable = isRunnable;
+        propertyChangeSupport.firePropertyChange(PROP_ISRUNNABLE, oldIsRunnable, isRunnable);
     }
 
     /**
@@ -186,26 +279,48 @@ public class LearningSystem implements Serializable {
         this.cvResults[index] = newCvResults;
         propertyChangeSupport.fireIndexedPropertyChange(PROP_CVRESULTS, index, oldCvResults, newCvResults);
     }
+    protected boolean isTrainable = false;
+    public static final String PROP_ISTRAINABLE = "isTrainable";
 
-    public enum LearningAlgorithmsInitializationState {
-        NOT_INITIALIZED,
-        SOME_INITIALIZED,
-        ALL_INITIALIZED
+    /**
+     * Get the value of isTrainable
+     *
+     * @return the value of isTrainable
+     */
+    public boolean isIsTrainable() {
+        return isTrainable;
+    }
+
+    /**
+     * Set the value of isTrainable
+     *
+     * @param isTrainable new value of isTrainable
+     */
+    protected void setIsTrainable(boolean isTrainable) {
+        boolean oldIsTrainable = this.isTrainable;
+        this.isTrainable = isTrainable;
+        propertyChangeSupport.firePropertyChange(PROP_ISTRAINABLE, oldIsTrainable, isTrainable);
+    }
+
+
+    /*   public enum LearningAlgorithmsInitializationState {
+    NOT_INITIALIZED,
+    SOME_INITIALIZED,
+    ALL_INITIALIZED
     };
 
     public enum LearningSystemTrainingState {
-        NOT_TRAINED,
-        TRAINING,
-        TRAINED,
-        ERROR
+    NOT_TRAINED,
+    TRAINING,
+    TRAINED,
+    ERROR
     };
 
     public enum EvaluationState {
-        NOT_EVALUATED,
-        EVALUTATING,
-        DONE_EVALUATING
-    };
-
+    NOT_EVALUATED,
+    EVALUTATING,
+    DONE_EVALUATING
+    }; */
     public enum DatasetState {
 
         NO_DATA,
@@ -213,31 +328,29 @@ public class LearningSystem implements Serializable {
     };
 
     protected enum EvaluationType {
+
         CV,
         TRAINING
     };
-
 
     /**
      * Get the value of evaluationState
      *
      * @return the value of evaluationState
      */
-    public EvaluationState getEvaluationState() {
-        return evaluationState;
-    }
-
+    /*  public EvaluationState getEvaluationState() {
+    return evaluationState;
+    } */
     /**
      * Set the value of evaluationState
      *
      * @param evaluationState new value of evaluationState
      */
-    public void setEvaluationState(EvaluationState evaluationState) {
-        EvaluationState oldEvaluationState = this.evaluationState;
-        this.evaluationState = evaluationState;
-        propertyChangeSupport.firePropertyChange(PROP_EVALUATIONSTATE, oldEvaluationState, evaluationState);
-    }
-
+    /*  public void setEvaluationState(EvaluationState evaluationState) {
+    EvaluationState oldEvaluationState = this.evaluationState;
+    this.evaluationState = evaluationState;
+    propertyChangeSupport.firePropertyChange(PROP_EVALUATIONSTATE, oldEvaluationState, evaluationState);
+    } */
     void addToTraining(double[] features, double[] params) {
         //Add to the training dataset.
         dataset.addInstance(features, params, paramMask, new Date());
@@ -247,7 +360,7 @@ public class LearningSystem implements Serializable {
         Instance[] instances = dataset.convertToClassifiableInstances(features);
         int next = 0;
         for (int i = 0; i < numParams; i++) {
-            if (learners[i] != null) { //classify whether or not learner enabled
+            if (learners[i] != null && learners[i].getTrainingState() == LearningAlgorithm.TrainingState.TRAINED) { //classify whether or not learner enabled
                 if (!paramUsingDistribution[i]) {
                     try {
                         outputs[next] = learners[i].classify(instances[i]);
@@ -264,10 +377,10 @@ public class LearningSystem implements Serializable {
                             outputs[next++] = dist[j];
                         }
                     } catch (Exception ex) {
-                        next+= dist.length;
+                        next += dist.length;
                         Logger.getLogger(LearningSystem.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    
+
                 }
             } else { //learner not active : keep old values, but advance next
                 if (!paramUsingDistribution[i]) {
@@ -280,38 +393,13 @@ public class LearningSystem implements Serializable {
         return outputs;
     }
 
-    /* TODO: Training system is a mess.
-     *
-     * Why keep track of # trained?
-     * - Care about updating GUI with progress
-     * ---> Maybe more appropriate to have status / progress : n of N done w/ message
-     *
-     * - Care about whether all trained so that we can run in future
-     *
-     * */
-    public void train() {
-        setSystemTrainingState(LearningSystemTrainingState.TRAINING);
-
-        for (int i = 0; i < numParams; i++) {
-            if (learners[i] != null && learnerEnabled[i]) {
-                try {
-                    learners[i].train(dataset.getClassifiableInstances(i));
-                } catch (Exception ex) {
-                    Logger.getLogger(LearningSystem.class.getName()).log(Level.SEVERE, null, ex);
-                //TODO lower priority: test this works when error actually occurs in learner
-                }
-            }
-
-        }
-    //s setSystemTrainingState(LearningSystemTrainingState.TRAINED);
-    }
-
-    public void train(int learnerNum) {
-        setSystemTrainingState(LearningSystemTrainingState.TRAINING);
-        if (learners[learnerNum] != null && learnerEnabled[learnerNum]) {
+    protected void train(int learnerNum) {
+        // setSystemTrainingState(LearningSystemTrainingState.TRAINING);
+        if (learners[learnerNum] != null) {
             try {
                 learners[learnerNum].train(dataset.getClassifiableInstances(learnerNum));
             } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, ex.getMessage(), "Could not train", JOptionPane.ERROR_MESSAGE);
                 Logger.getLogger(LearningSystem.class.getName()).log(Level.SEVERE, null, ex);
             //TODO lower priority: test this works when error actually occurs in learner
             }
@@ -319,8 +407,15 @@ public class LearningSystem implements Serializable {
     }
 
     public void trainInBackground() {
-        synchronized (this) {
+        boolean[] which = new boolean[numParams];
+        for (int i = 0; i < numParams; i++) {
+            which[i] = true;
+        }
+        trainInBackground(which);
+    }
 
+    public void trainInBackground(final boolean[] whichLearners) {
+        synchronized (this) {
             //See http://www.j2ee.me/javase/6/docs/api/javax/swing/SwingWorker.html
             if (trainingWorker != null && trainingWorker.getState() != SwingWorker.StateValue.DONE) {
                 //TODO: Cancel?
@@ -329,52 +424,78 @@ public class LearningSystem implements Serializable {
             }
             trainingWorker = new SwingWorker<Integer, Void>() {
 
+                //trainingWorker.
                 @Override
                 public Integer doInBackground() {
-                    train(); //TODO: Add status updates
+                    // train(); //TODO: Add status updates
+                    int progress = 0;
+                    //setProgress(progress);
+                    int numToTrain = 0;
+                    for (int i = 0; i < whichLearners.length; i++) {
+                        if (whichLearners[i]) {
+                            numToTrain++;
+                        }
+                    }
+                    int numTrained = 0;
+                    int numErr = 0;
+                    setTrainingProgress(new TrainingStatus(numToTrain,numTrained,numErr, false));
+
+                    for (int i = 0; i < whichLearners.length; i++) {
+                        if (whichLearners[i] && learners[i] != null) {
+                            try {
+                                learners[i].train(dataset.getClassifiableInstances(i));
+                                numTrained++;
+                            } catch (InterruptedException ex) {
+                                System.out.println("I was cancelled");
+                                return new Integer(0);
+                            } catch (Exception ex) {
+                                numErr++;
+                                JOptionPane.showMessageDialog(null, "Could not train model for parameter " + i + "\n" + ex.getMessage(), "Training error", JOptionPane.ERROR_MESSAGE);
+                                Logger.getLogger(LearningSystem.class.getName()).log(Level.SEVERE, null, ex);
+                            //TODO lower priority: test this works when error actually occurs in learner
+                            }
+                        //    setProgress(progress++);
+                            setTrainingProgress(new TrainingStatus(numToTrain,numTrained, numErr, false));
+                           // System.out.println("progress is " + progress);
+                        }
+
+                    }
+
                     return new Integer(0);
                 }
 
-
-             public void done() {
-               // setTrainingState(
-            }
+                @Override
+                public void done() {
+                    //setProgress(numParams+1);
+                    System.out.println("thread is done");
+                    if (isCancelled()) {
+                        TrainingStatus t = new TrainingStatus(trainingProgress.numToTrain, trainingProgress.numTrained, trainingProgress.numErrorsEncountered, true);
+                       // trainingProgress.wasCancelled = true;
+                        setTrainingProgress(t);
+                        System.out.println("I was cancelled");
+                    }
+                }
             };
-
+            setIsTraining(true);
+            trainingWorker.addPropertyChangeListener(trainingWorkerListener);
             trainingWorker.execute();
         }
     }
 
     public void trainInBackground(int paramNum) {
-        synchronized (this) {
-            //See http://www.j2ee.me/javase/6/docs/api/javax/swing/SwingWorker.html
-            if (trainingWorker != null && trainingWorker.getState() != SwingWorker.StateValue.DONE) {
-                //TODO: ability to Cancel?
-                //trainingWorker.cancel(true);
-                return;
-            }
-            learnerToTrain = paramNum;
-
-            trainingWorker = new SwingWorker<Integer, Void>() {
-
-                @Override
-                public Integer doInBackground() {
-                    train(learnerToTrain); //TODO: Add status updates
-                    return new Integer(0);
-                }
-            };
-
-            trainingWorker.execute();
-        }
+        boolean[] which = new boolean[numParams];
+        which[paramNum] = true;
+        trainInBackground(which);
     }
 
     public void forget() {
         for (int i = 0; i < numParams; i++) {
-            if (learners[i] != null && learnerEnabled[i]) {
+            if (learners[i] != null) {
                 learners[i].forget();
             }
         }
-        setSystemTrainingState(LearningSystemTrainingState.NOT_TRAINED);
+        updateRunnable();
+        updateTrainable();
     }
 
     /**
@@ -382,21 +503,19 @@ public class LearningSystem implements Serializable {
      *
      * @return the value of systemTrainingState
      */
-    public LearningSystemTrainingState getSystemTrainingState() {
-        return systemTrainingState;
-    }
-
+    /* public LearningSystemTrainingState getSystemTrainingState() {
+    return systemTrainingState;
+    } */
     /**
      * Set the value of systemTrainingState
      *
      * @param systemTrainingState new value of systemTrainingState
      */
-    public void setSystemTrainingState(LearningSystemTrainingState systemTrainingState) {
-        LearningSystemTrainingState oldSystemTrainingState = this.systemTrainingState;
-        this.systemTrainingState = systemTrainingState;
-        propertyChangeSupport.firePropertyChange(PROP_SYSTEMTRAININGSTATE, oldSystemTrainingState, systemTrainingState);
-    }
-
+    /* public void setSystemTrainingState(LearningSystemTrainingState systemTrainingState) {
+    LearningSystemTrainingState oldSystemTrainingState = this.systemTrainingState;
+    this.systemTrainingState = systemTrainingState;
+    propertyChangeSupport.firePropertyChange(PROP_SYSTEMTRAININGSTATE, oldSystemTrainingState, systemTrainingState);
+    } */
     /**
      * Get the value of paramMask
      *
@@ -435,24 +554,12 @@ public class LearningSystem implements Serializable {
         this.paramMask[index] = newParamMask;
     }
 
-    public boolean getLearnerEnabled(int learner) {
-        return learnerEnabled[learner];
-    }
-
-    public void setLearnersEnabled(boolean[] enabled) {
-        learnerEnabled = enabled;
-    }
-
-    public void setLearnerEnabled(int learner, boolean enabled) {
-        learnerEnabled[learner] = enabled;
-    }
-
     //Update this when initialization
     ///TODO problem: What if learner swapped mid-training?!?
-    protected void updateTrainingState() {
+    //should disallow this in GUI.
+    protected void updateRunnable() {
         if (learners == null || learners.length == 0) {
-            setSystemTrainingState(LearningSystemTrainingState.NOT_TRAINED);
-            return;
+            setIsRunnable(false);
         }
 
         int numTrained = 0;
@@ -460,28 +567,44 @@ public class LearningSystem implements Serializable {
             if (learners[i] != null) {
                 if (learners[i].getTrainingState() == LearningAlgorithm.TrainingState.TRAINED) {
                     numTrained++;
-                } else if (learners[i].getTrainingState() == LearningAlgorithm.TrainingState.TRAINING) {
-                    setSystemTrainingState(LearningSystemTrainingState.TRAINING);
-                    return;
-                //If any one is training, we'return training overall, even if someone is in error
-                } else if (learners[i].getTrainingState() == LearningAlgorithm.TrainingState.ERROR) {
-                    setSystemTrainingState(LearningSystemTrainingState.ERROR);
-                    return;
                 }
             }
         }
-        if (numTrained == 0) {
-            setSystemTrainingState(LearningSystemTrainingState.NOT_TRAINED);
-            return;
-        } else {
-            setSystemTrainingState(LearningSystemTrainingState.TRAINED); // could consider adding SOME_TRAINED state
-        }
+        setIsRunnable(numTrained > 0);
     }
 
-    protected void updateInitializationState() {
+
+    /*    protected void updateTrainingState() {
+    if (learners == null || learners.length == 0) {
+    setSystemTrainingState(LearningSystemTrainingState.NOT_TRAINED);
+    return;
+    }
+
+    int numTrained = 0;
+    for (int i = 0; i < learners.length; i++) {
+    if (learners[i] != null) {
+    if (learners[i].getTrainingState() == LearningAlgorithm.TrainingState.TRAINED) {
+    numTrained++;
+    } else if (learners[i].getTrainingState() == LearningAlgorithm.TrainingState.TRAINING) {
+    setSystemTrainingState(LearningSystemTrainingState.TRAINING);
+    return;
+    //If any one is training, we'return training overall, even if someone is in error
+    } else if (learners[i].getTrainingState() == LearningAlgorithm.TrainingState.ERROR) {
+    setSystemTrainingState(LearningSystemTrainingState.ERROR);
+    return;
+    }
+    }
+    }
+    if (numTrained == 0) {
+    setSystemTrainingState(LearningSystemTrainingState.NOT_TRAINED);
+    return;
+    } else {
+    setSystemTrainingState(LearningSystemTrainingState.TRAINED); // could consider adding SOME_TRAINED state
+    }
+    } */
+    protected void updateTrainable() {
         if (learners == null || learners.length == 0) {
-            setInitializationState(LearningAlgorithmsInitializationState.NOT_INITIALIZED);
-            return;
+            setIsTrainable(false);
         }
 
         int numInit = 0;
@@ -490,25 +613,46 @@ public class LearningSystem implements Serializable {
                 numInit++;
             }
         }
-        if (numInit == 0) {
-            setInitializationState(LearningAlgorithmsInitializationState.NOT_INITIALIZED);
-        } else if (numInit < numParams) {
-            setInitializationState(LearningAlgorithmsInitializationState.SOME_INITIALIZED);
-        } else {
-            setInitializationState(LearningAlgorithmsInitializationState.ALL_INITIALIZED);
+        if (numInit >= 1) {
+            setIsTrainable(true);
         }
+
     }
+
+    /* protected void updateInitializationState() {
+    if (learners == null || learners.length == 0) {
+    setInitializationState(LearningAlgorithmsInitializationState.NOT_INITIALIZED);
+    return;
+    }
+
+    int numInit = 0;
+    for (int i = 0; i < learners.length; i++) {
+    if (learners[i] != null) {
+    numInit++;
+    }
+    }
+    if (numInit == 0) {
+    setInitializationState(LearningAlgorithmsInitializationState.NOT_INITIALIZED);
+    } else if (numInit < numParams) {
+    setInitializationState(LearningAlgorithmsInitializationState.SOME_INITIALIZED);
+    } else {
+    setInitializationState(LearningAlgorithmsInitializationState.ALL_INITIALIZED);
+    }
+    } */
 
     // protected LearningAlgorithmsInitializationState state = LearningAlgorithmsInitializationState.NOT_INITIALIZED;
     // public static final String PROP_STATE = "state";
     private void learnerPropertyChanged(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(LearningAlgorithm.PROP_TRAININGSTATE)) {
-            LearningAlgorithm.TrainingState newState =
-                    (LearningAlgorithm.TrainingState) evt.getNewValue();
-            LearningAlgorithm.TrainingState oldState =
-                    (LearningAlgorithm.TrainingState) evt.getOldValue();
-            updateTrainingState();
+            updateRunnable();
         }
+    /* if (evt.getPropertyName().equals(LearningAlgorithm.PROP_TRAININGSTATE)) {
+    LearningAlgorithm.TrainingState newState =
+    (LearningAlgorithm.TrainingState) evt.getNewValue();
+    LearningAlgorithm.TrainingState oldState =
+    (LearningAlgorithm.TrainingState) evt.getOldValue();
+    updateTrainingState();
+    } */
     }
 
     /**
@@ -526,7 +670,9 @@ public class LearningSystem implements Serializable {
      * @param learners new value of learners
      */
     public void setLearners(LearningAlgorithm[] learners) {
-        //TODO: check that length is valid (= numParams)
+        if (learners.length != numParams) {
+            throw new IllegalArgumentException("learners length does not match number of parameters (" + numParams + " expected)");
+        }
 
         if (this.learners != null) {
             for (int i = 0; i < this.learners.length; i++) {
@@ -544,8 +690,10 @@ public class LearningSystem implements Serializable {
             }
         }
 
-        updateInitializationState();
-        updateTrainingState();
+        // updateInitializationState();
+        updateTrainable();
+        //updateTrainingState();
+        updateRunnable();
         fireLearnerChanged();
     }
 
@@ -574,18 +722,23 @@ public class LearningSystem implements Serializable {
         if (this.learners[index] != null) {
             this.learners[index].addPropertyChangeListener(learnerChangeListener);
         }
-        updateInitializationState();
-        updateTrainingState();
+        //   updateInitializationState();
+        updateTrainable();
+        // updateTrainingState();
+        updateRunnable();
         fireLearnerChanged();
     }
 
     public LearningSystem(int numParams) {
         this.numParams = numParams;
         learners = new LearningAlgorithm[numParams];
-        learnerEnabled = new boolean[numParams];
+        //  learnerEnabled = new boolean[numParams];
         paramUsingDistribution = new boolean[numParams];
         cvResults = new double[numParams];
         trainResults = new double[numParams];
+
+        //tmp
+        ChuckSystem cs = ChuckSystem.getChuckSystem();
 
         numMaxValsForParameter = ChuckSystem.getChuckSystem().getNumSynthMaxParamVals();
         for (int i = 0; i < numParams; i++) {
@@ -600,11 +753,11 @@ public class LearningSystem implements Serializable {
         setOutputsArray(paramUsingDistribution, numMaxValsForParameter);
         paramMask = new boolean[numParams];
         for (int i = 0; i < numParams; i++) {
-            learnerEnabled[i] = true;
+            //  learnerEnabled[i] = true;
             paramMask[i] = true;
         }
 
-      //  setScore(new PlayalongScore(numParams));
+    //  setScore(new PlayalongScore(numParams));
     }
 
     /**
@@ -642,21 +795,19 @@ public class LearningSystem implements Serializable {
      *
      * @return the value of initializationState
      */
-    public LearningAlgorithmsInitializationState getInitializationState() {
-        return initializationState;
-    }
-
+    /*    public LearningAlgorithmsInitializationState getInitializationState() {
+    return initializationState;
+    } */
     /**
      * Set the value of initializationState
      *
      * @param initializationState new value of initializationState
      */
-    protected void setInitializationState(LearningAlgorithmsInitializationState initializationState) {
-        LearningAlgorithmsInitializationState oldInitializationState = this.initializationState;
-        this.initializationState = initializationState;
-        propertyChangeSupport.firePropertyChange(PROP_INITIALIZATIONSTATE, oldInitializationState, initializationState);
-    }
-
+    /*   protected void setInitializationState(LearningAlgorithmsInitializationState initializationState) {
+    LearningAlgorithmsInitializationState oldInitializationState = this.initializationState;
+    this.initializationState = initializationState;
+    propertyChangeSupport.firePropertyChange(PROP_INITIALIZATIONSTATE, oldInitializationState, initializationState);
+    } */
     /**
      * Get the value of datasetState
      *
@@ -711,8 +862,8 @@ public class LearningSystem implements Serializable {
 
     public void computeTrainingAccuracyInBackground(int paramNum) throws Exception {
         synchronized (this) {
-            if (evaluationState != EvaluationState.EVALUTATING && systemTrainingState == LearningSystemTrainingState.TRAINED) {
-                setEvaluationState(evaluationState.EVALUTATING);
+            if (isRunnable) {
+                //    setEvaluationState(evaluationState.EVALUTATING);
                 evaluationWorker = new EvaluationWorker();
                 learnerToEvaluate = paramNum;
                 evaluationType = EvaluationType.TRAINING;
@@ -729,9 +880,9 @@ public class LearningSystem implements Serializable {
 
     public void computeCVAccuracyInBackground(int paramNum, int numFolds) throws Exception {
         synchronized (this) {
-            if (evaluationState != EvaluationState.EVALUTATING && systemTrainingState == LearningSystemTrainingState.TRAINED) {
+            if (isRunnable) {
                 evaluationWorker = new EvaluationWorker();
-                setEvaluationState(evaluationState.EVALUTATING);
+                //   setEvaluationState(evaluationState.EVALUTATING);
                 learnerToEvaluate = paramNum;
                 this.numFolds = numFolds;
                 evaluationType = EvaluationType.CV;
@@ -742,31 +893,29 @@ public class LearningSystem implements Serializable {
         }
     }
 
-    public void computeCVAccuracy(int numFolds) throws Exception {
-        if (evaluationState != EvaluationState.EVALUTATING && systemTrainingState == LearningSystemTrainingState.TRAINED) {
-            setEvaluationState(EvaluationState.EVALUTATING);
-            double[] a = new double[numParams];
-            for (int i = 0; i < numParams; i++) {
-                if (learners[i] != null) {
-                    a[i] = learners[i].computeCVAccuracy(numFolds, dataset.getClassifiableInstances(i));
-                    setCvResults(i, a[i]);
-                }
-            }
-            setEvaluationState(EvaluationState.EVALUTATING.DONE_EVALUATING);
-        } else {
-            throw new Exception("Cannot evaluate; either already evaluating, or not trained");
-        }
+    /*public void computeCVAccuracy(int numFolds) throws Exception {
+    if (isRunnable) {
+    //  setEvaluationState(EvaluationState.EVALUTATING);
+    double[] a = new double[numParams];
+    for (int i = 0; i < numParams; i++) {
+    if (learners[i] != null) {
+    a[i] = learners[i].computeCVAccuracy(numFolds, dataset.getClassifiableInstances(i));
+    setCvResults(i, a[i]);
     }
-
+    }
+    //  setEvaluationState(EvaluationState.EVALUTATING.DONE_EVALUATING);
+    } else {
+    throw new Exception("Cannot evaluate; either already evaluating, or not trained");
+    }
+    } */
     protected void updateDatasetState() {
-            if (dataset.isHasInstances()) {
-                setDatasetState(DatasetState.HAS_DATA);
-            } else {
-                setDatasetState(DatasetState.NO_DATA);
-            }
+        if (dataset.isHasInstances()) {
+            setDatasetState(DatasetState.HAS_DATA);
+        } else {
+            setDatasetState(DatasetState.NO_DATA);
+        }
 
     }
-
 
     protected void datasetChanged(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(SimpleDataset.PROP_HASINSTANCES)) {
@@ -851,21 +1000,19 @@ public class LearningSystem implements Serializable {
      *
      * @return the value of score
      */
- /*   public PlayalongScore getScore() {
-        return score;
+    /*   public PlayalongScore getScore() {
+    return score;
     } */
-
     /**
      * Set the value of score
      *
      * @param score new value of score
      */
-/*    public void setScore(PlayalongScore score) {
-        PlayalongScore oldScore = this.score;
-        this.score = score;
-        propertyChangeSupport.firePropertyChange(PROP_SCORE, oldScore, score);
+    /*    public void setScore(PlayalongScore score) {
+    PlayalongScore oldScore = this.score;
+    this.score = score;
+    propertyChangeSupport.firePropertyChange(PROP_SCORE, oldScore, score);
     } */
-
     public void addLearnerChangeListener(ChangeListener l) {
         listenerList.add(ChangeListener.class, l);
     }
@@ -936,7 +1083,7 @@ public class LearningSystem implements Serializable {
 
         @Override
         protected void done() {
-            setEvaluationState(EvaluationState.DONE_EVALUATING);
+            //   setEvaluationState(EvaluationState.DONE_EVALUATING);
         }
     }
 
@@ -951,26 +1098,26 @@ public class LearningSystem implements Serializable {
     }
 
     public static LearningSystem readFromFileOld(File f) throws Exception {
-        final LearningSystem ls = (LearningSystem)SerializedFileUtil.readFromFile(f);
+        final LearningSystem ls = (LearningSystem) SerializedFileUtil.readFromFile(f);
         ls.listenerList = new EventListenerList();
-                //System.out.println("Dataset state is " + ls.datasetState);
+        //System.out.println("Dataset state is " + ls.datasetState);
 
         LearningAlgorithm[] algs = ls.getLearners();
 
         ls.learnerChangeListener = new PropertyChangeListener() {
 
-        public void propertyChange(PropertyChangeEvent evt) {
-            ls.learnerPropertyChanged(evt);
-        }
-    };
+            public void propertyChange(PropertyChangeEvent evt) {
+                ls.learnerPropertyChanged(evt);
+            }
+        };
         ls.datasetListener = new PropertyChangeListener() {
 
-        public void propertyChange(PropertyChangeEvent evt) {
-            ls.datasetChanged(evt);
-        }
-    };
+            public void propertyChange(PropertyChangeEvent evt) {
+                ls.datasetChanged(evt);
+            }
+        };
 
-    //TODO: what about score player?
+        //TODO: what about score player?
 
         ls.setLearners(algs); //re-adds property change listeners!
 
@@ -991,38 +1138,60 @@ public class LearningSystem implements Serializable {
     }
 
     public void writeToOutputStreamNew(ObjectOutputStream o) throws IOException {
-        
-            o.writeInt(numParams);
-            o.writeObject(paramUsingDistribution);
-            o.writeObject(numMaxValsForParameter);
-            o.writeObject(learners);
-            if (dataset == null) {
-                o.writeInt(0);
-            } else {
-                o.writeInt(1);
-                dataset.writeToOutputStreamNew(o);
-            }
-       
+
+        o.writeInt(numParams);
+        o.writeObject(paramUsingDistribution);
+        o.writeObject(numMaxValsForParameter);
+        o.writeObject(learners);
+        if (dataset == null) {
+            o.writeInt(0);
+        } else {
+            o.writeInt(1);
+            dataset.writeToOutputStreamNew(o);
+        }
+
     }
 
     public static LearningSystem loadFromInputStream(ObjectInputStream i) throws IOException, ClassNotFoundException {
-            LearningSystem ls = null;
-            int numParams = i.readInt();
-            ls = new LearningSystem(numParams);
-            ls.paramUsingDistribution = (boolean[]) i.readObject(); //TODO: may have to init this bit by bit...
-            int[] numMax = (int[]) i.readObject();
-            ls.setNumMaxValsForParameter(numMax);
-            LearningAlgorithm[] algs = (LearningAlgorithm[]) i.readObject();
-            ls.setLearners(algs);
-            int flag = i.readInt();
-            if (flag == 0) {
-                ls.setDataset(null);
-            } else {
-                SimpleDataset ds = SimpleDataset.loadFromInputStream(i);
-                ls.setDataset(ds);
-            }
-            return ls;
+        LearningSystem ls = null;
+        int numParams = i.readInt();
+        ls = new LearningSystem(numParams);
+        ls.paramUsingDistribution = (boolean[]) i.readObject(); //TODO: may have to init this bit by bit...
+        int[] numMax = (int[]) i.readObject();
+        ls.setNumMaxValsForParameter(numMax);
+        LearningAlgorithm[] algs = (LearningAlgorithm[]) i.readObject();
+        ls.setLearners(algs);
+        int flag = i.readInt();
+        if (flag == 0) {
+            ls.setDataset(null);
+        } else {
+            SimpleDataset ds = SimpleDataset.loadFromInputStream(i);
+            ls.setDataset(ds);
+        }
+        return ls;
 
+    }
+
+    public static class TrainingStatus {
+        protected int numToTrain = 0;
+        protected int numTrained = 0;
+        protected int numErrorsEncountered = 0;
+        boolean wasCancelled = false;
+
+        public TrainingStatus(int numToTrain, int numTrained, int numErr, boolean wasCancelled) {
+            this.numToTrain = numToTrain;
+            this.numTrained = numTrained;
+            this.numErrorsEncountered = numErr;
+            this.wasCancelled = wasCancelled;
+        }
+
+        public TrainingStatus() {
+            this.numToTrain = 0;
+            this.numTrained = 0;
+            this.numErrorsEncountered = 0;
+            this.wasCancelled = false;
+
+        }
     }
 }
 

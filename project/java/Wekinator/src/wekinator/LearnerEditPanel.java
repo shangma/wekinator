@@ -100,6 +100,7 @@ public class LearnerEditPanel extends javax.swing.JPanel {
         panelLearnerSettings.removeAll();
         panelLearnerSettings.add(al.getSettingsPanel().getPanel());
         checkNNGui.setVisible(al instanceof NNLearningAlgorithm);
+
         panelLearnerSettings.repaint();
     }
 
@@ -132,8 +133,8 @@ public class LearnerEditPanel extends javax.swing.JPanel {
                     labelTrainingStatus.setText("");
                 } else if (state == TrainingState.TRAINED) {
                     labelTrainingStatus.setText("Trained");
-                } else if (state == TrainingState.ERROR) {
-                    labelTrainingStatus.setText("Encountered error while training");
+                //}// else if (state == TrainingState.ERROR) {
+                //    labelTrainingStatus.setText("Encountered error while training");
                 } else {
                     labelTrainingStatus.setText("Unknown training status.");
                 }
@@ -215,7 +216,7 @@ public class LearnerEditPanel extends javax.swing.JPanel {
                     .add(jPanel9Layout.createSequentialGroup()
                         .addContainerGap()
                         .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(labelLearnerDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 439, Short.MAX_VALUE)
+                            .add(labelLearnerDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
                             .add(jPanel9Layout.createSequentialGroup()
                                 .add(buttonSaveLearner)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -223,7 +224,7 @@ public class LearnerEditPanel extends javax.swing.JPanel {
                     .add(jPanel9Layout.createSequentialGroup()
                         .add(checkNNGui)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(labelTrainingStatus, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE))
+                        .add(labelTrainingStatus, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 308, Short.MAX_VALUE))
                     .add(jPanel9Layout.createSequentialGroup()
                         .addContainerGap()
                         .add(buttonRetrain)
@@ -258,8 +259,11 @@ public class LearnerEditPanel extends javax.swing.JPanel {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(accuracyPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 491, Short.MAX_VALUE)
-            .add(jPanel9, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, accuracyPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel9, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(36, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -276,7 +280,9 @@ public class LearnerEditPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 476, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

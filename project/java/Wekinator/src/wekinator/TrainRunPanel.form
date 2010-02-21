@@ -28,19 +28,14 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="buttonShh" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="menuPanel" min="-2" max="-2" attributes="0"/>
-                          <Component id="buttonSave" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
-                      <Component id="layoutPanel" min="-2" max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="buttonShh" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="buttonSave" min="-2" max="-2" attributes="0"/>
+                  <Component id="menuPanel" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="layoutPanel" pref="483" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -49,16 +44,19 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="layoutPanel" alignment="0" min="-2" max="-2" attributes="1"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="layoutPanel" pref="712" max="32767" attributes="1"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="menuPanel" min="-2" max="-2" attributes="1"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="buttonShh" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="buttonSave" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="310" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace min="-2" pref="114" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -68,13 +66,6 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignCardLayout"/>
       <SubComponents>
-        <Component class="wekinator.BuildPanel" name="buildPanel">
-          <Constraints>
-            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
-              <CardConstraints cardName="cardBuild"/>
-            </Constraint>
-          </Constraints>
-        </Component>
         <Component class="wekinator.TrainPanel" name="trainPanel">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
@@ -86,6 +77,13 @@
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
               <CardConstraints cardName="cardRun"/>
+            </Constraint>
+          </Constraints>
+        </Component>
+        <Component class="wekinator.BuildPanel" name="buildPanel">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
+              <CardConstraints cardName="cardBuild"/>
             </Constraint>
           </Constraints>
         </Component>
@@ -103,57 +101,64 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="buttonTrain" linkSize="2" alignment="0" min="-2" pref="236" max="-2" attributes="0"/>
-              <Component id="buttonRun" linkSize="2" alignment="0" min="-2" pref="236" max="-2" attributes="0"/>
-              <Component id="buttonConfigure" linkSize="2" alignment="0" min="-2" pref="236" max="-2" attributes="0"/>
-              <Component id="buttonCollect" alignment="0" pref="236" max="32767" attributes="0"/>
+              <Group type="102" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                      <Component id="toggleConfigure" alignment="0" max="32767" attributes="1"/>
+                      <Component id="toggleRun" alignment="0" max="32767" attributes="1"/>
+                      <Component id="toggleTrain" alignment="0" max="32767" attributes="1"/>
+                      <Component id="toggleCollect" alignment="0" pref="226" max="32767" attributes="1"/>
+                  </Group>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
+              </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <Component id="buttonCollect" min="-2" pref="76" max="-2" attributes="0"/>
+                  <Component id="toggleCollect" min="-2" pref="37" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="buttonTrain" linkSize="1" min="-2" pref="69" max="-2" attributes="0"/>
-                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Component id="buttonRun" linkSize="1" min="-2" pref="70" max="-2" attributes="0"/>
-                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Component id="buttonConfigure" linkSize="1" min="-2" pref="80" max="-2" attributes="0"/>
+                  <Component id="toggleTrain" min="-2" pref="37" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="toggleRun" min="-2" pref="37" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="toggleConfigure" min="-2" pref="37" max="-2" attributes="0"/>
+                  <EmptySpace pref="172" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
       </Layout>
       <SubComponents>
-        <Component class="javax.swing.JButton" name="buttonCollect">
+        <Component class="javax.swing.JToggleButton" name="toggleCollect">
           <Properties>
-            <Property name="text" type="java.lang.String" value="COLLECT DATA"/>
+            <Property name="text" type="java.lang.String" value="Collect data..."/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonCollectActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="toggleCollectActionPerformed"/>
           </Events>
         </Component>
-        <Component class="javax.swing.JButton" name="buttonTrain">
+        <Component class="javax.swing.JToggleButton" name="toggleTrain">
           <Properties>
-            <Property name="text" type="java.lang.String" value="TRAIN"/>
+            <Property name="text" type="java.lang.String" value="Train..."/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonTrainActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="toggleTrainActionPerformed"/>
           </Events>
         </Component>
-        <Component class="javax.swing.JButton" name="buttonRun">
+        <Component class="javax.swing.JToggleButton" name="toggleRun">
           <Properties>
-            <Property name="text" type="java.lang.String" value="RUN"/>
+            <Property name="text" type="java.lang.String" value="Run..."/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonRunActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="toggleRunActionPerformed"/>
           </Events>
         </Component>
-        <Component class="javax.swing.JButton" name="buttonConfigure">
+        <Component class="javax.swing.JToggleButton" name="toggleConfigure">
           <Properties>
-            <Property name="text" type="java.lang.String" value="CONFIGURE &amp; EVALUATE"/>
+            <Property name="text" type="java.lang.String" value="Configure &amp; evaluate..."/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonConfigureActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="toggleConfigureActionPerformed"/>
           </Events>
         </Component>
       </SubComponents>

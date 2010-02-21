@@ -14,8 +14,8 @@ import java.awt.CardLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.DefaultComboBoxModel;
-import wekinator.LearningSystem.EvaluationState;
-import wekinator.LearningSystem.LearningAlgorithmsInitializationState;
+//import wekinator.LearningSystem.EvaluationState;
+//import wekinator.LearningSystem.LearningAlgorithmsInitializationState;
         //TODO TODO TODO: If learning algorithm changed, or re-trained, clear records of previous evaluations
 
 
@@ -100,8 +100,8 @@ public class EditPanel extends javax.swing.JPanel {
 
         comboEditSelection = new javax.swing.JComboBox();
         panelDrilldown = new javax.swing.JPanel();
-        panelAllAccuracy = new wekinator.AllAccuracy();
         learnerEditPanel1 = new wekinator.LearnerEditPanel();
+        panelAllAccuracy = new wekinator.AllAccuracy();
 
         comboEditSelection.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "All models", "Model for Parameter 0 - Bow position", "Model for Parameter 1 - Pow tension", "Modle for Parameter 2 - Panning" }));
         comboEditSelection.addActionListener(new java.awt.event.ActionListener() {
@@ -111,18 +111,19 @@ public class EditPanel extends javax.swing.JPanel {
         });
 
         panelDrilldown.setLayout(new java.awt.CardLayout());
-        panelDrilldown.add(panelAllAccuracy, "card3");
         panelDrilldown.add(learnerEditPanel1, "card4");
+
+        panelAllAccuracy.setMinimumSize(new java.awt.Dimension(200, 200));
+        panelDrilldown.add(panelAllAccuracy, "card3");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(comboEditSelection, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(panelDrilldown, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 513, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                .add(comboEditSelection, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(96, Short.MAX_VALUE))
+            .add(panelDrilldown, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 382, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -174,7 +175,7 @@ public class EditPanel extends javax.swing.JPanel {
             for (int i = 0; i < numParams; i++) {
                 learnerPanels[i].getAccuracyPanel().updateResults(results, false);
             }
-        } else if (s.equals(LearningSystem.PROP_EVALUATIONSTATE)) {
+        }/* else if (s.equals(LearningSystem.PROP_EVALUATIONSTATE)) {
             EvaluationState es = learningSystem.getEvaluationState();
             if (es == EvaluationState.DONE_EVALUATING) {
                 panelAllAccuracy.evaluationFinished();
@@ -186,13 +187,13 @@ public class EditPanel extends javax.swing.JPanel {
             panelAllAccuracy.setEvaluationEnabled(es != EvaluationState.EVALUTATING);
             for (int i = 0; i < numParams; i++) {
                 learnerPanels[i].getAccuracyPanel().setEvaluationEnabled(es != EvaluationState.EVALUTATING);
-            }
-        }
+            } */
+       // }
         setButtonsEnabled();
     }
 
     protected void setButtonsEnabled() {
-        LearningSystem.LearningSystemTrainingState lsts = learningSystem.getSystemTrainingState();
+     /*   LearningSystem.LearningSystemTrainingState lsts = learningSystem.getSystemTrainingState();
         LearningSystem.DatasetState dbs = learningSystem.getDatasetState();
         LearningSystem.EvaluationState es = learningSystem.getEvaluationState();
         LearningSystem.LearningAlgorithmsInitializationState lais = learningSystem.getInitializationState();
@@ -211,6 +212,6 @@ public class EditPanel extends javax.swing.JPanel {
             for (int i = 0; i < numParams; i++) {
                 learnerPanels[i].getAccuracyPanel().setEvaluationEnabled(enable);
             }
-
+           */
     }
 }

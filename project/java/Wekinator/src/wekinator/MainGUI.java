@@ -677,14 +677,17 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
         }
     }
 
-    /** To keep */
+    //TODO: Get all this logic out of the gui! 
     private void chuckSystemPropertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(ChuckSystem.PROP_STATE)) {
             ChuckSystem cs = ChuckSystem.getChuckSystem();
             updateGUIforChuckSystem();
             // panelTabLearningSystemConfiguration.setEnabled(cs.getState() == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID);
             if (evt.getOldValue() != ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID && evt.getNewValue() == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID) {
-                learningSystemConfigurationPanel.configure(cs.getNumParams(), cs.getParamNames(), cs.isIsParamDiscrete(), WekinatorInstance.getWekinatorInstance().getFeatureConfiguration());
+              //  learningSystemConfigurationPanel.configure(cs.getNumParams(), cs.getParamNames(), cs.isIsParamDiscrete(), WekinatorInstance.getWekinatorInstance().getFeatureConfiguration());
+                //WekinatorInstance.getWekinatorInstance().setNumParams(cs.getNumParams());
+                //WekinatorInstance.getWekinatorInstance().setParamNames(
+
                 panelMainTabs.setSelectedComponent(panelTabLearningSystemConfiguration);
                 if (WekinatorRunner.getLearningSystemFile() != null) {
                     try {

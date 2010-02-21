@@ -8,7 +8,6 @@
  *
  * Created on Dec 6, 2009, 9:54:58 PM
  */
-
 package wekinator;
 
 import java.beans.PropertyChangeEvent;
@@ -16,11 +15,11 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import wekinator.LearningAlgorithms.LearningAlgorithm;
 import wekinator.LearningAlgorithms.NNLearningAlgorithm;
-import wekinator.LearningSystem.DatasetState;
-import wekinator.LearningSystem.EvaluationState;
-import wekinator.LearningSystem.LearningSystemTrainingState;
+import wekinator.LearningSystem.TrainingStatus;
 
 /**
  *
@@ -29,65 +28,56 @@ import wekinator.LearningSystem.LearningSystemTrainingState;
 public class TrainPanel extends javax.swing.JPanel {
 
     protected LearningSystem learningSystem = null;
-    protected boolean[] learnerSelected = null;
     protected JCheckBox[] learnerBoxes = null;
-    int numEnabled = 0;
-    int numNNs = 0;
-    int numTotal = 0;
 
     protected PropertyChangeListener learningSystemChangeListener = new PropertyChangeListener() {
-
         public void propertyChange(PropertyChangeEvent evt) {
-            learningSystemChanged(evt);
+            learningSystemPropertyChanged(evt);
         }
-
     };
-//TODO low priority: Ultimately want to know if change in whether NNs are used; not relevant yet.
 
-        private void learningSystemChanged(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(LearningSystem.PROP_SYSTEMTRAININGSTATE)) {
-                setTrainingStatusForLearningSystem();
-
-            }
-            setButtonEnable();
+    private ChangeListener learnerChangeListener = new ChangeListener() {
+        public void stateChanged(ChangeEvent e) {
+            learningAlgorithmsChanged(e);
         }
+    };
 
-        protected void setButtonEnable() {
-            LearningSystemTrainingState lst = learningSystem.getSystemTrainingState();
-            EvaluationState et = learningSystem.getEvaluationState();
-            DatasetState dt = learningSystem.getDatasetState();
-          //  LearningSystemlearningSystem.getInitializationState();
+    private void learningAlgorithmsChanged(ChangeEvent e) {
+            updateGuiForNN();
+    }
 
-            boolean trainEnable = (lst != LearningSystemTrainingState.TRAINING
-                    && et != EvaluationState.EVALUTATING
-                    && dt == DatasetState.HAS_DATA);
-            buttonTrain.setEnabled(trainEnable);
-
-            boolean untrainEnable = (lst != LearningSystemTrainingState.NOT_TRAINED
-                    && lst != LearningSystemTrainingState.TRAINING
-                    && et != EvaluationState.EVALUTATING);
-
-            buttonUntrain.setEnabled(untrainEnable);
-
+    private void learningSystemPropertyChanged(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(LearningSystem.PROP_TRAININGPROGRESS)) {
+            updateTrainingProgress(learningSystem.getTrainingProgress());
+        } else if (evt.getPropertyName().equals(LearningSystem.PROP_ISTRAINABLE)) {
+            updateButtons();
         }
-
-        protected void setTrainingStatusForLearningSystem() {
-               LearningSystem.LearningSystemTrainingState s= learningSystem.getSystemTrainingState();
-               if (s == LearningSystemTrainingState.TRAINING) {
-                   labelTrainingStatus.setText("Models are training...");
-                } else if (s == LearningSystemTrainingState.NOT_TRAINED) {
-                    labelTrainingStatus.setText("Models not yet trained.");
-                } else if (s == LearningSystemTrainingState.TRAINED) {
-                    labelTrainingStatus.setText("Training finished; " + learningSystem.getNumLearnersTrained() + " of " + numTotal + " models trained and usable");
-                } else if (s == LearningSystemTrainingState.ERROR) {
-                    labelTrainingStatus.setText("Errors encountered in the training process.");
-                }
-            }
-        
+    }
 
     /** Creates new form TrainPanel */
     public TrainPanel() {
         initComponents();
+        WekinatorLearningManager.getInstance().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                learningManagerPropertyChange(evt);
+            }
+        });
+    }
+
+    private void updateButtons() {
+        WekinatorLearningManager.Mode m = WekinatorLearningManager.getInstance().getMode();
+        buttonTrain.setEnabled(m == WekinatorLearningManager.Mode.NONE && learningSystem.isIsTrainable());
+        buttonSelectModels.setVisible(learningSystem != null && learningSystem.getNumParams() > 1);
+        buttonUntrain.setEnabled(m == WekinatorLearningManager.Mode.NONE && learningSystem != null && learningSystem.isIsRunnable());
+        buttonCancelTrain.setEnabled(m == WekinatorLearningManager.Mode.TRAINING);
+    }
+
+    private void learningManagerPropertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(WekinatorLearningManager.PROP_MODE)) {
+            updateButtons();
+        } else if (evt.getPropertyName().equals(WekinatorLearningManager.PROP_TRAININGMASK)) {
+            updateGuiForEnabled();
+        }
     }
 
     private int computeNumLearnersSelected() {
@@ -102,46 +92,51 @@ public class TrainPanel extends javax.swing.JPanel {
             }
         }
         return n;
-    
     }
 
-    private void updateLearnerSelectionFrame() {
+    private void tryUpdateSelectionFrameForTrainingMask() {
+        boolean[] mask = WekinatorLearningManager.getInstance().getTrainingMask();
+        if (mask != null && learningSystem != null && mask.length == learningSystem.getNumParams()) {
+            for (int i = 0; i < mask.length; i++) {
+                learnerBoxes[i].setEnabled(mask[i]);
+            }
+        }
+    }
+
+    private void updateLearnerSelectionFrameForLearningSystem() {
         panelFeatures.removeAll();
 //        FeatureConfiguration fc = WekinatorLearningManager.getInstance().getFeatureConfiguration();
         if (learningSystem != null) {
             String[] parameterNames = learningSystem.getDataset().getParameterNames();
-            if (learnerSelected == null || learnerSelected.length != parameterNames.length) {
-                learnerSelected = new boolean[parameterNames.length];
+            if (parameterNames != null) {
                 learnerBoxes = new JCheckBox[parameterNames.length];
-               
-            }
+                for (int i = 0; i < parameterNames.length; i++) {
+                    JPanel next = new JPanel();
+                    // JLabel nextName= new JLabel(featureNames[i]);
+                    // JCheckBox tmp = new JCheckBox
+                    learnerBoxes[i] = new JCheckBox(parameterNames[i], true);
+                    next.setAlignmentX(1.0F);
+                    learnerBoxes[i].setAlignmentX(0.0F);
+                    learnerBoxes[i].setAlignmentY(0.0F);
 
-                            for (int i = 0; i < parameterNames.length; i++) {
-                    learnerSelected[i] = learningSystem.getLearnerEnabled(i);
+                    next.add(learnerBoxes[i]);
+
+                    //next.setAl
+                    panelFeatures.add(next);
+
                 }
+            } else {
+                System.out.println("log: error: param names null");
 
-
-            for (int i = 0; i < parameterNames.length; i++) {
-                JPanel next = new JPanel();
-                // JLabel nextName= new JLabel(featureNames[i]);
-                // JCheckBox tmp = new JCheckBox
-                learnerBoxes[i] = new JCheckBox(parameterNames[i], learnerSelected[i]);
-                next.setAlignmentX(1.0F);
-                learnerBoxes[i].setAlignmentX(0.0F);
-                learnerBoxes[i].setAlignmentY(0.0F);
-
-                next.add(learnerBoxes[i]);
-                
-                //next.setAl
-                panelFeatures.add(next);
 
             }
+            tryUpdateSelectionFrameForTrainingMask();
         }
         //if (featureM.isVisible()) {
         learnerMaskFrame.setSize(500, 300);
         learnerMaskFrame.repaint();
     //}
-    
+
     }
 
     void setLearningSystem(LearningSystem ls) {
@@ -149,53 +144,61 @@ public class TrainPanel extends javax.swing.JPanel {
             return;
         }
         //Remove old listeners
-        if (learningSystem != null) { //remove prior listeners
+        if (learningSystem != null) {
             learningSystem.removePropertyChangeListener(learningSystemChangeListener);
+            learningSystem.removeLearnerChangeListener(learnerChangeListener);
         }
 
         this.learningSystem = ls;
         learningSystem.addPropertyChangeListener(learningSystemChangeListener);
-        
-        numTotal = ls.getNumParams();
-        updateLearnerSelectionFrame();
+        learningSystem.addLearnerChangeListener(learnerChangeListener);
 
-        numEnabled = 0;
-        numNNs = 0;
-        for (int i= 0 ; i < ls.getNumParams(); i++) {
-             if (ls.getLearnerEnabled(i))
-                 numEnabled++;
+        updateLearnerSelectionFrameForLearningSystem();
 
-             if (ls.getLearners(i) instanceof NNLearningAlgorithm) {
-                numNNs++;
-             }
-        }
 
-        //TODO add change listener to learning system!??! yes. TODO TODO TODO
-        setButtonEnable();
         updateGuiForEnabled();
         updateGuiForNN();
         updateLearnersForNN();
+        updateButtons();
+        updateTrainingProgress(learningSystem.getTrainingProgress());
     }
 
     protected void updateLearnersForNN() {
         LearningAlgorithm[] algs = learningSystem.getLearners();
         for (int i = 0; i < algs.length; i++) {
             if (algs[i] instanceof NNLearningAlgorithm) {
-                ((NNLearningAlgorithm)algs[i]).setUseGui(checkNNGui.isSelected());
+                ((NNLearningAlgorithm) algs[i]).setUseGui(checkNNGui.isSelected());
             }
         }
     }
 
     protected void updateGuiForEnabled() {
-        labelSelected.setText(numEnabled + " of " + numTotal + " will be trained");
+        boolean[] mask = WekinatorLearningManager.getInstance().getTrainingMask();
+        if (mask == null || mask.length == 0) {
+            labelSelected.setText("No models to train");
+            return;
+        }
+
+        int numEnabled = 0;
+        for (int i = 0; i < mask.length; i++) {
+            if (mask[i]) {
+                numEnabled++;
+            }
+        }
+
+        labelSelected.setText(numEnabled + " of " + mask.length + " will be trained");
     }
 
     protected void updateGuiForNN() {
-       
-            checkNNGui.setVisible(numNNs > 0);
-        
+        int numNNs = 0;
+        for (int i = 0; i < learningSystem.getNumParams(); i++) {
+            if (learningSystem.getLearners(i) instanceof NNLearningAlgorithm) {
+                numNNs++;
+            }
+        }
+        checkNNGui.setVisible(numNNs > 0);
+
     }
-  
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -241,8 +244,10 @@ public class TrainPanel extends javax.swing.JPanel {
         buttonCancel = new javax.swing.JButton();
         buttonOK = new javax.swing.JButton();
         jPanel8 = new javax.swing.JPanel();
-        labelTrainingStatus = new javax.swing.JLabel();
+        labelTrainingStatus1 = new javax.swing.JLabel();
         buttonCancelTrain = new javax.swing.JButton();
+        labelTrainingStatus2 = new javax.swing.JLabel();
+        labelTrainingStatus3 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         buttonTrain = new javax.swing.JButton();
         checkNNGui = new javax.swing.JCheckBox();
@@ -261,11 +266,6 @@ public class TrainPanel extends javax.swing.JPanel {
         jCheckBox3.setText("jCheckBox2");
         jCheckBox3.setAlignmentX(0.5F);
         jCheckBox3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jCheckBox3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBox3ActionPerformed(evt);
-            }
-        });
 
         org.jdesktop.layout.GroupLayout jPanel4Layout = new org.jdesktop.layout.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -285,11 +285,6 @@ public class TrainPanel extends javax.swing.JPanel {
         jCheckBox4.setText("jCheckBox2");
         jCheckBox4.setAlignmentX(0.5F);
         jCheckBox4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jCheckBox4.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBox4ActionPerformed(evt);
-            }
-        });
 
         org.jdesktop.layout.GroupLayout jPanel5Layout = new org.jdesktop.layout.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -309,11 +304,6 @@ public class TrainPanel extends javax.swing.JPanel {
         jCheckBox5.setText("jCheckBox2");
         jCheckBox5.setAlignmentX(0.5F);
         jCheckBox5.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jCheckBox5.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBox5ActionPerformed(evt);
-            }
-        });
 
         org.jdesktop.layout.GroupLayout jPanel6Layout = new org.jdesktop.layout.GroupLayout(jPanel6);
         jPanel6.setLayout(jPanel6Layout);
@@ -333,11 +323,6 @@ public class TrainPanel extends javax.swing.JPanel {
         jCheckBox6.setText("jCheckBox2");
         jCheckBox6.setAlignmentX(0.5F);
         jCheckBox6.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jCheckBox6.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBox6ActionPerformed(evt);
-            }
-        });
 
         org.jdesktop.layout.GroupLayout jPanel7Layout = new org.jdesktop.layout.GroupLayout(jPanel7);
         jPanel7.setLayout(jPanel7Layout);
@@ -605,7 +590,6 @@ public class TrainPanel extends javax.swing.JPanel {
             .add(learnerMaskFrameLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(learnerMaskFrameLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(scrollPaneFeatures, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 475, Short.MAX_VALUE)
                     .add(learnerMaskFrameLayout.createSequentialGroup()
                         .add(buttonCancel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -613,13 +597,15 @@ public class TrainPanel extends javax.swing.JPanel {
                     .add(learnerMaskFrameLayout.createSequentialGroup()
                         .add(jButton3)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(jButton4)))
+                        .add(jButton4))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, scrollPaneFeatures, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 475, Short.MAX_VALUE))
                 .addContainerGap())
         );
         learnerMaskFrameLayout.setVerticalGroup(
             learnerMaskFrameLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, learnerMaskFrameLayout.createSequentialGroup()
-                .add(scrollPaneFeatures, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
+                .addContainerGap()
+                .add(scrollPaneFeatures, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 238, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(learnerMaskFrameLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jButton3)
@@ -632,7 +618,7 @@ public class TrainPanel extends javax.swing.JPanel {
 
         jPanel8.setBorder(javax.swing.BorderFactory.createTitledBorder("Training Progress"));
 
-        labelTrainingStatus.setText("Finished training model 1 of 4");
+        labelTrainingStatus1.setText("Training model 3 of 4...");
 
         buttonCancelTrain.setText("Cancel");
         buttonCancelTrain.setEnabled(false);
@@ -642,6 +628,10 @@ public class TrainPanel extends javax.swing.JPanel {
             }
         });
 
+        labelTrainingStatus2.setText("2 models trained");
+
+        labelTrainingStatus3.setText("0 errors encountered");
+
         org.jdesktop.layout.GroupLayout jPanel8Layout = new org.jdesktop.layout.GroupLayout(jPanel8);
         jPanel8.setLayout(jPanel8Layout);
         jPanel8Layout.setHorizontalGroup(
@@ -649,16 +639,26 @@ public class TrainPanel extends javax.swing.JPanel {
             .add(jPanel8Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel8Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(labelTrainingStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 360, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(buttonCancelTrain))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(labelTrainingStatus1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 360, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(buttonCancelTrain)
+                    .add(jPanel8Layout.createSequentialGroup()
+                        .add(6, 6, 6)
+                        .add(jPanel8Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(labelTrainingStatus3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 360, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(labelTrainingStatus2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 360, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(19, Short.MAX_VALUE))
         );
         jPanel8Layout.setVerticalGroup(
             jPanel8Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel8Layout.createSequentialGroup()
-                .add(labelTrainingStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(labelTrainingStatus1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(buttonCancelTrain))
+                .add(labelTrainingStatus2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(labelTrainingStatus3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(buttonCancelTrain)
+                .addContainerGap())
         );
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Train models"));
@@ -706,7 +706,7 @@ public class TrainPanel extends javax.swing.JPanel {
                     .add(jPanel3Layout.createSequentialGroup()
                         .addContainerGap()
                         .add(buttonSelectModels))
-                    .add(buttonTrain, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+                    .add(buttonTrain, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 385, Short.MAX_VALUE)
                     .add(jPanel3Layout.createSequentialGroup()
                         .add(21, 21, 21)
                         .add(buttonUntrain)))
@@ -743,24 +743,8 @@ public class TrainPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void buttonCancelTrainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCancelTrainActionPerformed
-        // TODO add your handling code here:
+       WekinatorLearningManager.getInstance().stopTraining();
 }//GEN-LAST:event_buttonCancelTrainActionPerformed
-
-    private void jCheckBox3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox3ActionPerformed
-        WekinatorLearningManager.getInstance().stopTraining();
-}//GEN-LAST:event_jCheckBox3ActionPerformed
-
-    private void jCheckBox4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox4ActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_jCheckBox4ActionPerformed
-
-    private void jCheckBox5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox5ActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_jCheckBox5ActionPerformed
-
-    private void jCheckBox6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox6ActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_jCheckBox6ActionPerformed
 
     private void jCheckBox7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox7ActionPerformed
         // TODO add your handling code here:
@@ -819,17 +803,19 @@ public class TrainPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_jButton4ActionPerformed
 
     private void buttonCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCancelActionPerformed
-        if (learnerBoxes == null || learnerSelected == null || learnerBoxes.length != learnerSelected.length) {
+        boolean[] mask = WekinatorLearningManager.getInstance().getTrainingMask();
+        if (learnerBoxes == null || learnerBoxes.length == 0 || mask == null || learnerBoxes.length != mask.length) {
             learnerMaskFrame.setVisible(false);
             return;
         }
 
         for (int i = 0; i < learnerBoxes.length; i++) {
-            learnerBoxes[i].setSelected(learnerSelected[i]);
+            learnerBoxes[i].setSelected(mask[i]);
         }
         learnerMaskFrame.setVisible(false);
     }//GEN-LAST:event_buttonCancelActionPerformed
 
+    //TODO: what if # params can change while this is open?
     private void buttonOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonOKActionPerformed
         if (learnerBoxes == null) {
             learnerMaskFrame.setVisible(false);
@@ -837,25 +823,18 @@ public class TrainPanel extends javax.swing.JPanel {
         }
         int numSelected = computeNumLearnersSelected();
         if (numSelected == 0) {
-            //Error box; don't close
-            //TODO: low priority: Give focus back to frame when done.
             JOptionPane.showMessageDialog(this, "Must select at least one parameter to train", "Error", JOptionPane.ERROR_MESSAGE);
             learnerMaskFrame.toFront();
-            //JOptionPane.showMessage
             return;
         }
-
-        if (learnerSelected == null || learnerSelected.length != learnerBoxes.length) {
-            learnerSelected = new boolean[learnerBoxes.length];
-        }
+        boolean[] newMask = new boolean[learnerBoxes.length];
 
         for (int i = 0; i < learnerBoxes.length; i++) {
-            learnerSelected[i] = learnerBoxes[i].isSelected();
+            newMask[i] = learnerBoxes[i].isSelected();
         }
         learnerMaskFrame.setVisible(false);
-        numEnabled = numSelected;
-
-        updateGuiForEnabled();
+        WekinatorLearningManager.getInstance().setTrainingMask(newMask);
+    // updateGuiForEnabled();
     }//GEN-LAST:event_buttonOKActionPerformed
 
     private void buttonSelectModelsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSelectModelsActionPerformed
@@ -868,15 +847,13 @@ public class TrainPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_checkNNGuiActionPerformed
 
     private void buttonTrainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonTrainActionPerformed
-        learningSystem.setLearnersEnabled(learnerSelected);
+        //  learningSystem.setLearnersEnabled(learnerSelected);
         WekinatorLearningManager.getInstance().startTraining();
     }//GEN-LAST:event_buttonTrainActionPerformed
 
     private void buttonUntrainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonUntrainActionPerformed
         learningSystem.forget();
 }//GEN-LAST:event_buttonUntrainActionPerformed
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonCancel;
     private javax.swing.JButton buttonCancelTrain;
@@ -917,10 +894,32 @@ public class TrainPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
     private javax.swing.JLabel labelSelected;
-    private javax.swing.JLabel labelTrainingStatus;
+    private javax.swing.JLabel labelTrainingStatus1;
+    private javax.swing.JLabel labelTrainingStatus2;
+    private javax.swing.JLabel labelTrainingStatus3;
     private javax.swing.JFrame learnerMaskFrame;
     private javax.swing.JPanel panelFeatures;
     private javax.swing.JScrollPane scrollPaneFeatures;
     // End of variables declaration//GEN-END:variables
 
+    private void updateTrainingProgress(TrainingStatus trainingProgress) {
+        if (trainingProgress.numToTrain == 0) {
+            labelTrainingStatus1.setText("");
+            labelTrainingStatus2.setText("");
+            labelTrainingStatus3.setText("");
+        }
+
+        if (trainingProgress.wasCancelled) {
+          labelTrainingStatus1.setText("Cancelled training models.");
+
+        } else if ((trainingProgress.numTrained + trainingProgress.numErrorsEncountered) == trainingProgress.numToTrain) {
+            labelTrainingStatus1.setText("Finished training models.");
+        } else {
+            labelTrainingStatus1.setText("Training model " + (trainingProgress.numTrained + trainingProgress.numErrorsEncountered + 1) + " of " + trainingProgress.numToTrain);
+        }
+        labelTrainingStatus2.setText(trainingProgress.numTrained + " models successfully trained.");
+        labelTrainingStatus3.setText(trainingProgress.numErrorsEncountered + " models encountered errors.");
+
+
+    }
 }

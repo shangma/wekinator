@@ -15,7 +15,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.plaf.basic.BasicComboBoxUI.PropertyChangeHandler;
 import wekinator.WekinatorLearningManager.Mode;
 
 /**
@@ -38,21 +37,17 @@ public class BuildPanel extends javax.swing.JPanel {
     };
 
     PropertyChangeListener lsDatasetChangeListener = new PropertyChangeListener() {
-
         public void propertyChange(PropertyChangeEvent evt) {
             lsDatasetChanged(evt);
         }
-
     };
 
     ChangeListener datasetChangeListener = new ChangeListener() {
-
         public void stateChanged(ChangeEvent e) {
             datasetChanged(e);
         }
     };
     ChangeListener paramsChangeListener = new ChangeListener() {
-
         public void stateChanged(ChangeEvent e) {
             paramsChanged(e);
         }
@@ -131,7 +126,7 @@ public class BuildPanel extends javax.swing.JPanel {
         }
 
      //   learningSystem.getScore().addPropertyChangeListener(scoreChangeListener);
-        ls.addPropertyChangeListener(lsDatasetChangeListener);
+        ls.addPropertyChangeListener(lsDatasetChangeListener); //TODO: why a dataset listener on ls ? w/ no dataset prop name check?
 
         for (int i = 0; i < numParams; i++) {
             paramPanels[i] = new ParameterMiniPanel(
@@ -143,6 +138,8 @@ public class BuildPanel extends javax.swing.JPanel {
             panelBuildParams.add(paramPanels[i]);
             paramPanels[i].addChangeListener(paramsChangeListener);
         }
+
+        updateButtons();
     }
 
     void updatePlayalongMessage(String string) {
@@ -534,8 +531,12 @@ public class BuildPanel extends javax.swing.JPanel {
 
       
     private void startRecording() {
+        try {
        WekinatorLearningManager.getInstance().startDatasetCreation();
        WekinatorLearningManager.getInstance().setParamsAndMask(getParams(), getMask());
+        } catch (Exception ex) {
+            System.out.println("log this bp: can't start dataset creation");
+        }
     }
 
     private void stopRecording() {
@@ -584,10 +585,12 @@ public class BuildPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane scrollTrainPanel;
     // End of variables declaration//GEN-END:variables
 
+    //a property of the dataset has changed
     private void datasetChanged(ChangeEvent e) {
         updateForDataset();
     }
 
+    //the dataset object used by ls is new
     private void lsDatasetChanged(PropertyChangeEvent evt) {
         //update?DSdfasdfadsf
         if (dataset != null) {
@@ -607,12 +610,24 @@ public class BuildPanel extends javax.swing.JPanel {
         buttonForget.setEnabled(numData != 0);
     }
 
+    protected void updateButtons() {
+        Mode m = WekinatorLearningManager.getInstance().getMode();
+
+        buttonRecord.setEnabled(learningSystem != null
+                && m != Mode.EVALUATING
+                && m != Mode.RUNNING
+                && m != Mode.TRAINING);
+
+        setButtonRecording(m == Mode.DATASET_CREATION);
+
+    }
+
     private void learningManagerChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(WekinatorLearningManager.PROP_MODE)) {
             WekinatorLearningManager.Mode m = WekinatorLearningManager.getInstance().getMode();
-
-            setButtonRecording(m == Mode.DATASET_CREATION);
-
+            updateButtons();
+           // setButtonRecording(m == Mode.DATASET_CREATION);
+           // setButtonRecordingEnable(m != Mode.RUNNING && m != Mode.TRAINING && m != Mode.EVALUATING);
 
         } else if (evt.getPropertyName().equals(WekinatorLearningManager.PROP_PARAMS)) {
          //   if (comboSynthAction.getSelectedIndex() == 1) {
@@ -633,10 +648,9 @@ public class BuildPanel extends javax.swing.JPanel {
         }
     }
 
-    private void setButtonRecording(boolean y) {
-        if (y) {
+    private void setButtonRecording(boolean recording) {
+        if (recording) {
             buttonRecord.setText("Stop recording");
-           // buttonRecord.setBackground(Color.RED); : TODO: overide LAF
             isRecording = true;
         } else {
             buttonRecord.setText("Begin recording examples into dataset");
@@ -644,6 +658,7 @@ public class BuildPanel extends javax.swing.JPanel {
         }
     }
 
+    //The user has entered in new parameter values in the minipanes
     private void paramsChanged(ChangeEvent e) {
          double[] p = getParams();
            boolean[] b = getMask();

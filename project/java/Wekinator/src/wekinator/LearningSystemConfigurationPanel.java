@@ -13,6 +13,7 @@ package wekinator;
 import wekinator.LearningAlgorithms.LearningAlgorithm;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
@@ -32,28 +33,23 @@ import wekinator.util.Util;
  */
 public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
 
-    //Call this when chuck system set & reset (this panel can be persistant)
-    public void configure(int numParams, String[] paramNames,
-            boolean[] isParamDiscrete, FeatureConfiguration featureConfiguration)
-    {
-        //Set everything
-        this.numParams = numParams;
-        this.paramNames = paramNames;
-        this.isParamDiscrete = isParamDiscrete;
-        this.featureConfiguration = featureConfiguration;
-
-        //remake the GUI
-        this.setLearningSystem(new LearningSystem(numParams));
-    }
-
     protected int numParams = 0;
     protected String[] paramNames = new String[0];
     protected boolean[] isParamDiscrete = new boolean[0];
     protected FeatureConfiguration featureConfiguration = null;
-    
     protected LearningSystem learningSystem = null;
-
     protected Logger logger = Logger.getLogger(LearningSystemConfigurationPanel.class.getName());
+
+
+    //Call this when chuck system set & reset (this panel can be persistant)
+    public void configure(int numParams, String[] paramNames,
+            boolean[] isParamDiscrete, FeatureConfiguration featureConfiguration) {
+        this.numParams = numParams;
+        this.paramNames = paramNames;
+        this.isParamDiscrete = isParamDiscrete;
+        this.featureConfiguration = featureConfiguration;
+        this.setLearningSystem(new LearningSystem(numParams));
+    }
 
     public LearningSystem getLearningSystem() {
         return learningSystem;
@@ -76,8 +72,26 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
         setLearningSystem(null);
         //For now:
         paneTabSimpleAdvanced.setSelectedIndex(1);
+        ChuckSystem.getChuckSystem().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                chuckSystemUpdated(evt);
+            }
+        });
 
     }
+
+    private void chuckSystemUpdated(PropertyChangeEvent evt) {
+        ChuckSystem cs = ChuckSystem.getChuckSystem();
+        if (evt.getPropertyName().equals(ChuckSystem.PROP_STATE)) {
+            if (evt.getOldValue() != ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID && evt.getNewValue() == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID) {
+                this.configure(cs.getNumParams(),
+                        cs.getParamNames(),
+                        cs.isIsParamDiscrete(),
+                        WekinatorInstance.getWekinatorInstance().getFeatureConfiguration());
+            }
+        }
+    }
+
     protected DatasetLoadingPanel myDatasetPanel = null;
     protected LearningAlgorithmConfigurationPanel[] myAlgorithmPanels = new LearningAlgorithmConfigurationPanel[0];
 
@@ -101,8 +115,6 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
         }
         return file;
     }
-
-
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -240,15 +252,15 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
 
     private void buttonLoadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonLoadActionPerformed
 
-       File file = Util.findLoadFile(LearningSystem.getFileExtension(),
+        File file = Util.findLoadFile(LearningSystem.getFileExtension(),
                 LearningSystem.getFileTypeDescription(),
                 LearningSystem.getDefaultLocation(),
                 this);
         if (file != null) {
-               LearningSystem newS = null;
+            LearningSystem newS = null;
 
             try {
-              //  newS = LearningSystem.readFromFile(file);
+                //  newS = LearningSystem.readFromFile(file);
                 newS = LearningSystem.readFromFile(file);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid learning system file", JOptionPane.ERROR_MESSAGE);
@@ -259,7 +271,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
                 // check newS param types
                 //check newS feature names & param names (warn if disagree)
                 if (!WekinatorInstance.getWekinatorInstance().canUse(newS)) {
-                   JOptionPane.showMessageDialog(this, "Incompatible learning system", "Cannot load", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Incompatible learning system", "Cannot load", JOptionPane.ERROR_MESSAGE);
 
                     logger.log(Level.WARNING, "Incompatible learning system");
                     return;
@@ -271,19 +283,19 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
 
                 System.out.println("Sanity check:");
                 for (int i = 0; i < newS.getNumParams(); i++) {
-                        int[] mapping = newS.getDataset().getFeatureLearnerConfiguration().getFeatureMappingForLearner(i);
-                        System.out.println("mapping " + i + " is: ");
-                        for (int j = 0; j < mapping.length; j++) {
-                            System.out.print(mapping[j] + " ");
-                        }
-                        System.out.println("");
+                    int[] mapping = newS.getDataset().getFeatureLearnerConfiguration().getFeatureMappingForLearner(i);
+                    System.out.println("mapping " + i + " is: ");
+                    for (int j = 0; j < mapping.length; j++) {
+                        System.out.print(mapping[j] + " ");
+                    }
+                    System.out.println("");
                 }
 
                 Util.setLastFile(LearningSystem.getFileExtension(), file);
             }
         }
 
- 
+
 }//GEN-LAST:event_buttonLoadActionPerformed
 //TODO: enable GO button depending on init state.
 
@@ -326,6 +338,9 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
         //If no errors, apply changes globally
         if (learningSystem != WekinatorInstance.getWekinatorInstance().getLearningSystem()) {
             WekinatorInstance.getWekinatorInstance().setLearningSystem(learningSystem);
+            //ABC: set mask NOW.
+            boolean[] trainMask = getMaskFromForm();
+            WekinatorLearningManager.getInstance().setTrainingMask(trainMask);
         }
 
         labelLearningSystemStatus.setText("Learning system configured.");
@@ -342,6 +357,13 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
 
     }//GEN-LAST:event_buttonGoActionPerformed
 
+    private boolean[] getMaskFromForm() {
+        boolean[] m = new boolean[myAlgorithmPanels.length];
+        for (int i = 0; i < m.length; i++) {
+            m[i] = !myAlgorithmPanels[i].getDisabled();
+        }
+        return m;
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonGo;
     private javax.swing.JButton buttonLoad;
@@ -396,14 +418,16 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
                     }
                 }
                 myAlgorithmPanels = new LearningAlgorithmConfigurationPanel[algs.length];
+
+
                 for (int i = 0; i < algs.length; i++) {
-                    LearningAlgorithmConfigurationPanel p = 
+                    LearningAlgorithmConfigurationPanel p =
                             new LearningAlgorithmConfigurationPanel(
                             i, //paramNum
                             paramNames[i],
                             isParamDiscrete[i],
                             algs[i],
-                            learningSystem.getLearnerEnabled(i),
+                            true,
                             featureConfiguration);
                     myAlgorithmPanels[i] = p;
                     p.setBorder(new EtchedBorder());
@@ -419,7 +443,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
                     } else {
                         myAlgorithmPanels[i].setNewLearningAlgorithmSelected();
                     }
-                 //   myAlgorithmPanels[i].setDisabled(!learningSystem.getLearnerEnabled(i));
+                //   myAlgorithmPanels[i].setDisabled(!learningSystem.getLearnerEnabled(i));
                 }
 
             }
@@ -430,9 +454,9 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
             height += (myAlgorithmPanels[0].getPreferredSize().height) * myAlgorithmPanels.length;
         }
         System.out.println("Setting size");
-            //panelAdvancedParent.setSize(panelAdvancedParent.getSize().width, height);
+        //panelAdvancedParent.setSize(panelAdvancedParent.getSize().width, height);
 //panelAdvancedParent.setSize(panelAdvancedParent.getSize().width, 1000);
-panelAdvancedParent.setPreferredSize(new Dimension(panelAdvancedParent.getSize().width, height));
+        panelAdvancedParent.setPreferredSize(new Dimension(panelAdvancedParent.getSize().width, height));
         repaint();
     }
 
@@ -453,13 +477,11 @@ panelAdvancedParent.setPreferredSize(new Dimension(panelAdvancedParent.getSize()
         for (int i = 0; i < myAlgorithmPanels.length; i++) {
             LearningAlgorithm a = myAlgorithmPanels[i].commitAndGetSelectedAlgorithm();
             learningSystem.setLearners(i, a);
-            boolean disabled = myAlgorithmPanels[i].getDisabled();
-            learningSystem.setLearnerEnabled(i, !disabled);
-
+            // learningSystem.setLearnerEnabled(i, !disabled);
             int[] mapping = myAlgorithmPanels[i].getNewFeatureMapping();
             if (mapping != null) {
                 try {
-                    
+
                     learningSystem.getDataset().setMappingForLearner(i, mapping);
                 } catch (Exception ex) {
                     //TODO: log
@@ -478,7 +500,7 @@ panelAdvancedParent.setPreferredSize(new Dimension(panelAdvancedParent.getSize()
             LearningAlgorithm a = myAlgorithmPanels[i].getProposedLearningAlgorithmNoncommittal();
             ls.setLearners(i, a);
             boolean disabled = myAlgorithmPanels[i].getDisabled();
-            ls.setLearnerEnabled(i, !disabled);
+            // ls.setLearnerEnabled(i, !disabled);
             int[] mapping = myAlgorithmPanels[i].getNewFeatureMapping();
             if (mapping != null) {
                 try {
@@ -501,7 +523,7 @@ panelAdvancedParent.setPreferredSize(new Dimension(panelAdvancedParent.getSize()
 
         WekinatorInstance.getWekinatorInstance().setFeatureConfiguration(fc);
 
-      
+
         int[] maxVals = {3, 5};
         boolean[] isUseDist = {false, false, false};
         String[] names = {"my aparam 1", "my bparam 2", "p3"};

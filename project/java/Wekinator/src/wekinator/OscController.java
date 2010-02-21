@@ -86,7 +86,11 @@ public class OscController {
     private static void controlRecordReceived(boolean start) {
         if (isRecordControllable()) {
             if (start) {
+                try {
                 WekinatorLearningManager.getInstance().startDatasetCreation();
+                } catch (Exception ex) {
+                    System.out.println("log this osc: can't start dataset creation (info)");
+                }
             } else {
                 WekinatorLearningManager.getInstance().stopDatasetCreation();
 

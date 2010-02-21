@@ -36,6 +36,28 @@ public class WekinatorLearningManager {
     public static final String PROP_PARAMS = "params";
     protected double[] outputs = null;
     protected EventListenerList listenerList = new EventListenerList();
+    protected boolean[] trainingMask = null;
+    public static final String PROP_TRAININGMASK = "trainingMask";
+
+    /**
+     * Get the value of trainingMask
+     *
+     * @return the value of trainingMask
+     */
+    public boolean[] getTrainingMask() {
+        return trainingMask;
+    }
+
+    /**
+     * Set the value of trainingMask
+     *
+     * @param trainingMask new value of trainingMask
+     */
+    public void setTrainingMask(boolean[] trainingMask) {
+        boolean[] oldTrainingMask = this.trainingMask;
+        this.trainingMask = trainingMask;
+        propertyChangeSupport.firePropertyChange(PROP_TRAININGMASK, oldTrainingMask, trainingMask);
+    }
 
     public void addOutputChangeListener(ChangeListener l) {
         listenerList.add(ChangeListener.class, l);
@@ -108,6 +130,7 @@ public class WekinatorLearningManager {
         DATASET_CREATION,
         TRAINING,
         RUNNING,
+        EVALUATING,
         NONE
     };
     protected Mode mode = Mode.NONE;
@@ -161,10 +184,13 @@ public class WekinatorLearningManager {
         propertyChangeSupport.firePropertyChange(PROP_MODE, oldMode, mode);
     }
 
-    public void startDatasetCreation() {
+    public void startDatasetCreation() throws Exception {
         LearningSystem ls = WekinatorInstance.getWekinatorInstance().getLearningSystem();
-        if (ls == null || ls.getInitializationState() != LearningSystem.LearningAlgorithmsInitializationState.ALL_INITIALIZED) {
+       /* if (ls == null || ls.getInitializationState() != LearningSystem.LearningAlgorithmsInitializationState.ALL_INITIALIZED) {
             return;
+        } */
+        if (ls == null) {
+            throw new Exception("Learning system not initialized");
         }
 
         //if (initState == InitializationState.INITIALIZED) {
@@ -216,13 +242,14 @@ public class WekinatorLearningManager {
     }
 
     public void stopTraining() {
-        //TODO: cancel training here
+       //abc
+       WekinatorInstance.getWekinatorInstance().getLearningSystem().stopTraining();
         setMode(Mode.NONE);
     }
 
     public void startTraining() {
         setMode(Mode.TRAINING);
-        WekinatorInstance.getWekinatorInstance().getLearningSystem().trainInBackground();
+        WekinatorInstance.getWekinatorInstance().getLearningSystem().trainInBackground(trainingMask);
     }
 
     public void startTraining(int paramNum) {
@@ -305,9 +332,22 @@ public class WekinatorLearningManager {
     private void wekinatorInstancePropChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(WekinatorInstance.PROP_LEARNINGSYSTEM)) {
             updateLearningSystemListener((LearningSystem) evt.getOldValue(), (LearningSystem) evt.getNewValue());
+            if (evt.getNewValue() != null)
+                resetTrainingMask(((LearningSystem)evt.getNewValue()).getNumParams());
+            else
+                resetTrainingMask(0);
+        } else if (evt.getPropertyName().equals(WekinatorInstance.PROP_NUMPARAMS)) {
+                resetTrainingMask((Integer)evt.getNewValue());
         }
     }
 
+    private void resetTrainingMask(int numParams) {
+       boolean[] newMask = new boolean[WekinatorInstance.getWekinatorInstance().getNumParams()];
+       for (int i = 0; i < newMask.length; i++) {
+            newMask[i] = true;
+       }
+       setTrainingMask(newMask);
+    }
 
     //Problem here: WekinatorInstance and learning manager have constructors that reference each other!
     private WekinatorLearningManager() {
@@ -327,7 +367,11 @@ public class WekinatorLearningManager {
                     if (e.getKeyCode() == KeyEvent.VK_PAGE_DOWN) {
                         //Start recording
                         System.out.println("pg down start");
-                        startDatasetCreation();
+                        try {
+                            startDatasetCreation();
+                        } catch (Exception ex) {
+                            System.out.println("log this: dataset creation start failed");
+                        }
                     } else if (e.getKeyCode() == KeyEvent.VK_PAGE_UP) {
                         //TODO in future: integrate playalong here.
                     }
@@ -353,14 +397,22 @@ public class WekinatorLearningManager {
     //ABC: This is waht I need to fix: no longer listening for this on learning system
     //Do I try to synch? Or just have learning system keep state? (probably latter)
     private void learningSystemPropertyChanged(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(LearningSystem.PROP_INITIALIZATIONSTATE)) {
+        if (evt.getPropertyName().equals(LearningSystem.PROP_ISTRAINING)) {
+            if (!WekinatorInstance.getWekinatorInstance().getLearningSystem().isIsTraining()
+                    && getMode() == Mode.TRAINING) {
+                setMode(Mode.NONE);
+            }
+        }
+
+        //ABC todo: Get notified somehow that training has completed, eval has completed, error happened, etc. (event from LS and/or models?)
+        /*  if (evt.getPropertyName().equals(LearningSystem.PROP_INITIALIZATIONSTATE)) {
             //   updateMyInitState();
         } else if (evt.getPropertyName().equals(LearningSystem.PROP_SYSTEMTRAININGSTATE)) {
             LearningSystem.LearningSystemTrainingState ts = WekinatorInstance.getWekinatorInstance().getLearningSystem().getSystemTrainingState();
             if (mode == Mode.TRAINING && ts != LearningSystem.LearningSystemTrainingState.TRAINING) {
                 setMode(Mode.NONE);
             }
-        }
+        } */
     }
 
     private void updateLearningSystemListener(LearningSystem o, LearningSystem n) {

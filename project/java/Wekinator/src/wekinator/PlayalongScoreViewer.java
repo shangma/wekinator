@@ -350,6 +350,7 @@ class ScoreTableModel extends AbstractTableModel {
     boolean[] isDiscrete = null;
     int[] maxValues = null;
 
+    //TODO: this should be responsive to learningSystem changes!!
     public ScoreTableModel(PlayalongScore score) {
         this.score = score;
         score.addChangeListener(new ChangeListener() {
