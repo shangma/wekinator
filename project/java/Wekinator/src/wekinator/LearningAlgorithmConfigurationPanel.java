@@ -28,7 +28,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import wekinator.LearningAlgorithms.LearningAlgorithms;
 import wekinator.util.SerializedFileUtil;
 import wekinator.util.Util;
 
@@ -250,7 +249,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
         WekinatorInstance wek = WekinatorInstance.getWekinatorInstance();
         JFileChooser fc = new JFileChooser();
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-         String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastLocation(LearningAlgorithms.getFileExtension());
+         String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastLocation(LearningAlgorithm.getFileExtension());
         if (location == null || location.equals("")) {
             location = HidSetup.getDefaultLocation();
         }
@@ -263,7 +262,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
             file = fc.getSelectedFile();
         }
         if (file != null) {
-            WekinatorInstance.getWekinatorInstance().getSettings().setLastLocation(LearningAlgorithms.getFileExtension(), Util.getCanonicalPath(file));
+            WekinatorInstance.getWekinatorInstance().getSettings().setLastLocation(LearningAlgorithm.getFileExtension(), Util.getCanonicalPath(file));
         }
         return file;
     }
@@ -287,9 +286,9 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
         if (f != null) {
             loadLearnerFromFile(f);
         } */
-        File file = Util.findLoadFile(LearningAlgorithms.getFileExtension(),
-                LearningAlgorithms.getFileTypeDescription(),
-                LearningAlgorithms.getDefaultLocation(),
+        File file = Util.findLoadFile(LearningAlgorithm.getFileExtension(),
+                LearningAlgorithm.getFileTypeDescription(),
+                LearningAlgorithm.getDefaultLocation(),
                 this);
         if (file != null) {
                 loadLearnerFromFile(file);
@@ -316,7 +315,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
                 if (discrete) {
                     setLoadedLearningAlgorithm(l);
                     setHasUsableLoadedFile(true);
-                    Util.setLastFile(LearningAlgorithms.getFileExtension(), f);
+                    Util.setLastFile(LearningAlgorithm.getFileExtension(), f);
 
                 } else {
                     JOptionPane.showMessageDialog(this, "A discrete learning algorithm may only be loaded for a discrete parameter", "Could not load algorithm from file", JOptionPane.ERROR_MESSAGE);
@@ -325,7 +324,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
                 if (!discrete) {
                     setLoadedLearningAlgorithm(l);
                     setHasUsableLoadedFile(true);
-                    Util.setLastFile(LearningAlgorithms.getFileExtension(), f);
+                    Util.setLastFile(LearningAlgorithm.getFileExtension(), f);
 
                 } else {
                     JOptionPane.showMessageDialog(this, "A real-valued learning algorithm may only be loaded for a real-valued parameter", "Could not load algorithm from file", JOptionPane.ERROR_MESSAGE);

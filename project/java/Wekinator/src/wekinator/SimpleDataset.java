@@ -7,7 +7,7 @@ package wekinator;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -27,7 +28,6 @@ import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Remove;
 import weka.filters.unsupervised.attribute.Reorder;
-import wekinator.util.SerializedFileUtil;
 import javax.swing.event.*;
 import weka.core.converters.ArffLoader;
 import weka.core.converters.ArffSaver;
@@ -55,7 +55,7 @@ public class SimpleDataset implements Serializable {
     protected int nextID = 0;
     protected List<RawAudioSegment> audioSegments = null;
     protected int currentTrainingRound = 0;
-    protected int numMetaData = 3;
+    protected final int numMetaData = 3;
     protected int idIndex = 0;
     protected int timestampIndex = 1;
     protected int trainingIndex = 2;
@@ -157,9 +157,6 @@ public class SimpleDataset implements Serializable {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
-    //For serialization
-    private static final long serialVersionUID = -6463977379713550249L;
-
     public SimpleDataset(int numFeatures, int numParams, boolean[] isParamDiscrete, int[] numParamValues, String[] featureNames, String[] paramNames) {
         if (isParamDiscrete == null || isParamDiscrete.length != numParams) {
             throw new IllegalArgumentException("isParamDiscrete.length must match numParams");
@@ -219,6 +216,7 @@ public class SimpleDataset implements Serializable {
         ff.addElement(new Attribute("ID"));
         ff.addElement(new Attribute("Timestamp")); //yyMMddHHmmss format; stored as double
         ff.addElement(new Attribute("Training round"));
+        //new Attribute
 
         //Add features
         for (int i = 0; i < numFeatures; i++) {
@@ -974,11 +972,21 @@ public class SimpleDataset implements Serializable {
     }
 
     public static SimpleDataset readFromFile(File f) throws Exception {
-        return (SimpleDataset) SerializedFileUtil.readFromFile(f);
+       // return (SimpleDataset) SerializedFileUtil.readFromFile(f);
+        FileInputStream fin = new FileInputStream(f);
+        ObjectInputStream i = new ObjectInputStream(fin);
+        SimpleDataset s = loadFromInputStream(i);
+        i.close();
+        fin.close();
+        return s;
     }
 
     void writeToFile(File file) throws Exception {
-        SerializedFileUtil.writeToFile(file, this);
+                FileOutputStream fout = new FileOutputStream(file);
+        ObjectOutputStream o = new ObjectOutputStream(fout);
+        writeToOutputStreamNew(o);
+        o.close();
+        fout.close();
     }
 
     void writeInstancesToArff(File file) throws IOException {
@@ -993,16 +1001,44 @@ public class SimpleDataset implements Serializable {
         ArffLoader loader = new ArffLoader();
         loader.setFile(f);
         Instances i = loader.getDataSet();
+        //TODO: allow flexibility here: delete params or add ? params
         if (i.numAttributes() != (numFeatures + numParams + numMetaData)) {
-            throw new IOException("Improper number of features: expecting " + (numFeatures + numParams + numMetaData));
+            throw new IOException("Improper number of attributes: expecting " + (numFeatures + numParams + numMetaData));
         }
         allInstances = i;
         setHasInstances(allInstances.numInstances() > 0);
-        //Set feature names ?
-        
-        //Set parameter names ?
 
-        //Set numParam values for each param ?
+        //Set feature names
+        featureNames = new String[numFeatures];
+        int index = 0;
+        for (int j = numMetaData; j < numMetaData + numFeatures; j++) {
+            featureNames[index++] = allInstances.attribute(j).name();
+        }
+
+        //Set parameter names ?
+        index = 0;
+        paramNames = new String[numParams];
+        isParamDiscrete = new boolean[numParams];
+        numParamValues = new int[numParams];
+        for (int j = numMetaData + numFeatures; j < numMetaData + numFeatures + numParams; j++) {
+            paramNames[index] = allInstances.attribute(j).name();
+            isParamDiscrete[index] = allInstances.attribute(j).isNominal();
+            if (isParamDiscrete[index]) {
+           //     numParamValues[index] = (int)allInstances.attribute(j).getUpperNumericBound()+1;
+                Attribute a = allInstances.attribute(j);
+                Enumeration e = a.enumerateValues();
+                int max = 0;
+                while (e.hasMoreElements()) {
+                    String s = (String)e.nextElement();
+                    Integer n = Integer.parseInt(s);
+                    if (n > max) {
+                        max = n;
+                    }
+                }
+                numParamValues[index]= max+1;
+            }
+            index++;
+        }
     }
 
 

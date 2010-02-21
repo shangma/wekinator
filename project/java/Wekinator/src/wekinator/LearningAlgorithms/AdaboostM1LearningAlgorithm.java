@@ -73,8 +73,12 @@ public class AdaboostM1LearningAlgorithm extends ClassifierLearningAlgorithm {
         return myPanel;
     }
 
-    public static AdaboostM1LearningAlgorithm readFromInputStream(ObjectInputStream i) throws IOException, ClassNotFoundException {
+    public static AdaboostM1LearningAlgorithm readFromInputStream(ObjectInputStream i, boolean idread) throws IOException, ClassNotFoundException {
         AdaboostM1LearningAlgorithm a = new AdaboostM1LearningAlgorithm();
+        if (! idread) {
+            Object o = i.readObject();
+        }
+
         a.classifier = (AdaBoostM1) i.readObject();
         a.setTrainingState((TrainingState) i.readObject());
         return a;

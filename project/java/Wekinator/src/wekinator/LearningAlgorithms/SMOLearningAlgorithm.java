@@ -114,10 +114,18 @@ public class SMOLearningAlgorithm extends ClassifierLearningAlgorithm {
         }
     }
 
-    public static SMOLearningAlgorithm readFromInputStream(ObjectInputStream i) throws IOException, ClassNotFoundException {
+    public static SMOLearningAlgorithm readFromInputStream(ObjectInputStream i, boolean idread) throws IOException, ClassNotFoundException {
         SMOLearningAlgorithm a = new SMOLearningAlgorithm();
+        if (! idread) {
+            Object o = i.readObject();
+        }
         a.classifier = (SMO) i.readObject();
         a.setTrainingState((TrainingState) i.readObject());
         return a;
+    }
+
+            //written 1st in file to ID me
+    public static String getFileIdentifier() {
+        return "smo";
     }
 }

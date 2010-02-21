@@ -62,8 +62,11 @@ public class OtherClassifierLearningAlgorithm extends ClassifierLearningAlgorith
         return myPanel;
     }
 
-    public static OtherClassifierLearningAlgorithm readFromInputStream(ObjectInputStream i) throws IOException, ClassNotFoundException {
+    public static OtherClassifierLearningAlgorithm readFromInputStream(ObjectInputStream i, boolean idread) throws IOException, ClassNotFoundException {
         Classifier c = (Classifier) i.readObject();
+        if (! idread) {
+            Object o = i.readObject();
+        }
         OtherClassifierLearningAlgorithm a = new OtherClassifierLearningAlgorithm(c);
         a.setTrainingState((TrainingState) i.readObject());
         return a;
@@ -72,6 +75,10 @@ public class OtherClassifierLearningAlgorithm extends ClassifierLearningAlgorith
     @Override
     protected void initClassifier() {
 
+    }
+            //written 1st in file to ID me
+    public static String getFileIdentifier() {
+        return "other";
     }
 
 }

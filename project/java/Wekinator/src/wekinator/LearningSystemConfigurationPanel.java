@@ -152,14 +152,14 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
             .add(panelSimpleTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(jLabel1)
-                .addContainerGap(498, Short.MAX_VALUE))
+                .addContainerGap(512, Short.MAX_VALUE))
         );
         panelSimpleTabLayout.setVerticalGroup(
             panelSimpleTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(panelSimpleTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(jLabel1)
-                .addContainerGap(360, Short.MAX_VALUE))
+                .addContainerGap(374, Short.MAX_VALUE))
         );
 
         paneTabSimpleAdvanced.addTab("Simple", panelSimpleTab);
@@ -190,7 +190,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
 
         paneTabSimpleAdvanced.addTab("Advanced", panelAdvancedTab);
 
-        buttonLoad.setText("Load model file");
+        buttonLoad.setText("Load learning system from file...");
         buttonLoad.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonLoadActionPerformed(evt);
@@ -223,9 +223,9 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
                     .add(paneTabSimpleAdvanced, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 627, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                                 .add(buttonLoad)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 336, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 240, Short.MAX_VALUE)
                                 .add(buttonUndo))
                             .add(layout.createSequentialGroup()
                                 .add(buttonGo)
@@ -240,7 +240,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
                 .add(paneTabSimpleAdvanced, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(buttonLoad)
+                    .add(buttonLoad, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(buttonUndo))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)

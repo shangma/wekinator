@@ -73,8 +73,16 @@ public class J48LearningAlgorithm extends ClassifierLearningAlgorithm {
         return myPanel;
     }
 
-    public static J48LearningAlgorithm readFromInputStream(ObjectInputStream i) throws IOException, ClassNotFoundException {
+            //written 1st in file to ID me
+    public static String getFileIdentifier() {
+        return "j48";
+    }
+
+    public static J48LearningAlgorithm readFromInputStream(ObjectInputStream i, boolean idread) throws IOException, ClassNotFoundException {
         J48LearningAlgorithm a = new J48LearningAlgorithm();
+        if (! idread) {
+            Object o = i.readObject();
+        }
         a.classifier = (J48) i.readObject();
         a.setTrainingState((TrainingState) i.readObject());
         return a;

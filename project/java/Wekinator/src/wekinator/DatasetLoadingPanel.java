@@ -11,6 +11,7 @@
 package wekinator;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.OptionalDataException;
 import java.util.logging.Level;
@@ -18,6 +19,7 @@ import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import wekinator.util.FileChooserWithExtension;
 import wekinator.util.Util;
 
 /**
@@ -226,64 +228,87 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
 
     private void loadDatasetFromFile() {
         //TODO: Insert support for loading ARFF files again.
-        File file = Util.findLoadFile(SimpleDataset.getFileExtension(),
-                SimpleDataset.getFileTypeDescription(),
-                SimpleDataset.getDefaultLocation(),
-                this);
+      /*  File file = Util.findLoadFile(SimpleDataset.getFileExtension(),
+        SimpleDataset.getFileTypeDescription(),
+        SimpleDataset.getDefaultLocation(),
+        this); */
 
-        if (file == null)
+        //     public static File findLoadFile(String ext, String description, String defDir, Component c) {
+
+        String lastLoc = WekinatorInstance.getWekinatorInstance().getSettings().getLastLocation(SimpleDataset.getFileExtension());
+        File defaultFile = null;
+        if (lastLoc != null) {
+            defaultFile = new File(lastLoc);
+        }
+
+        File defaultDir = null;
+        if (SimpleDataset.getDefaultLocation() != null && defaultFile == null) {
+            defaultDir = new File(WekinatorInstance.getWekinatorInstance().getSettings().getDefaultSettingsDirectory(), SimpleDataset.getDefaultLocation());
+        }
+
+        FileChooserWithExtension fc = new FileChooserWithExtension(
+                SimpleDataset.getFileExtension(),
+                SimpleDataset.getFileTypeDescription(),
+                defaultFile,
+                defaultDir,
+                false);
+
+        fc.addChoosableFileFilter(new javax.swing.filechooser.FileFilter() {
+
+            @Override
+            public boolean accept(File f) {
+                if (f.isDirectory()) {
+                    return true;
+                }
+
+                String extt = Util.getExtension(f);
+                if (extt != null && extt.equals("arff")) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            @Override
+            public String getDescription() {
+                return "Weka ARFF (.arff)";
+            }
+        });
+
+        File file = null;
+        int returnVal = fc.showOpenDialog(this);
+        if (returnVal == FileChooserWithExtension.APPROVE_OPTION) {
+            file = fc.getSelectedFile();
+        }
+
+        if (file == null) {
             return;
+        }
 
         SimpleDataset s = null;
-        try {
-              s = SimpleDataset.readFromFile(file);
-        } catch (Exception ex) {
-              Logger.getLogger(DatasetLoadingPanel.class.getName()).log(Level.SEVERE, null, ex);
-              JOptionPane.showMessageDialog(this, "Could not load dataset from file", "Could not load dataset from file", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-            
-      /*  Exception e = null;
-        boolean success = false;
-        try {
-            s = SimpleDataset.readFromFile(f);
-            success = true;
-        } catch (Exception ex) {
-            e = ex;
-        }
-
-        if (!success) {
+        if (Util.getExtension(file).equals("arff")) {
             s = createNewDataset();
             try {
-                s.loadInstancesFromArff(f);
-                success = true;
+                s.loadInstancesFromArff(file);
             } catch (IOException ex) {
-                e = ex;
+                Logger.getLogger(DatasetLoadingPanel.class.getName()).log(Level.SEVERE, null, ex);
+                JOptionPane.showMessageDialog(this, "Could not load dataset from arff file", "Could not load dataset from arff file", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        } else {
+            try {
+                s = SimpleDataset.readFromFile(file);
+            } catch (Exception ex) {
+                Logger.getLogger(DatasetLoadingPanel.class.getName()).log(Level.SEVERE, null, ex);
+                JOptionPane.showMessageDialog(this, "Could not load dataset from file", "Could not load dataset from file", JOptionPane.ERROR_MESSAGE);
+                return;
             }
         }
-        if (!success) {
-            if (e != null && e instanceof OptionalDataException) {
-                Logger.getLogger(DatasetLoadingPanel.class.getName()).log(Level.SEVERE, null, e);
-                JOptionPane.showMessageDialog(this, "Invalid dataset file", "Could not load dataset from file", JOptionPane.ERROR_MESSAGE);
-                return;
-            } else if (e != null) {
-
-                Logger.getLogger(DatasetLoadingPanel.class.getName()).log(Level.SEVERE, null, e);
-                JOptionPane.showMessageDialog(this, "Could not load dataset from file: " + e.getMessage(), "Could not load dataset from file", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            Logger.getLogger(DatasetLoadingPanel.class.getName()).log(Level.SEVERE, null, e);
-            JOptionPane.showMessageDialog(this, "Could not load dataset from file for unspecified reason", "Could not load dataset from file for unspecified reason", JOptionPane.ERROR_MESSAGE);
-            return;
-
-        } */
         if (s != null) {
             //TODO: Ultimately ensure no null problems here! (e.g. null featureconfiguration)
             if (s.getNumFeatures() != WekinatorInstance.getWekinatorInstance().getFeatureConfiguration().getNumFeaturesEnabled()) {
-               // JOptionPane.showMessageDialog(this, "The number of features of this dataset does not match the number of features currently being extracted.", "Dataset not usable", JOptionPane.ERROR_MESSAGE);
-                
-
-                return;
+                // JOptionPane.showMessageDialog(this, "The number of features of this dataset does not match the number of features currently being extracted.", "Dataset not usable", JOptionPane.ERROR_MESSAGE);
+                  return;
             }
 
             ChuckSystem cs = ChuckSystem.getChuckSystem();
@@ -303,7 +328,8 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
                 //If loaded dataset has values too high, delete those rows
                 //If loaded dataset has values too low, expand ceiling
                 if (isPDiscrete[i] && (maxClasses[i] != s.getMaxLegalDiscreteParamValues()[i])) {
-                    JOptionPane.showMessageDialog(this, "The type of parameters used in this dataset does not match the type of parameters used by your current synth - mismatch of # of legal parameter values", "Dataset not usable", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "The type of parameters used in this dataset does not match the type of parameters used by your current synth\n"
+                            + "Mismatch of # of legal parameter values", "Dataset not usable", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
             }

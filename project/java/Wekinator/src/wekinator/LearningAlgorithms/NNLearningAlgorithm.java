@@ -88,6 +88,11 @@ public class NNLearningAlgorithm extends ClassifierLearningAlgorithm {
        return accuracy;
     }
 
+            //written 1st in file to ID me
+    public static String getFileIdentifier() {
+        return "nn";
+    }
+
     @Override
     public double computeCVAccuracy(int numFolds, Instances instances) throws Exception {
       //  return ClassifierLearningAlgorithmUtil.computeCVAccuracy(this, numFolds, instances);
@@ -130,8 +135,11 @@ public class NNLearningAlgorithm extends ClassifierLearningAlgorithm {
  */
     }
 
-    public static NNLearningAlgorithm readFromInputStream(ObjectInputStream i) throws IOException, ClassNotFoundException {
+    public static NNLearningAlgorithm readFromInputStream(ObjectInputStream i, boolean idread) throws IOException, ClassNotFoundException {
         NNLearningAlgorithm a = new NNLearningAlgorithm();
+        if (! idread) {
+            Object o = i.readObject();
+        }
         a.classifier = (MultilayerPerceptron) i.readObject();
         a.setTrainingState((TrainingState) i.readObject());
         return a;

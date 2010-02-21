@@ -43,6 +43,11 @@ public class IbkLearningAlgorithm extends ClassifierLearningAlgorithm {
         ((IBk)classifier).setKNN(defaultNumNeighbors);
     }
 
+    //written 1st in file to ID me
+    public static String getFileIdentifier() {
+        return "ibk";
+    }
+
     @Override
     public IBk getClassifier() {
         return (IBk)classifier;
@@ -72,8 +77,11 @@ public class IbkLearningAlgorithm extends ClassifierLearningAlgorithm {
             return myPanel;
     }
 
-    public static IbkLearningAlgorithm readFromInputStream(ObjectInputStream i) throws IOException, ClassNotFoundException {
+    public static IbkLearningAlgorithm readFromInputStream(ObjectInputStream i, boolean idread) throws IOException, ClassNotFoundException {
         IbkLearningAlgorithm a = new IbkLearningAlgorithm();
+        if (! idread) {
+            Object o = i.readObject();
+        }
         a.classifier = (IBk) i.readObject();
         a.setTrainingState((TrainingState) i.readObject());
         return a;

@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package wekinator.LearningAlgorithms;
 
 import java.io.File;
@@ -27,12 +26,13 @@ import wekinator.util.SerializedFileUtil;
  * @author rebecca
  */
 public abstract class ClassifierLearningAlgorithm extends LearningAlgorithm {
+
     protected Classifier classifier = null;
 
-    public Classifier getClassifier()
-    {
+    public Classifier getClassifier() {
         return classifier;
     }
+
     public void setClassifier(Classifier c) {
         classifier = c;
     }
@@ -44,7 +44,7 @@ public abstract class ClassifierLearningAlgorithm extends LearningAlgorithm {
         setTrainingState(trainingState.NOT_TRAINED);
     }
 
-     public void train(Instances instances) throws Exception {
+    public void train(Instances instances) throws Exception {
         if (instances.numInstances() == 0) {
             return;
         }
@@ -52,8 +52,8 @@ public abstract class ClassifierLearningAlgorithm extends LearningAlgorithm {
         setTrainingState(TrainingState.TRAINING);
         Classifier backup = Classifier.makeCopy(this.classifier);
         try {
-                Thread.sleep(3000);
-                classifier.buildClassifier(instances);
+            Thread.sleep(3000);
+            classifier.buildClassifier(instances);
 
             setTrainingState(TrainingState.TRAINED);
         } catch (Exception ex) {
@@ -119,16 +119,17 @@ public abstract class ClassifierLearningAlgorithm extends LearningAlgorithm {
         }
     }
 
-     public void writeToOutputStream(ObjectOutputStream o) throws IOException {
-            o.writeObject(classifier);
-            o.writeObject(trainingState);
+    public void writeToOutputStream(ObjectOutputStream o) throws IOException {
+        o.writeObject(this.getClass().getName());
+        o.writeObject(classifier);
+        o.writeObject(trainingState);
     }
 
     public void saveAsSerializedWekaClassifier(File f) throws Exception {
         SerializedFileUtil.writeToFile(f, classifier);
     }
 
-     public static ClassifierLearningAlgorithm loadFromSerializedWekaClassifier(File f) throws ClassCastException, Exception {
+    public static ClassifierLearningAlgorithm loadFromSerializedWekaClassifier(File f) throws ClassCastException, Exception {
         Object o = SerializedFileUtil.readFromFile(f);
         ClassifierLearningAlgorithm la = null;
         Classifier c;

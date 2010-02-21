@@ -7,11 +7,16 @@ package wekinator.LearningAlgorithms;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import weka.core.Instance;
 import weka.core.Instances;
+import wekinator.util.SerializedFileUtil;
 
 /**
  * Same trained model should be able to be used
@@ -22,6 +27,18 @@ import weka.core.Instances;
  * @author rebecca
  */
 public abstract class LearningAlgorithm implements Serializable {
+    public static String getFileExtension() {
+        return "wmodel";
+    }
+
+    public static String getFileTypeDescription() {
+        return "learning algorithm";
+    }
+
+    public static String getDefaultLocation() {
+        return "individualModels";
+    }
+
     public static String PROP_TRAININGSTATE = "trainingState";
     protected TrainingState trainingState = TrainingState.NOT_TRAINED;
 
@@ -96,6 +113,39 @@ public abstract class LearningAlgorithm implements Serializable {
     
     public abstract void writeToOutputStream(ObjectOutputStream o) throws IOException;
 
-   // public static LearningAlgorithm readFromInputStream(ObjectInputStream i) throws IOException, ClassNotFoundException;
+    public static LearningAlgorithm readFromFile(File f) throws ClassCastException, Exception {
+        FileInputStream fin = new FileInputStream(f);
+        ObjectInputStream i = new ObjectInputStream(fin);
+        LearningAlgorithm a = readFromInputStream(i);
+        i.close();
+        fin.close();
+        return a;
+    }
+
+     public void writeToFile(File f) throws Exception {
+        FileOutputStream fout = new FileOutputStream(f);
+        ObjectOutputStream o = new ObjectOutputStream(fout);
+        writeToOutputStream(o);
+        o.close();
+        fout.close();
+    }
+
+    public static LearningAlgorithm readFromInputStream(ObjectInputStream i) throws IOException, ClassNotFoundException {
+         String name = (String)i.readObject();
+         if (name.equals(AdaboostM1LearningAlgorithm.class.getName())) {
+             return AdaboostM1LearningAlgorithm.readFromInputStream(i, true);
+         } else if (name.equals(IbkLearningAlgorithm.class.getName())) {
+             return IbkLearningAlgorithm.readFromInputStream(i, true);
+         } else if (name.equals(J48LearningAlgorithm.class.getName())) {
+             return J48LearningAlgorithm.readFromInputStream(i, true);
+         } else if (name.equals(NNLearningAlgorithm.class.getName())) {
+             return NNLearningAlgorithm.readFromInputStream(i, true);
+         } else if (name.equals(SMOLearningAlgorithm.class.getName())) {
+             return SMOLearningAlgorithm.readFromInputStream(i, true);
+         } else if (name.equals(OtherClassifierLearningAlgorithm.class.getName())) {
+             return OtherClassifierLearningAlgorithm.readFromInputStream(i, true);
+         }
+         else throw new IOException("No learning algorithm found for name " + name);
+     }
 
 }
