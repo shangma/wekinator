@@ -878,7 +878,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(radioUseFile)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(labelFile, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 428, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(labelFile, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 290, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(layout.createSequentialGroup()
                         .add(radioUseNew)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)

@@ -16,7 +16,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="buttonRun" alignment="0" pref="400" max="32767" attributes="0"/>
+          <Component id="buttonRun" alignment="0" pref="312" max="32767" attributes="0"/>
           <Component id="jPanel5" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
@@ -45,10 +45,10 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <Component id="jButton11" min="-2" max="-2" attributes="1"/>
-                  <EmptySpace pref="241" max="32767" attributes="0"/>
+                  <EmptySpace pref="153" max="32767" attributes="0"/>
               </Group>
               <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
-                  <Component id="scrollOutputPanel" alignment="1" pref="388" max="32767" attributes="0"/>
+                  <Component id="scrollOutputPanel" alignment="1" pref="300" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>

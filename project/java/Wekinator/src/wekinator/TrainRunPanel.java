@@ -216,7 +216,11 @@ public class TrainRunPanel extends javax.swing.JPanel {
         jLabel3.setText("jLabel3");
 
         layoutPanel.setLayout(new java.awt.CardLayout());
+
+        trainPanel.setMinimumSize(new java.awt.Dimension(200, 200));
         layoutPanel.add(trainPanel, "cardTrain");
+
+        runPanel.setPreferredSize(new java.awt.Dimension(165, 397));
         layoutPanel.add(runPanel, "cardRun");
         layoutPanel.add(buildPanel, "cardBuild");
         layoutPanel.add(editPanel, "cardEdit");

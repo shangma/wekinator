@@ -152,7 +152,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
             .add(panelSimpleTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(jLabel1)
-                .addContainerGap(512, Short.MAX_VALUE))
+                .addContainerGap(345, Short.MAX_VALUE))
         );
         panelSimpleTabLayout.setVerticalGroup(
             panelSimpleTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -181,7 +181,9 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
         panelAdvancedTab.setLayout(panelAdvancedTabLayout);
         panelAdvancedTabLayout.setHorizontalGroup(
             panelAdvancedTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 606, Short.MAX_VALUE)
+            .add(panelAdvancedTabLayout.createSequentialGroup()
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 433, Short.MAX_VALUE)
+                .addContainerGap())
         );
         panelAdvancedTabLayout.setVerticalGroup(
             panelAdvancedTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -218,20 +220,18 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(17, 17, 17)
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(paneTabSimpleAdvanced, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 627, Short.MAX_VALUE)
+                    .add(paneTabSimpleAdvanced, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 460, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(buttonLoad)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 240, Short.MAX_VALUE)
-                                .add(buttonUndo))
-                            .add(layout.createSequentialGroup()
-                                .add(buttonGo)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(labelLearningSystemStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 379, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                        .addContainerGap())))
+                        .add(buttonLoad)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(buttonUndo))
+                    .add(layout.createSequentialGroup()
+                        .add(buttonGo)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(labelLearningSystemStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 379, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

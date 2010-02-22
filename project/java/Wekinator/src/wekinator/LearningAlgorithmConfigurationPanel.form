@@ -528,7 +528,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="radioUseFile" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="labelFile" min="-2" pref="428" max="-2" attributes="0"/>
+                      <Component id="labelFile" min="-2" pref="290" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="radioUseNew" min="-2" max="-2" attributes="0"/>
