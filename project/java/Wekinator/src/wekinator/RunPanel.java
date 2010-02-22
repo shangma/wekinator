@@ -179,11 +179,11 @@ public class RunPanel extends javax.swing.JPanel {
     private void learningManagerChange(PropertyChangeEvent evt) {
          if (evt.getPropertyName().equals(WekinatorLearningManager.PROP_MODE)) {
             WekinatorLearningManager.Mode m = WekinatorLearningManager.getInstance().getMode();
-            setButtonRecording(m == Mode.RUNNING);
+            setButtonRunningIsRunning(m == Mode.RUNNING);
         }
     }
 
-     private void setButtonRecording(boolean y) {
+     private void setButtonRunningIsRunning(boolean y) {
         if (y) {
             buttonRun.setText("Stop");
            // buttonRecord.setBackground(Color.RED); : TODO: overide LAF

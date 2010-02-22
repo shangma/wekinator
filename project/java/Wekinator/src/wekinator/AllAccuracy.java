@@ -11,9 +11,13 @@
 package wekinator;
 
 import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.text.DecimalFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import wekinator.LearningAlgorithms.NNLearningAlgorithm;
+import wekinator.LearningSystem.EvalStatus;
 
 /**
  *
@@ -26,12 +30,39 @@ public class AllAccuracy extends javax.swing.JPanel {
     protected ParameterMiniViewer[] paramPanels = null;
     protected int myParam = -1;
 
+    public boolean isUsed = false;
+
+    protected PropertyChangeListener learningSystemChangeListener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            learningSystemPropertyChanged(evt);
+        }
+    };
+    
     public void setLearningSystem(LearningSystem ls) {
-        learningSystem = ls;
+        System.out.println("setting learning system at " + myParam);
+     //   System.out.println("null ? " + (ls == null));
+        if (learningSystem == ls) {
+            return;
+        }
+        //Remove old listeners
+        if (learningSystem != null) {
+            learningSystem.removePropertyChangeListener(learningSystemChangeListener);
+        }
+
+        this.learningSystem = ls;
+        if (learningSystem != null) {
+            learningSystem.addPropertyChangeListener(learningSystemChangeListener);
+        }
+
+        updateParamPanelsForNumLearners();
+        updateButtons();
+        updateEvalStatus(ls.getEvalStatus());
+        System.out.println("null ? " + (ls == null));
+    }
+
+    private void updateParamPanelsForNumLearners() {
         panelOutputs.removeAll();
         if (myParam == -1) {
-
-
             int numParams = learningSystem.getNumParams();
             paramPanels = new ParameterMiniViewer[numParams];
             SimpleDataset d = learningSystem.getDataset();
@@ -55,38 +86,53 @@ public class AllAccuracy extends javax.swing.JPanel {
             paramPanels[0].setPreferredSize(new Dimension(300, 28));
             panelOutputs.add(paramPanels[0]);
         }
+
     }
 
-    //Under assumption that panel is already enabled
-    public void setEvaluationEnabled(boolean enable) {
-        buttonCompute.setEnabled(enable);
+   private void updateButtons() {
+        WekinatorLearningManager.Mode m = WekinatorLearningManager.getInstance().getMode();
+        if (learningSystem == null) {
+            System.out.println("null at " + myParam);
+       //     return;
+        }
+        //} else {
+           // System.out.println("NOT null at " + myParam);
+            buttonCompute.setEnabled(learningSystem != null && m == WekinatorLearningManager.Mode.NONE && learningSystem.isRunnable);
+            buttonCancel.setEnabled(m == WekinatorLearningManager.Mode.EVALUATING);
+        
+       // }
+        //TODO: add way to restrict cancellign to when it's me that is doing evaluating
     }
 
     public void updateResults(double[] results, boolean isCV) {
         if (results != null) {
+             DecimalFormat dd = new DecimalFormat("#.##");
             if (myParam == -1) {
                 if (results.length == paramPanels.length) {
                     for (int i = 0; i < paramPanels.length; i++) {
                         String s;
                         if (learningSystem.getLearners(i) instanceof NNLearningAlgorithm) {
-                            s = " (RMS error)";
+                            s = " (RMS err)";
+                            paramPanels[i].setValue(dd.format(results[i]) + s);
                         } else {
-                            s = " (% accurate)";
+                            s = " %";
+                            paramPanels[i].setValue(dd.format(results[i] * 100) + s);
                         }
-                        paramPanels[i].setValue(results[i] + s);
+                        
                     }
                 }
             } else {
                 if (results.length > myParam) {
-                    String s;
-                    if (learningSystem.getLearners(myParam) instanceof NNLearningAlgorithm) {
-                        s = " (RMS error)";
-                    } else {
-                        s = " (% accurate)";
-                    }
-                    paramPanels[0].setValue(results[myParam] + s);
+                        String s;
+                        if (learningSystem.getLearners(myParam) instanceof NNLearningAlgorithm) {
+                            s = " (RMS err)";
+                            paramPanels[0].setValue(dd.format(results[myParam]) + s);
+                        } else {
+                            s = " %";
+                            paramPanels[0].setValue(dd.format(results[myParam] * 100) + s);
+                        }
                 }
-            }
+            } 
 
         }
         if (isCV) {
@@ -96,38 +142,126 @@ public class AllAccuracy extends javax.swing.JPanel {
         }
     }
 
-    public void evaluationFinished() {
+   /* public void evaluationFinished() {
         //TODO: Also need to re-enable eval button from elsewhere.
-        setGuiEvaluating(false);
-    }
+     //   setGuiEvaluating(false);
+    } */
 
     /** Creates new form AllAccuracy */
     public AllAccuracy() {
-        initComponents();
-        myParam = -1;
-        setGuiEvaluating(false);
+     //   initComponents();
+     //   myParam = -1;
+      //  setGuiEvaluating(false);
+        this(-1);
     }
 
     public AllAccuracy(int paramNum) {
-        initComponents();
+            initComponents();
         myParam = paramNum;
-        setGuiEvaluating(false);
+      //  setGuiEvaluating(false);
+       WekinatorLearningManager.getInstance().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                learningManagerPropertyChange(evt);
+            }
+        });
+        updateButtons();
+
+       WekinatorInstance.getWekinatorInstance().addPropertyChangeListener(new PropertyChangeListener() {
+
+       public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(WekinatorInstance.PROP_LEARNINGSYSTEM)) {
+                    setLearningSystem(WekinatorInstance.getWekinatorInstance().getLearningSystem());
+                }
+
+            }
+        });
+        setLearningSystem(WekinatorInstance.getWekinatorInstance().getLearningSystem());
+
+    }
+
+    private void learningManagerPropertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(WekinatorLearningManager.PROP_MODE)) {
+            updateButtons();
+        }
     }
 
     public void setParamNum(int paramNum) {
         this.myParam = paramNum;
-
+        updateParamPanelsForNumLearners();
     }
 
-    protected void setGuiEvaluating(boolean evaluating) {
+   /* protected void setGuiEvaluating(boolean evaluating) {
         buttonCompute.setEnabled(evaluating);
         progressBar.setIndeterminate(evaluating);
         if (evaluating) {
-            labelStatus.setText("Evaluating accuracy...");
+            labelModelStatus.setText("Evaluating accuracy...");
         } else {
-            labelStatus.setText("");
+            labelModelStatus.setText("");
         }
+    } */
+
+    private void learningSystemPropertyChanged(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(LearningSystem.PROP_EVALSTATUS)) {
+            updateEvalStatus(learningSystem.getEvalStatus());
+            EvalStatus es = learningSystem.getEvalStatus();
+            if (es.isCV) {
+                double[] results = learningSystem.getCvResults();
+                updateResults(results, true);
+            } else {
+             double[] results = learningSystem.getTrainResults();
+                updateResults(results, false);
+            }
+
+        } else if (evt.getPropertyName().equals(LearningSystem.PROP_ISTRAINABLE)) {
+            updateButtons();
+        } /*else if (evt.getPropertyName().equals(LearningSystem.PROP_CVRESULTS)) {
+            double[] results = learningSystem.getCvResults();
+            updateResults(results, true);
+           // for (int i = 0; i < numParams; i++) {
+           //     learnerPanels[i].getAccuracyPanel().updateResults(results, true);
+           // }
+        } else if (evt.getPropertyName().equals(LearningSystem.PROP_TRAINRESULTS)) {
+            double[] results = learningSystem.getTrainResults();
+            updateResults(results, false);
+        } */
     }
+
+    private void updateEvalStatus(EvalStatus evalStatus) {
+       // if (evalStatus.myParam != myParam)
+       //     return;
+
+        if (evalStatus.numModelsToEval == 0) {
+            labelModelStatus.setText("");
+            labelFoldStatus.setText("");
+            labelErrorStatus.setText("");
+            progressBar.setValue(0);
+            return;
+        }
+
+        if (evalStatus.wasCancelled) {
+          labelModelStatus.setText("Cancelled evaluation.");
+          progressBar.setValue(0);
+
+        } else if ((evalStatus.numModelsDone + evalStatus.numModelsWithErrors) == evalStatus.numModelsToEval) {
+            labelModelStatus.setText("Finished evaluating models.");
+            labelFoldStatus.setText("");
+           // progressBar.setMaximum(1 + evalStatus.numModelsToEval * evalStatus.numFolds);
+           // progressBar.setValue(1 + evalStatus.numModelsToEval * evalStatus.numFolds);
+             progressBar.setMaximum(1 + evalStatus.numModelsToEval );
+            progressBar.setValue(1 + evalStatus.numModelsToEval);
+
+        } else {
+            labelModelStatus.setText("Evaluating model " + (evalStatus.numModelsDone + evalStatus.numModelsWithErrors + 1) + " of " + evalStatus.numModelsToEval);
+         /*   labelFoldStatus.setText("     Computing fold " + (evalStatus.numFoldsDone + 1) + " of " + evalStatus.numFolds);
+            progressBar.setMaximum(1 + evalStatus.numModelsToEval * evalStatus.numFolds);
+            progressBar.setValue(1 + (evalStatus.numModelsDone + evalStatus.numModelsWithErrors) * evalStatus.numFolds + evalStatus.numFoldsDone); */
+            labelFoldStatus.setText("");
+            progressBar.setMaximum(1 + evalStatus.numModelsToEval);
+            progressBar.setValue(1 + (evalStatus.numModelsDone + evalStatus.numModelsWithErrors));
+        }
+        labelErrorStatus.setText(evalStatus.numModelsWithErrors + " models encountered errors.");
+    }
+
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -143,13 +277,15 @@ public class AllAccuracy extends javax.swing.JPanel {
         buttonCompute = new javax.swing.JButton();
         radioCV = new javax.swing.JRadioButton();
         radioTraining = new javax.swing.JRadioButton();
-        labelStatus = new javax.swing.JLabel();
+        labelModelStatus = new javax.swing.JLabel();
         buttonCancel = new javax.swing.JButton();
         progressBar = new javax.swing.JProgressBar();
         labelResultsHeader = new javax.swing.JLabel();
         scrollOutputPanel = new javax.swing.JScrollPane();
         panelOutputs = new javax.swing.JPanel();
         parameterMiniViewer1 = new wekinator.ParameterMiniViewer();
+        labelFoldStatus = new javax.swing.JLabel();
+        labelErrorStatus = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createTitledBorder("Compute Accuracy"));
 
@@ -169,7 +305,7 @@ public class AllAccuracy extends javax.swing.JPanel {
         buttonGroup1.add(radioTraining);
         radioTraining.setText("Training accuracy");
 
-        labelStatus.setText("Computing Fold 2 of 10, model 1 of 15");
+        labelModelStatus.setText("Computing model 1 of 15...");
 
         buttonCancel.setText("Cancel");
         buttonCancel.setEnabled(false);
@@ -178,8 +314,6 @@ public class AllAccuracy extends javax.swing.JPanel {
                 buttonCancelActionPerformed(evt);
             }
         });
-
-        progressBar.setIndeterminate(true);
 
         labelResultsHeader.setText("Accuracy computed:");
 
@@ -190,6 +324,10 @@ public class AllAccuracy extends javax.swing.JPanel {
 
         scrollOutputPanel.setViewportView(panelOutputs);
 
+        labelFoldStatus.setText("          Computing fold 2 of 10...");
+
+        labelErrorStatus.setText("0 models encountered errors");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -197,30 +335,25 @@ public class AllAccuracy extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(progressBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
-                        .add(22, 22, 22))
-                    .add(layout.createSequentialGroup()
-                        .add(labelResultsHeader, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 287, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(layout.createSequentialGroup()
-                                .add(radioTraining)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 150, Short.MAX_VALUE))
+                    .add(scrollOutputPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, radioTraining)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                                 .add(radioCV)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(comboNumFolds, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, labelStatus, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                                 .add(buttonCompute)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(buttonCancel)))
-                        .addContainerGap())
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(scrollOutputPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
-                        .addContainerGap())))
+                        .add(labelFoldStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 273, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, progressBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, labelErrorStatus, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE))
+                        .add(labelModelStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 287, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(labelResultsHeader, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 287, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -235,13 +368,18 @@ public class AllAccuracy extends javax.swing.JPanel {
                     .add(buttonCompute)
                     .add(buttonCancel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(labelStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(4, 4, 4)
-                .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(labelModelStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(labelFoldStatus)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(labelErrorStatus)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(labelResultsHeader, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(scrollOutputPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(scrollOutputPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -256,45 +394,50 @@ public class AllAccuracy extends javax.swing.JPanel {
             } else if (comboNumFolds.getSelectedIndex() == 2) {
                 numFolds = 10;
             }
-            try {
+           // try {
                 if (myParam == -1) {
-                    if (learningSystem == null) {
-                        System.out.println("null");
+                    if (learningSystem != null) {
+                     //   learningSystem.computeCVAccuracyInBackground(numFolds);
+                     WekinatorLearningManager.getInstance().computeCVAccuracyInBackground(numFolds);
+
                     }
-                    learningSystem.computeCVAccuracyInBackground(numFolds);
                 } else {
-                    learningSystem.computeCVAccuracyInBackground(myParam, numFolds);
+                    if (learningSystem != null) {
+                       WekinatorLearningManager.getInstance().computeCVAccuracyInBackground(myParam, numFolds);
+                    }
                 }
-                setGuiEvaluating(true);
-            } catch (Exception ex) {
-                Logger.getLogger(AllAccuracy.class.getName()).log(Level.SEVERE, null, ex);
-            }
+               // setGuiEvaluating(true);
+           // } catch (Exception ex) {
+           //     Logger.getLogger(AllAccuracy.class.getName()).log(Level.SEVERE, null, ex);
+           // }
         } else {
-            try {
-                if (myParam == -1) {
-                    learningSystem.computeTrainingAccuracyInBackground();
-                } else {
-                    learningSystem.computeTrainingAccuracyInBackground(myParam);
+            //try {
+                if (myParam == -1 && learningSystem != null) {
+                   WekinatorLearningManager.getInstance().computeTrainingAccuracyInBackground();
+                } else if (learningSystem != null) {
+                    WekinatorLearningManager.getInstance().computeTrainingAccuracyInBackground(myParam);
                 }
-                setGuiEvaluating(true);
-            } catch (Exception ex) {
-                Logger.getLogger(AllAccuracy.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            setGuiEvaluating(true);
+             //   setGuiEvaluating(true);
+            //} catch (Exception ex) {
+            //    Logger.getLogger(AllAccuracy.class.getName()).log(Level.SEVERE, null, ex);
+           // }
+           // setGuiEvaluating(true);
         }
 
 }//GEN-LAST:event_buttonComputeActionPerformed
 
     private void buttonCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCancelActionPerformed
-        // TODO add your handling code here:
+        WekinatorLearningManager.getInstance().stopEvaluating();
 }//GEN-LAST:event_buttonCancelActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonCancel;
     private javax.swing.JButton buttonCompute;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JComboBox comboNumFolds;
+    private javax.swing.JLabel labelErrorStatus;
+    private javax.swing.JLabel labelFoldStatus;
+    private javax.swing.JLabel labelModelStatus;
     private javax.swing.JLabel labelResultsHeader;
-    private javax.swing.JLabel labelStatus;
     private javax.swing.JPanel panelOutputs;
     private wekinator.ParameterMiniViewer parameterMiniViewer1;
     private javax.swing.JProgressBar progressBar;

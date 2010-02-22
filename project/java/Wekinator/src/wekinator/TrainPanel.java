@@ -248,6 +248,7 @@ public class TrainPanel extends javax.swing.JPanel {
         buttonCancelTrain = new javax.swing.JButton();
         labelTrainingStatus2 = new javax.swing.JLabel();
         labelTrainingStatus3 = new javax.swing.JLabel();
+        progressBar = new javax.swing.JProgressBar();
         jPanel3 = new javax.swing.JPanel();
         buttonTrain = new javax.swing.JButton();
         checkNNGui = new javax.swing.JCheckBox();
@@ -640,11 +641,14 @@ public class TrainPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(jPanel8Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(labelTrainingStatus1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 360, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(buttonCancelTrain)
                     .add(jPanel8Layout.createSequentialGroup()
                         .add(6, 6, 6)
-                        .add(jPanel8Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(jPanel8Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(labelTrainingStatus3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 360, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel8Layout.createSequentialGroup()
+                                .add(progressBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(18, 18, 18)
+                                .add(buttonCancelTrain))
                             .add(labelTrainingStatus2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 360, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(19, Short.MAX_VALUE))
         );
@@ -656,9 +660,11 @@ public class TrainPanel extends javax.swing.JPanel {
                 .add(labelTrainingStatus2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(labelTrainingStatus3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(buttonCancelTrain)
-                .addContainerGap())
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel8Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(buttonCancelTrain)
+                    .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(12, 12, 12))
         );
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Train models"));
@@ -899,6 +905,7 @@ public class TrainPanel extends javax.swing.JPanel {
     private javax.swing.JLabel labelTrainingStatus3;
     private javax.swing.JFrame learnerMaskFrame;
     private javax.swing.JPanel panelFeatures;
+    private javax.swing.JProgressBar progressBar;
     private javax.swing.JScrollPane scrollPaneFeatures;
     // End of variables declaration//GEN-END:variables
 
@@ -907,19 +914,24 @@ public class TrainPanel extends javax.swing.JPanel {
             labelTrainingStatus1.setText("");
             labelTrainingStatus2.setText("");
             labelTrainingStatus3.setText("");
+            progressBar.setValue(0);
+            return;
         }
 
         if (trainingProgress.wasCancelled) {
           labelTrainingStatus1.setText("Cancelled training models.");
+          progressBar.setValue(0);
 
         } else if ((trainingProgress.numTrained + trainingProgress.numErrorsEncountered) == trainingProgress.numToTrain) {
             labelTrainingStatus1.setText("Finished training models.");
+            progressBar.setMaximum(1 + trainingProgress.numToTrain);
+            progressBar.setValue(1 + trainingProgress.numToTrain);
         } else {
             labelTrainingStatus1.setText("Training model " + (trainingProgress.numTrained + trainingProgress.numErrorsEncountered + 1) + " of " + trainingProgress.numToTrain);
+            progressBar.setMaximum(1 + trainingProgress.numToTrain);
+            progressBar.setValue(1 + trainingProgress.numTrained + trainingProgress.numErrorsEncountered);
         }
         labelTrainingStatus2.setText(trainingProgress.numTrained + " models successfully trained.");
         labelTrainingStatus3.setText(trainingProgress.numErrorsEncountered + " models encountered errors.");
-
-
     }
 }

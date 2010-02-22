@@ -58,6 +58,7 @@ public class LearnerEditPanel extends javax.swing.JPanel {
     /** Creates new form LearnerEditPanel */
     public LearnerEditPanel() {
         initComponents();
+        accuracyPanel.isUsed = true;
     }
 
     public LearnerEditPanel(LearningSystem ls, int paramNum) {
@@ -87,7 +88,7 @@ public class LearnerEditPanel extends javax.swing.JPanel {
         ls.addPropertyChangeListener(lsPropertyChangeListener);
         al.addPropertyChangeListener(learningAlgChangeListener);
         accuracyPanel.setParamNum(paramNum);
-        accuracyPanel.setLearningSystem(ls);
+     //   accuracyPanel.setLearningSystem(ls);
 
         updateGuiForAlgorithm();
 

@@ -118,6 +118,29 @@ public class WekinatorLearningManager {
         propertyChangeSupport.firePropertyChange(PROP_PARAMS, oldparams, params);
     }
 
+    public void computeCVAccuracyInBackground(int numFolds) {
+        computeCVAccuracyInBackground(-1, numFolds);
+    }
+
+    public void computeCVAccuracyInBackground(int myParam, int numFolds)  {
+        setMode(Mode.EVALUATING);
+        WekinatorInstance.getWekinatorInstance().getLearningSystem().computeCVAccuracyInBackground(myParam, numFolds);
+    }
+
+    void computeTrainingAccuracyInBackground() {
+        computeTrainingAccuracyInBackground(-1);
+    }
+
+    void computeTrainingAccuracyInBackground(int myParam) {
+        setMode(Mode.EVALUATING);
+        WekinatorInstance.getWekinatorInstance().getLearningSystem().computeTrainingAccuracyInBackground(myParam);
+    }
+
+    void stopEvaluating() {
+       WekinatorInstance.getWekinatorInstance().getLearningSystem().stopEvaluating();
+
+    }
+
 
     /*    public enum InitializationState {
     NOT_INITIALIZED,
@@ -402,17 +425,12 @@ public class WekinatorLearningManager {
                     && getMode() == Mode.TRAINING) {
                 setMode(Mode.NONE);
             }
-        }
-
-        //ABC todo: Get notified somehow that training has completed, eval has completed, error happened, etc. (event from LS and/or models?)
-        /*  if (evt.getPropertyName().equals(LearningSystem.PROP_INITIALIZATIONSTATE)) {
-            //   updateMyInitState();
-        } else if (evt.getPropertyName().equals(LearningSystem.PROP_SYSTEMTRAININGSTATE)) {
-            LearningSystem.LearningSystemTrainingState ts = WekinatorInstance.getWekinatorInstance().getLearningSystem().getSystemTrainingState();
-            if (mode == Mode.TRAINING && ts != LearningSystem.LearningSystemTrainingState.TRAINING) {
+        } else if (evt.getPropertyName().equals(LearningSystem.PROP_ISEVALUATING)) {
+            if (!WekinatorInstance.getWekinatorInstance().getLearningSystem().getIsEvaluating()
+                    && getMode() == Mode.EVALUATING) {
                 setMode(Mode.NONE);
             }
-        } */
+        }
     }
 
     private void updateLearningSystemListener(LearningSystem o, LearningSystem n) {

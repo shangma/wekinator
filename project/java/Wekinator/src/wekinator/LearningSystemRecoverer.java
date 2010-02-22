@@ -5,10 +5,8 @@
 
 package wekinator;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.ObjectOutputStream;
 
 /**

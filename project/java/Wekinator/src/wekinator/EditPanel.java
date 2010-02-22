@@ -16,8 +16,7 @@ import java.beans.PropertyChangeListener;
 import javax.swing.DefaultComboBoxModel;
 //import wekinator.LearningSystem.EvaluationState;
 //import wekinator.LearningSystem.LearningAlgorithmsInitializationState;
-        //TODO TODO TODO: If learning algorithm changed, or re-trained, clear records of previous evaluations
-
+//TODO TODO TODO: If learning algorithm changed, or re-trained, clear records of previous evaluations
 
 /**
  *
@@ -39,54 +38,70 @@ public class EditPanel extends javax.swing.JPanel {
     /** Creates new form EditPanel */
     public EditPanel() {
         initComponents();
+        WekinatorInstance.getWekinatorInstance().addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(WekinatorInstance.PROP_LEARNINGSYSTEM)) {
+                    setLearningSystem(WekinatorInstance.getWekinatorInstance().getLearningSystem());
+                }
+
+            }
+        });
+        setLearningSystem(WekinatorInstance.getWekinatorInstance().getLearningSystem());
+        panelAllAccuracy.isUsed = true;
     }
 
     void setLearningSystem(LearningSystem ls) {
+        learnerEditPanel1 = null;
+        int oldNumParams = numParams;
+
         if (learningSystem == ls) {
             return;
         }
 
         if (learningSystem != null) {
-            //TODO: remove listeners, learnerEditPanels
             learningSystem.removePropertyChangeListener(lsPropListener);
         }
 
-        learningSystem = ls;
-        numParams = ls.getNumParams();
-        learningSystem.addPropertyChangeListener(lsPropListener);
-
-        panelDrilldown.removeAll();
-        learnerPanels = new LearnerEditPanel[numParams];
-        CardLayout c = (CardLayout) panelDrilldown.getLayout();
-        panelAllAccuracy = new AllAccuracy();
-        panelAllAccuracy.setLearningSystem(ls);
-
-       // c.addLayoutComponent(panelAllAccuracy, "all");
-        panelDrilldown.add(panelAllAccuracy, "all");
-
-        comboEditSelection.removeAllItems();
-        Object[] items = new Object[numParams + 1];
-       items[0] = makeObj("All models");
-         
-
-       // comboEditSelection.addI
-
-        SimpleDataset d = learningSystem.getDataset();
-
-        for (int i = 0; i < numParams; i++) {
-            learnerPanels[i] = new LearnerEditPanel(ls, i);
-           // c.addLayoutComponent(learnerPanels[i], Integer.toString(i));
-            panelDrilldown.add(learnerPanels[i], Integer.toString(i));
-            items[i + 1] = makeObj(d.getParameterName(i));
+        if (ls != null) {
+            ls.addPropertyChangeListener(lsPropListener);
+           numParams = ls.getNumParams();
+        } else {
+            numParams = 0;
+            //TODO: get rid of panels here.
+            panelDrilldown.removeAll();
         }
-        comboEditSelection.setModel(new DefaultComboBoxModel(items));
-        comboEditSelection.setModel(new DefaultComboBoxModel(items));
-        c.show(panelDrilldown, "all");
 
-        panelDrilldown.repaint();
+        learningSystem = ls;
 
+        if (numParams != oldNumParams) {
+            panelDrilldown.removeAll();
+            learnerPanels = new LearnerEditPanel[numParams];
+            CardLayout c = (CardLayout) panelDrilldown.getLayout();
+            //c.addLayoutComponent(panelAllAccuracy, "all");
+            panelDrilldown.add(panelAllAccuracy, "all");
+           //c.addLayoutComponent(panelAllAccuracy, "all");
+
+            //keep this part:
+            comboEditSelection.removeAllItems();
+            Object[] items = new Object[numParams + 1];
+            items[0] = makeObj("All models");
+            SimpleDataset d = learningSystem.getDataset();
+            for (int i = 0; i < numParams; i++) {
+                learnerPanels[i] = new LearnerEditPanel(ls, i);
+                // c.addLayoutComponent(learnerPanels[i], Integer.toString(i));
+                panelDrilldown.add(learnerPanels[i], Integer.toString(i));
+               // c.addLayoutComponent(learnerPanels[i], Integer.toString(i));
+                items[i + 1] = makeObj(d.getParameterName(i));
+            }
+            comboEditSelection.setModel(new DefaultComboBoxModel(items));
+            comboEditSelection.setModel(new DefaultComboBoxModel(items));
+            c.show(panelDrilldown, "all");
+            panelDrilldown.repaint();
+
+        }
         setButtonsEnabled();
-        
+
     }
 
     /** This method is called from within the constructor to
@@ -121,16 +136,18 @@ public class EditPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(comboEditSelection, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(96, Short.MAX_VALUE))
-            .add(panelDrilldown, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 382, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(comboEditSelection, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(panelDrilldown, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(comboEditSelection, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(panelDrilldown, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 679, Short.MAX_VALUE))
+                .add(panelDrilldown, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(58, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -162,7 +179,7 @@ public class EditPanel extends javax.swing.JPanel {
     }
 
     private void learningSystemPropertyChanged(PropertyChangeEvent evt) {
-        String s = evt.getPropertyName();
+      /*  String s = evt.getPropertyName();
         if (s.equals(LearningSystem.PROP_CVRESULTS)) {
             double[] results = learningSystem.getCvResults();
             panelAllAccuracy.updateResults(results, true);
@@ -176,42 +193,42 @@ public class EditPanel extends javax.swing.JPanel {
                 learnerPanels[i].getAccuracyPanel().updateResults(results, false);
             }
         }/* else if (s.equals(LearningSystem.PROP_EVALUATIONSTATE)) {
-            EvaluationState es = learningSystem.getEvaluationState();
-            if (es == EvaluationState.DONE_EVALUATING) {
-                panelAllAccuracy.evaluationFinished();
-                for (int i = 0; i < numParams; i++) {
-                    learnerPanels[i].getAccuracyPanel().evaluationFinished();
-                }
-            }
+        EvaluationState es = learningSystem.getEvaluationState();
+        if (es == EvaluationState.DONE_EVALUATING) {
+        panelAllAccuracy.evaluationFinished();
+        for (int i = 0; i < numParams; i++) {
+        learnerPanels[i].getAccuracyPanel().evaluationFinished();
+        }
+        }
 
-            panelAllAccuracy.setEvaluationEnabled(es != EvaluationState.EVALUTATING);
-            for (int i = 0; i < numParams; i++) {
-                learnerPanels[i].getAccuracyPanel().setEvaluationEnabled(es != EvaluationState.EVALUTATING);
-            } */
-       // }
-        setButtonsEnabled();
+        panelAllAccuracy.setEvaluationEnabled(es != EvaluationState.EVALUTATING);
+        for (int i = 0; i < numParams; i++) {
+        learnerPanels[i].getAccuracyPanel().setEvaluationEnabled(es != EvaluationState.EVALUTATING);
+        } */
+        // }
+        //setButtonsEnabled();
     }
 
     protected void setButtonsEnabled() {
-     /*   LearningSystem.LearningSystemTrainingState lsts = learningSystem.getSystemTrainingState();
+        /*   LearningSystem.LearningSystemTrainingState lsts = learningSystem.getSystemTrainingState();
         LearningSystem.DatasetState dbs = learningSystem.getDatasetState();
         LearningSystem.EvaluationState es = learningSystem.getEvaluationState();
         LearningSystem.LearningAlgorithmsInitializationState lais = learningSystem.getInitializationState();
         boolean enable = false;
         if (dbs == learningSystem.datasetState.HAS_DATA 
-                && es != LearningSystem.EvaluationState.EVALUTATING
-                && lais == LearningAlgorithmsInitializationState.ALL_INITIALIZED
-                && lsts != LearningSystem.LearningSystemTrainingState.TRAINING) {
-            
+        && es != LearningSystem.EvaluationState.EVALUTATING
+        && lais == LearningAlgorithmsInitializationState.ALL_INITIALIZED
+        && lsts != LearningSystem.LearningSystemTrainingState.TRAINING) {
 
-                    enable = true;
+
+        enable = true;
 
 
         } 
         panelAllAccuracy.setEvaluationEnabled(enable);
-            for (int i = 0; i < numParams; i++) {
-                learnerPanels[i].getAccuracyPanel().setEvaluationEnabled(enable);
-            }
-           */
+        for (int i = 0; i < numParams; i++) {
+        learnerPanels[i].getAccuracyPanel().setEvaluationEnabled(enable);
+        }
+         */
     }
 }

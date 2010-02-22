@@ -127,7 +127,7 @@ public class TrainRunPanel extends javax.swing.JPanel {
         buildPanel.setLearningSystem(ls);
         trainPanel.setLearningSystem(ls);
         runPanel.setLearningSystem(ls);
-        editPanel.setLearningSystem(ls);
+       // editPanel.setLearningSystem(ls);
         setCurrentPane(Panes.COLLECT);
         setButtonsEnabled();
     }

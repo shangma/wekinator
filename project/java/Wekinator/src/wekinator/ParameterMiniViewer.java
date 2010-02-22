@@ -38,7 +38,6 @@ public class ParameterMiniViewer extends javax.swing.JPanel {
     }
 
         public void setValue(String s) {
-
             labelVal.setText(s);
         }
 
