@@ -227,13 +227,13 @@ public class SMOSettingsPanel extends javax.swing.JPanel implements LearningAlgo
     public void applySettings() throws Exception {
         boolean valid = true;
         Kernel k = null;
-        int c = 0;
+        double c = 0;
         double g = 0.0;
         double e = 0.0;
         String s = "";
         int kIndex =0;
         try {
-            c = Integer.parseInt(textC.getText());
+            c = Double.parseDouble(textC.getText());
             if (c <= 0) 
             {
                 throw new Exception("Invalid complexity constant " + c);
@@ -261,6 +261,8 @@ public class SMOSettingsPanel extends javax.swing.JPanel implements LearningAlgo
 
         //ok, now valid for sure.
         la.getClassifier().setC(c);
+       // la.getClassifier().setC
+
 
         if (kIndex == 3) {
             la.getClassifier().setKernel(oldOtherKernel);

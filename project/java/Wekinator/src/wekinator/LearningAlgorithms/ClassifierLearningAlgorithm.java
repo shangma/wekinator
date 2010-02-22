@@ -52,7 +52,7 @@ public abstract class ClassifierLearningAlgorithm extends LearningAlgorithm {
         setTrainingState(TrainingState.TRAINING);
         Classifier backup = Classifier.makeCopy(this.classifier);
         try {
-            Thread.sleep(3000);
+        //    Thread.sleep(3000);
             classifier.buildClassifier(instances);
 
             setTrainingState(TrainingState.TRAINED);
@@ -74,7 +74,7 @@ public abstract class ClassifierLearningAlgorithm extends LearningAlgorithm {
 
     public double computeAccuracy(Instances instances) throws Exception {
         if (getTrainingState() == TrainingState.TRAINED) {
-            Thread.sleep(3000);
+         //   Thread.sleep(3000);
 
             Evaluation eval = new Evaluation(instances);
             eval.evaluateModel(getClassifier(), instances);
@@ -87,7 +87,7 @@ public abstract class ClassifierLearningAlgorithm extends LearningAlgorithm {
 
     public double computeCVAccuracy(int numFolds, Instances instances) throws Exception {
         if (getTrainingState() == TrainingState.TRAINED) {
-                       Thread.sleep(3000);
+             //          Thread.sleep(3000);
 
             //TODO: is it necessary to copy here? Depends on implementation of SimpleDataset
             Random r = new Random();

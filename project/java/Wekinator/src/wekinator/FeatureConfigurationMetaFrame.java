@@ -106,6 +106,8 @@ public class FeatureConfigurationMetaFrame extends javax.swing.JFrame {
         panelFeatures = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
+        jButton3 = new javax.swing.JButton();
+        jButton4 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setAlwaysOnTop(true);
@@ -128,14 +130,33 @@ public class FeatureConfigurationMetaFrame extends javax.swing.JFrame {
             }
         });
 
+        jButton3.setText("Select all");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
+        jButton4.setText("Select none");
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(scrollFeaturePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
+            .add(scrollFeaturePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jButton3)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jButton4)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(jButton1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 239, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jButton2))
         );
         layout.setVerticalGroup(
@@ -144,8 +165,10 @@ public class FeatureConfigurationMetaFrame extends javax.swing.JFrame {
                 .add(scrollFeaturePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 260, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jButton2)
                     .add(jButton1)
-                    .add(jButton2))
+                    .add(jButton3)
+                    .add(jButton4))
                 .addContainerGap())
         );
 
@@ -160,6 +183,36 @@ public class FeatureConfigurationMetaFrame extends javax.swing.JFrame {
         commit();
         this.dispose();     
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+    for (int i = 0; i < childBoxArray.length; i++) {
+        if (childBoxArray[i] != null) {
+        for (int j= 0; j < childBoxArray[i].length; j++) {
+            if (childBoxArray[i][j] != null) {
+            for (int k = 0; k < childBoxArray[i][j].length; k++) {
+                childBoxArray[i][j][k].setSelected(true);
+            }
+            }
+        }
+        }
+    }
+        
+       
+    }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+    for (int i = 0; i < childBoxArray.length; i++) {
+        if (childBoxArray[i] != null) {
+        for (int j= 0; j < childBoxArray[i].length; j++) {
+            if (childBoxArray[i][j] != null) {
+            for (int k = 0; k < childBoxArray[i][j].length; k++) {
+                childBoxArray[i][j][k].setSelected(false);
+            }
+            }
+        }
+        }
+    }
+    }//GEN-LAST:event_jButton4ActionPerformed
 
     protected void commit() {
         HashMap<String, ArrayList<LinkedList<MetaFeature>>> allMetaFeatures = new HashMap<String, ArrayList<LinkedList<MetaFeature>>>();
@@ -245,6 +298,8 @@ public class FeatureConfigurationMetaFrame extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
     private javax.swing.JPanel panelFeatures;
     private javax.swing.JScrollPane scrollFeaturePanel;
     // End of variables declaration//GEN-END:variables

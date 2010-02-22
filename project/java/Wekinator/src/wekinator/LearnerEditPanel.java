@@ -16,6 +16,7 @@ import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import wekinator.LearningAlgorithms.AdaboostM1LearningAlgorithm;
@@ -45,7 +46,6 @@ public class LearnerEditPanel extends javax.swing.JPanel {
         }
     };
     protected PropertyChangeListener learningAlgChangeListener = new PropertyChangeListener() {
-
         public void propertyChange(PropertyChangeEvent evt) {
             learningAlgorithmPropertyChanged(evt);
         }
@@ -59,21 +59,34 @@ public class LearnerEditPanel extends javax.swing.JPanel {
     public LearnerEditPanel() {
         initComponents();
         accuracyPanel.isUsed = true;
+        WekinatorInstance.getWekinatorInstance().addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                wekinatorInstPropertyChange(evt);
+            }
+        });
+        setLearningSystem(WekinatorInstance.getWekinatorInstance().getLearningSystem());
+    }
+
+    private void wekinatorInstPropertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(WekinatorInstance.PROP_LEARNINGSYSTEM)) {
+            setLearningSystem(WekinatorInstance.getWekinatorInstance().getLearningSystem());
+        }
     }
 
     public LearnerEditPanel(LearningSystem ls, int paramNum) {
         initComponents();
         setLearningSystemAndNumber(ls, paramNum);
-        
+
     }
 
-    public void setLearningSystemAndNumber(LearningSystem ls, int paramNum) {
-        if (this.ls == ls && paramNum == this.paramNum) {
+    public void setLearningSystem(LearningSystem ls) {
+        if (this.ls == ls) {
             return;
         }
 
         if (this.ls != null) {
-            ls.removeLearnerChangeListener(learningSystemChangeListener);
+            this.ls.removeLearnerChangeListener(learningSystemChangeListener);
             ls.removePropertyChangeListener(lsPropertyChangeListener);
             if (al != null) {
                 al.removePropertyChangeListener(learningAlgChangeListener);
@@ -81,48 +94,58 @@ public class LearnerEditPanel extends javax.swing.JPanel {
         }
 
         this.ls = ls;
-        this.al = ls.getLearners(paramNum);
-
-        //Add listeners
-        ls.addLearnerChangeListener(learningSystemChangeListener);
-        ls.addPropertyChangeListener(lsPropertyChangeListener);
-        al.addPropertyChangeListener(learningAlgChangeListener);
-        accuracyPanel.setParamNum(paramNum);
-     //   accuracyPanel.setLearningSystem(ls);
-
+        if (ls != null) {
+            this.al = ls.getLearners(paramNum);
+            ls.addLearnerChangeListener(learningSystemChangeListener);
+            ls.addPropertyChangeListener(lsPropertyChangeListener);
+            if (al != null) {
+                al.addPropertyChangeListener(learningAlgChangeListener);
+            }
+        } else {
+            al = null;
+        }
         updateGuiForAlgorithm();
+    }
 
-
+    public void setLearningSystemAndNumber(LearningSystem ls, int paramNum) {
+        this.paramNum = paramNum;
+        accuracyPanel.setParamNum(paramNum);
+        setLearningSystem(ls);
     }
 
     protected void updateGuiForAlgorithm() {
-        labelLearnerDescription.setText(al.getName() + ", using " + "AAA features");
+        System.out.println("updating gui");
+        labelLearnerDescription.setText(al.getName()); //TODO: + ", using " + "AAA features");
         panelLearnerSettings.removeAll();
-        panelLearnerSettings.add(al.getSettingsPanel().getPanel());
+        JPanel p = al.getSettingsPanel().getPanel();
+        panelLearnerSettings.add(p);
         checkNNGui.setVisible(al instanceof NNLearningAlgorithm);
-
         panelLearnerSettings.repaint();
+        updateForTrainingStatus();
     }
 
     private void learningSystemPropertyChanged(PropertyChangeEvent evt) {
         //TODO: respond to learning system changes...?
-     //   System.out.println("here");
-
+        //   System.out.println("here");
     }
 
     private void learningSystemLearnersChanged(ChangeEvent e) {
         System.out.println("updating learner edit panel " + paramNum);
         LearningAlgorithm newal = ls.getLearners(paramNum);
-        //if (newal != al) {
-            al = newal;       
-            updateGuiForAlgorithm();
-        //}
+        if (al != null) {
+            al.removePropertyChangeListener(learningAlgChangeListener);
+        }
+        if (newal != null) {
+            newal.addPropertyChangeListener(learningAlgChangeListener);
+        }
+
+        al = newal;
+        updateGuiForAlgorithm();
+    
     }
 
-    private void learningAlgorithmPropertyChanged(PropertyChangeEvent evt) {
-        String s= evt.getPropertyName();
-        if (s.equals(LearningAlgorithm.PROP_TRAININGSTATE)) {
-            TrainingState state    = al.getTrainingState();
+    private void updateForTrainingStatus() {
+           TrainingState state = al.getTrainingState();
             if (state == TrainingState.TRAINING) {
                 buttonRetrain.setEnabled(false);
                 labelTrainingStatus.setText("Training...");
@@ -130,7 +153,7 @@ public class LearnerEditPanel extends javax.swing.JPanel {
             } else {
                 buttonRetrain.setEnabled(true);
                 if (state == TrainingState.NOT_TRAINED) {
-                    labelTrainingStatus.setText("");
+                    labelTrainingStatus.setText("Not trained");
                 } else if (state == TrainingState.TRAINED) {
                     labelTrainingStatus.setText("Trained");
                 //}// else if (state == TrainingState.ERROR) {
@@ -140,6 +163,13 @@ public class LearnerEditPanel extends javax.swing.JPanel {
                 }
 
             }
+
+    }
+
+    private void learningAlgorithmPropertyChanged(PropertyChangeEvent evt) {
+        String s = evt.getPropertyName();
+        if (s.equals(LearningAlgorithm.PROP_TRAININGSTATE)) {
+            updateForTrainingStatus();
         }
 
     }
@@ -174,7 +204,7 @@ public class LearnerEditPanel extends javax.swing.JPanel {
         jButton15.setText("Change model type or load...");
         jButton15.setEnabled(false);
 
-        buttonRetrain.setText("Retrain w/ these settings");
+        buttonRetrain.setText("Apply these settings");
         buttonRetrain.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonRetrainActionPerformed(evt);
@@ -188,7 +218,7 @@ public class LearnerEditPanel extends javax.swing.JPanel {
             }
         });
 
-        jButton1.setText("Reset to current parameters");
+        jButton1.setText("Undo changes");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -232,7 +262,7 @@ public class LearnerEditPanel extends javax.swing.JPanel {
                         .add(jButton1))
                     .add(jPanel9Layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(panelLearnerSettings, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(panelLearnerSettings, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 400, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         jPanel9Layout.setVerticalGroup(
@@ -244,7 +274,7 @@ public class LearnerEditPanel extends javax.swing.JPanel {
                     .add(buttonSaveLearner)
                     .add(jButton15))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(panelLearnerSettings, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(panelLearnerSettings, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 124, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(buttonRetrain)
@@ -292,9 +322,9 @@ public class LearnerEditPanel extends javax.swing.JPanel {
         try {
             al.getSettingsPanel().applySettings();
             if (al instanceof NNLearningAlgorithm) {
-                ((NNLearningAlgorithm)al).setUseGui(checkNNGui.isSelected());
+                ((NNLearningAlgorithm) al).setUseGui(checkNNGui.isSelected());
             }
-            WekinatorLearningManager.getInstance().startTraining(paramNum);
+          //  WekinatorLearningManager.getInstance().startTraining(paramNum);
         } catch (Exception ex) {
             Logger.getLogger(LearnerEditPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -312,7 +342,6 @@ public class LearnerEditPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_buttonSaveLearnerActionPerformed
 
     private void checkNNGuiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkNNGuiActionPerformed
-        
 }//GEN-LAST:event_checkNNGuiActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
@@ -338,7 +367,7 @@ public class LearnerEditPanel extends javax.swing.JPanel {
     public static void main(String[] args) {
         JFrame f = new JFrame();
         ChuckSystem.getChuckSystem().setNumParams(1);
-        
+
         LearningSystem ls = new LearningSystem(1);
         ls.setLearners(0, new AdaboostM1LearningAlgorithm());
         LearnerEditPanel p = new LearnerEditPanel(ls, 0);
@@ -347,5 +376,4 @@ public class LearnerEditPanel extends javax.swing.JPanel {
 
 
     }
-
 }

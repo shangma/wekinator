@@ -16,7 +16,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import weka.core.Instance;
 import weka.core.Instances;
-import wekinator.util.SerializedFileUtil;
 
 /**
  * Same trained model should be able to be used

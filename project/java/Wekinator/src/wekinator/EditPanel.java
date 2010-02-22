@@ -52,7 +52,7 @@ public class EditPanel extends javax.swing.JPanel {
     }
 
     void setLearningSystem(LearningSystem ls) {
-        learnerEditPanel1 = null;
+       // learnerEditPanel1 = null;
         int oldNumParams = numParams;
 
         if (learningSystem == ls) {
@@ -115,8 +115,8 @@ public class EditPanel extends javax.swing.JPanel {
 
         comboEditSelection = new javax.swing.JComboBox();
         panelDrilldown = new javax.swing.JPanel();
-        learnerEditPanel1 = new wekinator.LearnerEditPanel();
         panelAllAccuracy = new wekinator.AllAccuracy();
+        jPanel1 = new javax.swing.JPanel();
 
         comboEditSelection.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "All models", "Model for Parameter 0 - Bow position", "Model for Parameter 1 - Pow tension", "Modle for Parameter 2 - Panning" }));
         comboEditSelection.addActionListener(new java.awt.event.ActionListener() {
@@ -126,10 +126,22 @@ public class EditPanel extends javax.swing.JPanel {
         });
 
         panelDrilldown.setLayout(new java.awt.CardLayout());
-        panelDrilldown.add(learnerEditPanel1, "card4");
 
         panelAllAccuracy.setMinimumSize(new java.awt.Dimension(200, 200));
         panelDrilldown.add(panelAllAccuracy, "card3");
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 329, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 375, Short.MAX_VALUE)
+        );
+
+        panelDrilldown.add(jPanel1, "card3");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -139,7 +151,7 @@ public class EditPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(comboEditSelection, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(panelDrilldown, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(17, Short.MAX_VALUE))
+                .addContainerGap(170, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -162,7 +174,7 @@ public class EditPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox comboEditSelection;
-    private wekinator.LearnerEditPanel learnerEditPanel1;
+    private javax.swing.JPanel jPanel1;
     private wekinator.AllAccuracy panelAllAccuracy;
     private javax.swing.JPanel panelDrilldown;
     // End of variables declaration//GEN-END:variables
