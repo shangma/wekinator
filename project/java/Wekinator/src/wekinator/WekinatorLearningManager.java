@@ -232,6 +232,7 @@ public class WekinatorLearningManager {
 
         FeatureExtractionController.startExtracting();
         setMode(Mode.DATASET_CREATION);
+        WekinatorInstance.getWekinatorInstance().getLearningSystem().getDataset().startNewTrainingRound();
 
     }
 

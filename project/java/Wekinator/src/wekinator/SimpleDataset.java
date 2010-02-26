@@ -618,6 +618,7 @@ public class SimpleDataset implements Serializable {
         currentTrainingRound++;
     }
 
+    //TODO TODO TODO: Error in addInstance - wrong parameter value
     //How do we handle missing features or missing parameters??
     public void addInstance(double[] featureVals, double paramVals[], boolean paramMask[], Date timeStamp) {
 
