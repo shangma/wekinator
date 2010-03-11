@@ -231,7 +231,7 @@ public class OscHandler {
                 addPlayalongMessageListener();
         addHidSettingsAllListener();
         addChuckSettingsArrayListener();
-                OscController.addListeners(receiver);
+        OscController.addListeners(receiver);
 
         receiver.startListening();
 

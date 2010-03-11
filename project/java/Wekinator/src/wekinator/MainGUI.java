@@ -161,6 +161,7 @@ public class MainGUI extends javax.swing.JFrame {
         wekMenu = new javax.swing.JMenu();
         preferencesMenuItem = new javax.swing.JMenuItem();
         exitMenuItem = new javax.swing.JMenuItem();
+        menuEnableOscControl = new javax.swing.JCheckBoxMenuItem();
         fileMenu = new javax.swing.JMenu();
         menuSaveSystem = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
@@ -367,6 +368,15 @@ public class MainGUI extends javax.swing.JFrame {
         });
         wekMenu.add(exitMenuItem);
 
+        menuEnableOscControl.setSelected(true);
+        menuEnableOscControl.setText("Enable OSC control");
+        menuEnableOscControl.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuEnableOscControlActionPerformed(evt);
+            }
+        });
+        wekMenu.add(menuEnableOscControl);
+
         menuBar.add(wekMenu);
 
         fileMenu.setText("File");
@@ -552,6 +562,12 @@ private void menuItemOtfScoreActionPerformed(java.awt.event.ActionEvent evt) {//
 private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemViewFeaturesActionPerformed
     FeatureExtractionController.showFeatureViewer();
 }//GEN-LAST:event_menuItemViewFeaturesActionPerformed
+
+private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuEnableOscControlActionPerformed
+    OscController.setOscControllable(menuEnableOscControl.isSelected());
+    System.out.println("set contorllable to " + menuEnableOscControl.isSelected());
+}//GEN-LAST:event_menuEnableOscControlActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aboutMenuItem1;
     private javax.swing.ButtonGroup buttonGroupClassifierSource;
@@ -580,6 +596,7 @@ private void menuItemViewFeaturesActionPerformed(java.awt.event.ActionEvent evt)
     private javax.swing.JLabel labelOscStatus1;
     private wekinator.LearningSystemConfigurationPanel learningSystemConfigurationPanel;
     private javax.swing.JMenuBar menuBar;
+    private javax.swing.JCheckBoxMenuItem menuEnableOscControl;
     private javax.swing.JMenuItem menuItemOtfScore;
     private javax.swing.JMenuItem menuItemViewConsole;
     private javax.swing.JMenuItem menuItemViewDataset;

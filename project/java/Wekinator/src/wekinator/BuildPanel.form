@@ -36,13 +36,18 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                  <Component id="jPanel1" alignment="0" min="0" max="32767" attributes="1"/>
-                  <Component id="jPanel7" alignment="0" max="32767" attributes="1"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jPanel7" max="32767" attributes="1"/>
+                  </Group>
                   <Component id="jPanel6" alignment="0" max="32767" attributes="1"/>
-                  <Component id="jPanel2" alignment="0" max="32767" attributes="1"/>
+                  <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                      <Component id="jPanel1" alignment="0" min="0" max="32767" attributes="1"/>
+                      <Component id="jPanel2" alignment="0" max="32767" attributes="1"/>
+                  </Group>
               </Group>
-              <EmptySpace pref="12" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -56,7 +61,7 @@
               <Component id="jPanel6" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jPanel7" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -184,19 +189,14 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="buttonRecord" alignment="1" pref="464" max="32767" attributes="1"/>
-              <Group type="102" alignment="0" attributes="0">
-                  <Component id="checkOSCRecord" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-              </Group>
+              <Component id="buttonRecord" alignment="1" pref="470" max="32767" attributes="1"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <Component id="buttonRecord" min="-2" pref="66" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="checkOSCRecord" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -208,17 +208,6 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonRecordActionPerformed"/>
-          </Events>
-        </Component>
-        <Component class="javax.swing.JCheckBox" name="checkOSCRecord">
-          <Properties>
-            <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-              <Font name="Lucida Grande" size="13" style="2"/>
-            </Property>
-            <Property name="text" type="java.lang.String" value="Advanced: Enable OSC record control"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="checkOSCRecordActionPerformed"/>
           </Events>
         </Component>
       </SubComponents>

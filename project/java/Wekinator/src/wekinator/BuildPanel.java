@@ -167,7 +167,6 @@ public class BuildPanel extends javax.swing.JPanel {
         buttonAddClipboard1 = new javax.swing.JButton();
         jPanel6 = new javax.swing.JPanel();
         buttonRecord = new javax.swing.JButton();
-        checkOSCRecord = new javax.swing.JCheckBox();
         jPanel7 = new javax.swing.JPanel();
         labelNumExamples = new javax.swing.JLabel();
         jButton8 = new javax.swing.JButton();
@@ -269,29 +268,17 @@ public class BuildPanel extends javax.swing.JPanel {
             }
         });
 
-        checkOSCRecord.setFont(new java.awt.Font("Lucida Grande", 2, 13));
-        checkOSCRecord.setText("Advanced: Enable OSC record control");
-        checkOSCRecord.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                checkOSCRecordActionPerformed(evt);
-            }
-        });
-
         org.jdesktop.layout.GroupLayout jPanel6Layout = new org.jdesktop.layout.GroupLayout(jPanel6);
         jPanel6.setLayout(jPanel6Layout);
         jPanel6Layout.setHorizontalGroup(
             jPanel6Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonRecord, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE)
-            .add(jPanel6Layout.createSequentialGroup()
-                .add(checkOSCRecord)
-                .addContainerGap())
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonRecord, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE)
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel6Layout.createSequentialGroup()
                 .add(buttonRecord, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 66, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(checkOSCRecord))
+                .addContainerGap())
         );
 
         jPanel7.setBorder(javax.swing.BorderFactory.createTitledBorder("Manage recorded examples"));
@@ -376,12 +363,15 @@ public class BuildPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(jPanel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(12, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -496,10 +486,7 @@ public class BuildPanel extends javax.swing.JPanel {
         }        
     }//GEN-LAST:event_buttonPlayScoreActionPerformed
 
-    private void checkOSCRecordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkOSCRecordActionPerformed
-        OscController.setRecordControllable(checkOSCRecord.getModel().isSelected());
-    
-}//GEN-LAST:event_checkOSCRecordActionPerformed
+
 
     private void startPlayalongJava() {
         if (WekinatorInstance.getWekinatorInstance().getPlayalongScore() != null) {
@@ -507,7 +494,8 @@ public class BuildPanel extends javax.swing.JPanel {
                  }
     }
 
-    private void startPlayalongChuck() {
+    //TODO: encapsulate in chuck proxy ~
+    public void startPlayalongChuck() {
         OscHandler.getOscHandler().setBuildPanel(this); //TODO total hack get rid of this
         OscHandler.getOscHandler().playScore();
             setButtonPlayalong(true); //TODO: enable this to happen somewhere else? have playalong state somewhere outside gui!
@@ -520,7 +508,7 @@ public class BuildPanel extends javax.swing.JPanel {
         WekinatorInstance.getWekinatorInstance().getPlayalongScore().stop();
     }
 
-    private void stopPlayalongChuck() {
+    public void stopPlayalongChuck() {
         OscHandler.getOscHandler().stopPlayback();
         setButtonPlayalong(false);
         isPlayalongChuck = false;
@@ -566,7 +554,6 @@ public class BuildPanel extends javax.swing.JPanel {
     private javax.swing.JButton buttonPlayScore;
     private javax.swing.JButton buttonRecord;
     private javax.swing.JButton buttonSynthPlay;
-    private javax.swing.JCheckBox checkOSCRecord;
     private javax.swing.JComboBox comboChooseScore;
     private javax.swing.JComboBox comboSynthAction;
     private javax.swing.JButton jButton1;

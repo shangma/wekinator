@@ -19,6 +19,9 @@ public class OscController {
 
     private static OscController ref = new OscController();
     private static final String OSCrecordMessage = "/control/OSCrecord";
+    private static final String OSCplayscoreMessage = "/control/OSCplayscore";
+    private static final String OSCtrainMessage = "/control/OSCtrain";
+    private static final String OSCrunMessage = "/control/OSCstartrun";
 
     private OscController() {
     }
@@ -26,6 +29,10 @@ public class OscController {
     public static void addListeners(OSCPortIn receiver) {
         // return listeners;
         addRecordListener(receiver);
+        addPlayscoreListener(receiver);
+        addTrainListener(receiver);
+        addRunListener(receiver);
+
     }
 
     private static void addRecordListener(OSCPortIn receiver) {
@@ -41,16 +48,58 @@ public class OscController {
         };
         receiver.addListener(OSCrecordMessage, l);
     }
-    protected boolean recordControllable = false;
-    public static final String PROP_RECORDCONTROLLABLE = "recordControllable";
+
+    private static void addPlayscoreListener(OSCPortIn receiver) {
+        OSCListener l = new OSCListener() {
+
+            public void acceptMessage(Date arg0, OSCMessage message) {
+                System.out.println("Control start score message received");
+                Object[] o = message.getArguments();
+                if (o.length > 0 && (o[0] instanceof java.lang.Integer)) {
+                    scoreMessageReceived(((Integer) o[0]) == 1);
+                }
+            }
+        };
+        receiver.addListener(OSCplayscoreMessage, l);
+    }
+
+    private static void addTrainListener(OSCPortIn receiver) {
+        OSCListener l = new OSCListener() {
+
+            public void acceptMessage(Date arg0, OSCMessage message) {
+                System.out.println("Control train message received");
+                Object[] o = message.getArguments();
+                if (o.length > 0 && (o[0] instanceof java.lang.Integer)) {
+                    trainMessageReceived(((Integer) o[0]) == 1);
+                }
+            }
+        };
+        receiver.addListener(OSCtrainMessage, l);
+    }
+
+    private static void addRunListener(OSCPortIn receiver) {
+        OSCListener l = new OSCListener() {
+
+            public void acceptMessage(Date arg0, OSCMessage message) {
+                System.out.println("Control start run received");
+                Object[] o = message.getArguments();
+                if (o.length > 0 && (o[0] instanceof java.lang.Integer)) {
+                    runMessageReceived(((Integer) o[0]) == 1);
+                }
+            }
+        };
+        receiver.addListener(OSCrunMessage, l);
+    }
+    protected boolean oscControllable = true;
+    public static final String PROP_OSCCONTROLLABLE = "oscControllable";
 
     /**
      * Get the value of recordControllable
      *
      * @return the value of recordControllable
      */
-    public static boolean isRecordControllable() {
-        return ref.recordControllable;
+    public static boolean isOscControllable() {
+        return ref.oscControllable;
     }
 
     /**
@@ -58,10 +107,10 @@ public class OscController {
      *
      * @param recordControllable new value of recordControllable
      */
-    public static void setRecordControllable(boolean recordControllable) {
-        boolean oldRecordControllable = ref.recordControllable;
-        ref.recordControllable = recordControllable;
-        ref.propertyChangeSupport.firePropertyChange(PROP_RECORDCONTROLLABLE, oldRecordControllable, recordControllable);
+    public static void setOscControllable(boolean oscControllable) {
+        boolean oldRecordControllable = ref.oscControllable;
+        ref.oscControllable = oscControllable;
+        ref.propertyChangeSupport.firePropertyChange(PROP_OSCCONTROLLABLE, oldRecordControllable, oscControllable);
     }
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
@@ -84,17 +133,76 @@ public class OscController {
     }
 
     private static void controlRecordReceived(boolean start) {
-        if (isRecordControllable()) {
+        if (isOscControllable()) {
             if (start) {
                 try {
-                WekinatorLearningManager.getInstance().startDatasetCreation();
+                    System.out.println("starting");
+                    WekinatorLearningManager.getInstance().startDatasetCreation();
                 } catch (Exception ex) {
                     System.out.println("log this osc: can't start dataset creation (info)");
                 }
             } else {
+                System.out.println("stopping");
                 WekinatorLearningManager.getInstance().stopDatasetCreation();
 
             }
+        } else {
+            System.out.println("not controllable");
         }
+    }
+
+    private static void scoreMessageReceived(boolean start) {
+        //Hack: move to  playalong proxy or something
+        if (isOscControllable()) {
+            if (start) {
+                //try {
+                //  WekinatorLearningManager.getInstance().startDatasetCreation();
+                //start score
+                //     OscHandler.getOscHandler().setBuildPanel(this); //TODO total hack get rid of this
+                OscHandler.getOscHandler().playScore();
+                //setButtonPlayalong(true); //TODO: enable this to happen somewhere else? have playalong state somewhere outside gui!
+                //isPlayalongChuck = true;
+                OscHandler.getOscHandler().startGettingParams();
+            // } catch (Exception ex) {
+            //     System.out.println("log this osc: can't start score (info)");
+            // }
+            } else {
+                OscHandler.getOscHandler().stopPlayback();
+                OscHandler.getOscHandler().stopGettingParams();
+            }
+        }
+    }
+
+    private static void trainMessageReceived(boolean b) {
+        if (isOscControllable()) {
+            WekinatorLearningManager lm = WekinatorLearningManager.getInstance();
+            LearningSystem ls = WekinatorInstance.getWekinatorInstance().getLearningSystem();
+            if (lm != null && lm.getMode() == WekinatorLearningManager.Mode.NONE && ls != null && ls.isIsTrainable()) {
+
+                WekinatorLearningManager.getInstance().startTraining();
+            } else {
+                System.out.println("Received train message but cannot train at this time");
+            }
+        }
+    }
+
+    private static void runMessageReceived(boolean start) {
+        if (isOscControllable()) {
+
+            LearningSystem ls = WekinatorInstance.getWekinatorInstance().getLearningSystem();
+            WekinatorLearningManager lm = WekinatorLearningManager.getInstance();
+            if (start) {
+                if (ls != null && ls.isIsRunnable() && lm.mode == WekinatorLearningManager.Mode.NONE) {
+                    WekinatorLearningManager.getInstance().startRunning();
+                    OscHandler.getOscHandler().startSound();
+                }
+            } else {
+                if (lm.mode == WekinatorLearningManager.Mode.RUNNING) {
+                    WekinatorLearningManager.getInstance().stopRunning();
+                    OscHandler.getOscHandler().stopSound();
+                }
+            }
+        }
+
     }
 }
