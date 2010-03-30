@@ -103,7 +103,7 @@ public class GraphDataViewFrame extends javax.swing.JFrame {
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-    boolean isDiscrete[] = {true, true, true, true};
+    boolean isDiscrete[] = {false, false, false, false};
         int numVals[] = {3, 2, 3, 4};
         String featureNames[] = {"F1", "f2", "F3", "f4", "f5", "f6"};
         String paramNames[] = {"P1", "p2", "p3", "p4"};
@@ -119,10 +119,10 @@ public class GraphDataViewFrame extends javax.swing.JFrame {
                     if (i % 5 == 0) {
                        paramVals[j] = Double.NaN;
                     } else {
-                        paramVals[j] = (int)(Math.random() * numVals[j]);
+                        paramVals[j] = (int)(Math.random() * (numVals[j]));
                     }
                 } else {
-                    paramVals[j] = 0;
+                    paramVals[j] = Math.random()* 10;
                 }
             }
             s.addInstance(featureVals, paramVals);

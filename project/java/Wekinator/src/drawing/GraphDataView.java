@@ -122,7 +122,10 @@ public class GraphDataView {
     //Data model stuff!!!
     private void changeLabels(int selectedParam, int selectedMin, int selectedMax, int c) {
         System.out.println("changing to class " + c  + " for track " + selectedParam);
-
+        if (selectedMin == -1 || selectedMax == -1) {
+            return;
+        }
+        
         if (c < d.getMaxLegalDiscreteParamValues()[selectedParam])  {
             for (int i = selectedMin; i <= selectedMax && i < d.getNumDatapoints(); i++) {
                 d.setParameterValue(i, selectedParam, c);

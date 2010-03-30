@@ -29,8 +29,8 @@ public class TrackSet {
     public int minInd = 0;
     public int maxInd = 10;
     public float trackWidth = 100f;
-    public float trackHeight = 20f;
-    public float labelHeight = 20f; //doesn't change
+    public float trackHeight = 30f;
+    public float labelHeight = 30f; //doesn't change
     public int ctrlRegionHeight = 40;
     private HScrollbar hs1 = null;
     public Region myRegion = null;
@@ -61,24 +61,27 @@ public class TrackSet {
         int numDiscrete = 0;
         int numContinuous = 0;
         int maxValues[] = d.getMaxLegalDiscreteParamValues();
-        LinkedList<Integer> discIds = new LinkedList<Integer>();
-        LinkedList<Integer> contIds = new LinkedList<Integer>();
+      //  LinkedList<Integer> discIds = new LinkedList<Integer>();
+      //  LinkedList<Integer> contIds = new LinkedList<Integer>();
         for (int i = 0; i < d.getNumParameters(); i++) {
             if (d.isParameterDiscrete(i)) {
                 numDiscrete++;
-                discIds.add(i);
+               // discIds.add(i);
                 if (maxValues[i] > maxNumClasses) {
                     maxNumClasses = maxValues[i];
                 }
             } else {
-                contIds.add(i);
+               // contIds.add(i);
                 numContinuous++;
             }
         }
-        int numTracksTotal = d.getNumFeatures() + numContinuous;
-        int numLabelsTotal = numDiscrete;
+       // int numTracksTotal = d.getNumFeatures() + numContinuous;
+       // int numLabelsTotal = numDiscrete;
+        int numTracksTotal = d.getNumFeatures();
+        int numLabelsTotal = numDiscrete + numContinuous;
+
         trackNames = new String[numTracksTotal];
-        labelNames = new String[numDiscrete];
+        labelNames = new String[numLabelsTotal];
 
         minTrack = 0;
         maxTrack = Math.min(numTracksTotal - 1, maxNumTracksShown - 1);
@@ -107,8 +110,13 @@ public class TrackSet {
         String[] pnames = d.getParameterNames();
         String[] fnames = d.getFeatureNames(); //add listener for this?
         for (int i = 0; i < numLabelsTotal; i++) {
-            myLabels[i] = new LabelTrack(trackWidth, labelHeight, minInd, maxInd, hues, d, discIds.get(i), app);
-            labelNames[i] = pnames[discIds.get(i)];
+            if (d.isParameterDiscrete(i)) {
+                myLabels[i] = new DiscreteLabelTrack(trackWidth, labelHeight, minInd, maxInd, hues, d, i, app);
+            } else {
+             //   float w, float h, int minInd, int maxInd, SimpleDataset d, boolean isParam, int myId, PApplet app
+                myLabels[i] = new ContinuousLabelTrack(trackWidth, labelHeight, minInd, maxInd, d, true, i, app);
+            }
+            labelNames[i] = pnames[i];
         }
         for (int i = 0; i < numLabelsShown; i++) {
              labelRegions[i] = new Region(hSpace + vertScrollSize + nameWidth, heightSoFar, hSpace + nameWidth + trackWidth + vertScrollSize, heightSoFar + labelHeight);
@@ -123,16 +131,16 @@ public class TrackSet {
         trackRegions = new Region[numTracksShown];
         scrollTUp = new Region(hSpace, heightSoFar, hSpace + vertScrollSize, heightSoFar + vertScrollSize);
 
-        int t = 0;
-        for (int i = 0; i < contIds.size(); i++) {
+        //int t = 0;
+       /* for (int i = 0; i < contIds.size(); i++) {
             myTracks[t] = new PlotTrack(trackWidth, trackHeight, minInd, maxInd, d, true, contIds.get(i), app);
             trackNames[t] = pnames[contIds.get(i)];
             t++;
-        }
+        } */
         for (int i = 0; i < d.getNumFeatures(); i++) {
-            myTracks[t] = new PlotTrack(trackWidth, trackHeight, minInd, maxInd, d, false, i, app);
-            trackNames[t] = fnames[i];
-            t++;
+            myTracks[i] = new PlotTrack(trackWidth, trackHeight, minInd, maxInd, d, false, i, app);
+            trackNames[i] = fnames[i];
+            //t++;
         }
 
         for (int i = 0; i < numTracksShown; i++) {
@@ -257,43 +265,47 @@ public class TrackSet {
                 int region = findRegion(labelRegions, mouseX, mouseY);
                 int labelNum = findLabelForRegion(region);
 
-                if (labelNum != -1) {
-                    if (selectedTrack != labelNum && clickState != ClickState.NONE) {
-                        myLabels[selectedTrack].clearClick();
+                if (labelNum != -1) { //clicked on a label
+                    if (selectedTrack != labelNum && clickState != ClickState.NONE  && selectedTrack != -1 && d.isParameterDiscrete(selectedTrack)) {
+                        ((DiscreteLabelTrack)myLabels[selectedTrack]).clearClick();
                     }
-                    selectedTrack = labelNum;
-                    myLabels[labelNum].leftClick(mouseX - labelRegions[region].x1, mouseY - labelRegions[region].y1);
-                    if (clickState != ClickState.LR_LABEL) {
-                        clickState = ClickState.L_LABEL;
+                    if (d.isParameterDiscrete(labelNum)) {
+                        selectedTrack = labelNum;
+                        ((DiscreteLabelTrack)myLabels[labelNum]).leftClick(mouseX - labelRegions[region].x1, mouseY - labelRegions[region].y1);
+                         if (clickState != ClickState.LR_LABEL) {
+                            clickState = ClickState.L_LABEL;
+                        }
                     }
                 } else if (clickState != ClickState.NONE) {
                     //User has clicked outside a label
-                    myLabels[selectedTrack].clearClick();
-                    selectedTrack = -1;
-                    clickState = ClickState.NONE;
+                    if (selectedTrack != -1 && d.isParameterDiscrete(selectedTrack)) {
+                        ((DiscreteLabelTrack)myLabels[selectedTrack]).clearClick();
+                        selectedTrack = -1;
+                        clickState = ClickState.NONE;
+                    }
                 }
         } else if (mouseButton == PApplet.RIGHT && clickState != ClickState.NONE) {
               int region = findRegion(labelRegions, mouseX, mouseY);
                 int labelNum = findLabelForRegion(region);
-              if (labelNum != -1 && labelNum == selectedTrack) {
-                 myLabels[selectedTrack].rightClick(mouseX - labelRegions[region].x1, mouseY - labelRegions[region].y1);
+              if (labelNum != -1 && labelNum == selectedTrack && d.isParameterDiscrete(selectedTrack)) {
+                 ((DiscreteLabelTrack)myLabels[selectedTrack]).rightClick(mouseX - labelRegions[region].x1, mouseY - labelRegions[region].y1);
                  clickState = ClickState.LR_LABEL;
               }
         }
     }
 
     public int getSelectedMin() {
-        if (selectedTrack == -1 || clickState == ClickState.NONE)
+        if (selectedTrack == -1 || clickState == ClickState.NONE ||  !d.isParameterDiscrete(selectedTrack))
             return -1;
 
-        return myLabels[selectedTrack].minSelected;
+        return ((DiscreteLabelTrack)myLabels[selectedTrack]).minSelected;
     }
 
     public int getSelectedMax() {
-        if (selectedTrack == -1 || clickState == ClickState.NONE)
+        if (selectedTrack == -1 || clickState == ClickState.NONE ||  !d.isParameterDiscrete(selectedTrack))
             return -1;
 
-        return myLabels[selectedTrack].maxSelected;
+        return ((DiscreteLabelTrack)myLabels[selectedTrack]).maxSelected;
     }
 
     private int findLabelForRegion(int regionNum) {
@@ -344,8 +356,8 @@ public class TrackSet {
         }
 
         for (int i = 0; i < myLabels.length; i++) {
-            myLabels[i].minInd = min;
-            myLabels[i].maxInd = min + myLabels[i].getUnitWidth(); //hack
+            myLabels[i].setMinInd(min);
+            myLabels[i].setMaxInd(min + myLabels[i].getUnitWidth()); //hack
         }
     }
 
@@ -396,6 +408,9 @@ public class TrackSet {
         p.translate(scrollLDown.x1, scrollLDown.y1);
         p.fill(200);
         p.rect(0, 0, vertScrollSize, vertScrollSize);
+        p.fill(0);
+        p.line(0, 0, vertScrollSize * .5f, vertScrollSize);
+        p.line(vertScrollSize * .5f, vertScrollSize, vertScrollSize, 0);
         p.popMatrix();
 
 
@@ -403,6 +418,9 @@ public class TrackSet {
         p.translate(scrollLUp.x1, scrollLUp.y1);
         p.fill(200);
         p.rect(0, 0, vertScrollSize, vertScrollSize);
+        p.fill(0);
+        p.line(0, vertScrollSize, vertScrollSize * .5f, 0);
+        p.line(vertScrollSize * .5f, 0, vertScrollSize, vertScrollSize);
         p.popMatrix();
 
 
@@ -411,6 +429,9 @@ public class TrackSet {
         p.translate(scrollTUp.x1, scrollTUp.y1);
         p.fill(200);
         p.rect(0, 0, vertScrollSize, vertScrollSize);
+        p.fill(0);
+        p.line(0, vertScrollSize, vertScrollSize * .5f, 0);
+        p.line(vertScrollSize * .5f, 0, vertScrollSize, vertScrollSize);
         p.popMatrix();
 
 
@@ -418,7 +439,17 @@ public class TrackSet {
         p.translate(scrollTDown.x1, scrollTDown.y1);
         p.fill(200);
         p.rect(0, 0, vertScrollSize, vertScrollSize);
+                p.fill(0);
+        p.line(0, 0, vertScrollSize * .5f, vertScrollSize);
+        p.line(vertScrollSize * .5f, vertScrollSize, vertScrollSize, 0);
+
+        p.fill(0);
         p.popMatrix();
+
+        if (p.mouseX >= labelRegions[0].x1 && p.mouseY <= labelRegions[0].x2) {
+            p.line(p.mouseX - (int)myRegion.x1, labelRegions[0].y1, p.mouseX - (int)myRegion.x1, trackRegions[trackRegions.length-1].y2);
+        }
+
 
         p.popStyle();
     }
