@@ -30,7 +30,7 @@ public class FeatureConfiguration {
     public static boolean equal(FeatureConfiguration fc1, FeatureConfiguration fc2) {
         if (fc1 == fc2) {
             return true;
-        }
+        } 
 
         if (fc1 == null || fc2 == null) {
             return false;
@@ -576,7 +576,6 @@ public class FeatureConfiguration {
     public FeatureConfiguration() {
         populateFeatureList();
         WekinatorInstance.getWekinatorInstance().addOscFeatureNamesChangeListener(new ChangeListener() {
-
             public void stateChanged(ChangeEvent e) {
                 wekOscFeaturesChanged();
             }

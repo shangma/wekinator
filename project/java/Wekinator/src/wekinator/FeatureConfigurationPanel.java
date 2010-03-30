@@ -583,8 +583,9 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
                 }
             }
        // }
-        }
-        else if (ChuckSystem.getChuckSystem().state != ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID) {
+            //Possible problem here: what if not "equal" per se but still need to refresh chuck? Does equality work with hid change, fft size change, motion rate change, etc.?
+        } else if (ChuckSystem.getChuckSystem().state != ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID) {
+        //else {
                 //Then, set backup to the current configuration, and set the WekInst current to it as well
                 WekinatorInstance.getWekinatorInstance().setFeatureConfiguration(featureConfiguration);
                 labelFeatureStatus.setText("Feature configuration set; using " + featureConfiguration.getNumFeaturesEnabled() + " features.");

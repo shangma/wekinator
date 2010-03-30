@@ -1026,6 +1026,7 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
                 //WekinatorInstance.getWekinatorInstance().setNumParams(cs.getNumParams());
                 //WekinatorInstance.getWekinatorInstance().setParamNames(
 
+                //This was causing problem when feature config changed but learning system became invalid!
                 if (WekinatorInstance.getWekinatorInstance().getLearningSystem() == null) {
                     panelMainTabs.setSelectedComponent(panelTabLearningSystemConfiguration);
 

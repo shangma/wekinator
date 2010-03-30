@@ -202,9 +202,8 @@ public class WekinatorInstance {
         }
 
         //New: invalidate learning configuration
-        if (!FeatureConfiguration.equal(featureConfiguration, WekinatorInstance.getWekinatorInstance().getFeatureConfiguration())) {
-             setLearningSystem(null);
-
+        if (!FeatureConfiguration.equal(featureConfiguration, oldFeatureConfiguration)) {
+             setLearningSystem(null); 
         }
 
     }

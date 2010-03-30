@@ -640,7 +640,13 @@ public class SimpleDataset {
     public void addInstance(double[] featureVals, double paramVals[], boolean paramMask[], Date timeStamp) {
 
         if (featureVals == null || featureVals.length != numFeatures) {
-            throw new IllegalArgumentException("Wrong feature vals");
+            String err = "Wrong feature vals; ";
+            if (featureVals == null) {
+                err += "got null";
+            } else {
+                err += "length = " + featureVals.length + " when expected " + numFeatures;
+            }
+            throw new IllegalArgumentException(err);
         }
         if (paramVals == null || paramVals.length != numParams || paramMask == null || paramMask.length != numParams) {
             throw new IllegalArgumentException("Wrong parameter values or mask");
