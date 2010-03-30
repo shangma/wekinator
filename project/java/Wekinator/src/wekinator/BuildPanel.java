@@ -63,6 +63,7 @@ public class BuildPanel extends javax.swing.JPanel {
             }
         }); 
 
+        //TODO: add listener for wekinator instance chuck configuration change: need to know whether chuck score is valid.
        WekinatorInstance.getWekinatorInstance().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 wekinatorInstanceChange(evt);
