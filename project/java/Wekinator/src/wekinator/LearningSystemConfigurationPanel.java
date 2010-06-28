@@ -513,10 +513,9 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
             LearningAlgorithm a = myAlgorithmPanels[i].commitAndGetSelectedAlgorithm();
             learningSystem.setLearners(i, a);
             // learningSystem.setLearnerEnabled(i, !disabled);
-            int[] mapping = myAlgorithmPanels[i].getNewFeatureMapping();
+            int[] mapping = myAlgorithmPanels[i].getFeatureMapping();
             if (mapping != null) {
                 try {
-
                     learningSystem.getDataset().setMappingForLearner(i, mapping);
                 } catch (Exception ex) {
                     //TODO: log
@@ -536,7 +535,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
             ls.setLearners(i, a);
             boolean disabled = myAlgorithmPanels[i].getDisabled();
             // ls.setLearnerEnabled(i, !disabled);
-            int[] mapping = myAlgorithmPanels[i].getNewFeatureMapping();
+            int[] mapping = myAlgorithmPanels[i].getFeatureMapping();
             if (mapping != null) {
                 try {
 

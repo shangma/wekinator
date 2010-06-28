@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.OptionalDataException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ButtonModel;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -50,7 +51,10 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
     protected int[] loadedFeatureMapping = null;
     protected File fileToLoadFrom = null;
     protected boolean hasUsableLoadedFile = false;
+
+    protected int[] myFeatureMapping = null;
     protected ChangeListener featureNamesListener = new ChangeListener() {
+    
 
         public void stateChanged(ChangeEvent e) {
             featureNamesChanged();
@@ -92,9 +96,27 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
         return checkDisabled.isSelected();
     }
 
+    //MappingToCommit should never be null
+    protected void commitFeatureMapping(int[] mappingToCommit) {
+        if (mappingToCommit == null)
+            return;
+
+        if (myFeatureMapping == null || myFeatureMapping.length != mappingToCommit.length) {
+            myFeatureMapping = new int[mappingToCommit.length];
+        }
+
+        for (int i = 0; i < mappingToCommit.length; i++) {
+            myFeatureMapping[i] = mappingToCommit[i];
+        }
+    }
+
     //TODO: Fix so also is feature mapping
-    public int[] getNewFeatureMapping() {
-        if (radioUseNew.isSelected()) {
+    //6/29: This is the problem: By the time this is called (post-commit), button has already changed to "use current"
+    public int[] getFeatureMapping() {
+        return myFeatureMapping;
+
+       /* ButtonModel bb = buttonGroup1.getSelection();
+        if (radioUseNew.isSelected()) { //false here??
 
             if (featureSelected == null) {
                 System.out.println("Should not be null here - fix this");
@@ -120,7 +142,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
             return loadedFeatureMapping;
         } else {
             return null; //TODO: Handle more gracefully.
-        }
+        } */
     }
 
     /**
@@ -129,17 +151,18 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
      * @param currentLearningAlgorithm new value of currentLearningAlgorithm
      */
     public void setCurrentLearningAlgorithm(LearningAlgorithm learningAlgorithm) {
-        boolean isAlgorithmNewlyNotNull = false;
+        //NEW 6/29:
+        boolean isAlgorithmNewlyNotNull = (this.currentLearningAlgorithm == null && learningAlgorithm != null);
+
         if (this.currentLearningAlgorithm != null) {
             this.currentLearningAlgorithm.removePropertyChangeListener(learningChangeListener);
-            if (learningAlgorithm != null) {
-                isAlgorithmNewlyNotNull = true;
-            }
         }
         this.currentLearningAlgorithm = learningAlgorithm;
         if (this.currentLearningAlgorithm != null) {
             this.currentLearningAlgorithm.addPropertyChangeListener(learningChangeListener);
         }
+
+        //6/29: Error is happening here on 1st non-null:
         setCurrentAlgorithmInfo(isAlgorithmNewlyNotNull);
     }
 
@@ -1041,7 +1064,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
 
         for (int i = 0; i < featureBoxes.length; i++) {
             featureSelected[i] = featureBoxes[i].isSelected();
-        }
+        } //this does its job 6/28
         featureMapFrame.setVisible(false);
         if (numSelected == featureBoxes.length) {
             labelFeatures.setText("Using all features");
@@ -1214,7 +1237,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
             radioUseCurrent.setSelected(true);
         }
 
-        if (currentLearningAlgorithm == null) {
+        if (currentLearningAlgorithm == null) { //only null @ first load of pane, before config done
             labelLearnerStatus.setText("None");
             radioUseNew.setSelected(true);
             radioUseCurrent.setEnabled(false);
@@ -1322,9 +1345,33 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
 
     public void commitCurrentConfiguration() throws Exception {
         LearningAlgorithm selected = getProposedLearningAlgorithmNoncommittal();
+        setMyMapping();
         setCurrentLearningAlgorithm(selected);
         setLoadedLearningAlgorithm(null);
         setCurrentLearningAlgorithmSelected();
+    }
+
+    protected void setMyMapping() {
+        if (radioUseCurrent.isSelected()) {
+            //do nothing
+        } else if (radioUseFile.isSelected()) {
+            commitFeatureMapping(loadedFeatureMapping); //Will have to initialize this somewhere.
+        } else if (radioUseNew.isSelected()) {
+            int numSelected = 0;
+            for (int i = 0; i < featureSelected.length; i++) {
+               if (featureSelected[i]) {
+                  numSelected++;
+                }
+            }
+            int mapping[] = new int[numSelected];
+            int n = 0;
+            for (int i = 0; i < featureSelected.length; i++) {
+                if (featureSelected[i]) {
+                    mapping[n++] = i;
+                }
+             }
+            commitFeatureMapping(mapping);
+        }
     }
 
     public void setDisabled(boolean b) {
