@@ -840,7 +840,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
         labelLearnerStatus.setText("Adaboost.M1, not yet trained, using 6 features");
         labelLearnerStatus.setEnabled(false);
 
-        comboSelectClassifier.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "AdaBoostM.1", "Decision Tree", "K-Nearest Neighbor", "Support Vector Machine", "HMM" }));
+        comboSelectClassifier.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "AdaBoostM.1", "Decision Tree", "K-Nearest Neighbor", "Support Vector Machine" }));
         comboSelectClassifier.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 comboSelectClassifierActionPerformed(evt);

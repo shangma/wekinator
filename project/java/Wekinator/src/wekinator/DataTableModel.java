@@ -41,7 +41,7 @@ public class DataTableModel extends AbstractTableModel {
         columnNames = new String[numMetaData + numFeats + numParams];
         columnNames[0] = "ID";
         columnNames[1] = "Time";
-        columnNames[2] = "Training round";
+        columnNames[2] = "Recording round";
 
         for (int i = 0; i < numFeats; i++) {
             columnNames[i + numMetaData] = dataset.getFeatureName(i);
