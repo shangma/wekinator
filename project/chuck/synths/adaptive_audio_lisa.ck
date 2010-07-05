@@ -1,5 +1,7 @@
 /* This changes LiSa params of live audio input
 
+//*** Doesn't work with current plork chuck - workaround = ?
+
  Wekinator version 0.2
  Copyright 2009 Rebecca Fiebrink
  http://wekinator.cs.princeton.edu
@@ -50,7 +52,8 @@ public class SynthClass {
 	    l[i].recRamp(20::ms); //ramp at extremes of record buffer while recording
     	l[i].record(0);
     
-	    adc => l[i] => e;
+	    //adc => l[i].chan(0) => e;
+		adc => l[i] => e;
 	}
 
 	//Do we want discrete or continuous parameters?

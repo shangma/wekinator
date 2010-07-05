@@ -105,7 +105,7 @@ public class SynthClass {
 	fun void drum1() {
 		// construct the patch
 		SndBuf buf => Gain g => e1;
-		"synths/data/kick.wav" => buf.read;
+		"../../../chuck/synths/data/kick.wav" => buf.read;
 		.5 => g.gain;
 
 		// time loop
@@ -120,7 +120,7 @@ public class SynthClass {
 	fun void drum2() {
 		// construct the patch
 		SndBuf buf => Gain g => e2;
-		"synths/data/hihat.wav" => buf.read;
+		"../../../chuck/synths/data/hihat.wav" => buf.read;
 		.25 => g.gain;
 
 		// time loop
@@ -145,7 +145,7 @@ public class SynthClass {
 	fun void drum3() {
 		// construct the patch
 		SndBuf buf => Gain g => e2;
-		"synths/data/hihat-open.wav" => buf.read;
+		"../../../chuck/synths/data/hihat-open.wav" => buf.read;
 		.5 => g.gain;
 
 		// time loop
@@ -205,7 +205,7 @@ public class SynthClass {
 	fun void funtimes() {
 		// construct the patch
 		SndBuf buf => Gain g => JCRev r => e4;
-		"synths/data/snare.wav" => buf.read;
+		"../../../chuck/synths/data/snare.wav" => buf.read;
 		.5 => g.gain;
 		.05 => r.mix;
 
