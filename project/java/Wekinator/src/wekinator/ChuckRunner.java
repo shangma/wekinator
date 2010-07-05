@@ -38,8 +38,19 @@ public class ChuckRunner {
     protected static ChuckConfiguration configuration;
     protected static String lastErrorMessages = "";
     protected static Logger logger = Logger.getLogger(ChuckRunner.class.getName());
+    protected static boolean isWindows = !File.separator.equals("/");
+
+    private static String removeC(String s) {
+        //Removes "C:" from beginning of string if on windows
+        if (isWindows && s.startsWith("C:")) {
+            return s.substring(2);
+        } else {
+            return s;
+        }
+    }
 
     private ChuckRunner() {
+      //  isWindows = ;
     }
 
     public enum ChuckRunnerState {
@@ -132,36 +143,42 @@ public class ChuckRunner {
         s[0] = configuration.getChuckExecutable();
         s[1] = "+";
         s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "TrackpadFeatureExtractor.ck";
+        s[2] = removeC(s[2]);
         cmds.add(s);
 
         s = new String[3];
         s[0] = configuration.getChuckExecutable();
         s[1] = "+";
         s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "MotionFeatureExtractor.ck";
+        s[2] = removeC(s[2]);
         cmds.add(s);
 
         s = new String[3];
         s[0] = configuration.getChuckExecutable();
         s[1] = "+";
         s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "AudioFeatureExtractor.ck";
+        s[2] = removeC(s[2]);
         cmds.add(s);
 
         s = new String[3];
         s[0] = configuration.getChuckExecutable();
         s[1] = "+";
         s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "HidDiscoverer.ck";
-        cmds.add(s);
+       s[2] = removeC(s[2]);
+       cmds.add(s);
 
         s = new String[3];
         s[0] = configuration.getChuckExecutable();
         s[1] = "+";
         s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "CustomOSCFeatureExtractor.ck";
+        s[2] = removeC(s[2]);
         cmds.add(s);
 
         s = new String[3];
         s[0] = configuration.getChuckExecutable();
         s[1] = "+";
         s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "ProcessingFeatureExtractor.ck";
+        s[2] = removeC(s[2]);
         cmds.add(s);
 
         s = new String[3];
@@ -173,6 +190,7 @@ public class ChuckRunner {
         } else {
             s[2] = configuration.getChuckDir() + File.separator + "feature_extractors" + File.separator + "keyboard_rowcol.ck";
         }
+        s[2] = removeC(s[2]);
         cmds.add(s);
 
         s = new String[3];
@@ -183,6 +201,7 @@ public class ChuckRunner {
         } else {
             s[2] = configuration.getChuckSynthFilename();
         }
+        s[2] = removeC(s[2]);
         cmds.add(s);
 
         s = new String[3];
@@ -193,6 +212,7 @@ public class ChuckRunner {
         } else {
             s[2] = configuration.getChuckDir() + File.separator + "score_players" + File.separator + "no_score.ck";
         }
+        s[2] = removeC(s[2]);
         cmds.add(s);
 
         if (configuration.isUseOscSynth()) {
@@ -207,12 +227,14 @@ public class ChuckRunner {
             args += ":synthPort:" + configuration.getOscSynthReceivePort();
             s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "main_chuck_new.ck" + args;
             //s[3] = args;
+            s[2] = removeC(s[2]);
             cmds.add(s);
         } else {
             s = new String[3];
             s[0] = configuration.getChuckExecutable();
             s[1] = "+";
             s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "main_chuck.ck";
+            s[2] = removeC(s[2]);
             cmds.add(s);
         }
 
@@ -306,7 +328,13 @@ public class ChuckRunner {
         s[1] = "--kill";
         Process child = Runtime.getRuntime().exec(s);
 
-        String cmd2 = "killall chuck";
+        String cmd2;
+        if (isWindows) {
+            cmd2 = "tskill /A chuck";
+        } else
+        {
+            cmd2 =  "killall chuck";
+        }
         Process child2 = Runtime.getRuntime().exec(cmd2);
 
         logger.log(Level.INFO, "Attempted to kill chuck");

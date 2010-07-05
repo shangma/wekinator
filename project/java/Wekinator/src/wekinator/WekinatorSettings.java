@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import wekinator.util.Util;
 
@@ -43,8 +45,12 @@ public class WekinatorSettings {
 
 
         File projectDir = (new File(currentDir)).getParentFile().getParentFile();
-        String projectDirString[] = projectDir.getAbsolutePath().split(File.separator);
-        if (projectDirString.length > 0 && projectDirString[projectDirString.length - 1].equals("java")) {
+       // String projectDirString[] = splitDirectorString(projectDir.getAbsolutePath());
+
+        //String projectDirString[] = projectDir.getAbsolutePath().split(File.);
+        if (projectDir.getName().equals("java")) {
+
+            //    projectDirString.length > 0 && projectDirString[projectDirString.length - 1].equals("java")) {
             projectDir = projectDir.getParentFile();
         }
         defaultDir = Util.getCanonicalPath(projectDir) + File.separator + "mySavedSettings";

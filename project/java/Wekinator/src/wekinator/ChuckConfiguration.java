@@ -191,10 +191,14 @@ public class ChuckConfiguration {
             File f = new File(Util.getCanonicalPath(new File("")));
             String preferredPath = f.getParentFile().getParentFile().getParentFile().getAbsolutePath();
             File f2 = new File(preferredPath);
-            if (f2.exists()) {
-                wekDir = Util.getCanonicalPath(f2);
+            if (f2.exists() && !f2.getName().equals("project") ) {
+                wekDir = Util.getCanonicalPath(f2) + File.separator + "project";
             }
-
+            if (File.separator.equals("/")) {
+                chuckExecutable = "/usr/bin/chuck";
+            } else {
+                chuckExecutable = "C:\\windows\\system32\\chuck.exe";
+            }
 
         } catch (Exception ex) {
         }
@@ -216,10 +220,10 @@ public class ChuckConfiguration {
         String errorString = "";
 
         //Check for legal chuck directory
-        String s;
+      /*  String s;
         String[] ss;
         if (wekDir.contains(File.separator)) {
-            ss = wekDir.split(File.separator);
+            ss = wekDir.split(File.separator); //AAA
             if (ss.length > 0) {
                 s = ss[ss.length - 1];
             } else {
@@ -227,29 +231,29 @@ public class ChuckConfiguration {
             }
         } else {
             s = wekDir;
-        }
+        } */
 
         File f = new File(wekDir);
         String coreString = wekDir + File.separator + "chuck" + File.separator + "core_chuck" + File.separator; //TODO: make work for windows
         File f2 = new File(coreString);
 
-        if (!s.equals("wekinator") && !s.equals("project")) {
+        // if (!s.equals("wekinator") && !s.equals("project"))
+        //File wekDirFile = new File(wekDir);
+        if (!f.exists() || !f.isDirectory()) {
+            errorString += "Wekinator project directory does not exist or is not a directory\n";
+        }  else if(!f.exists() || !f.getName().equals("project")) {
             errorString += "Wekinator project directory must refer to a directory called \"project/\"\n";
-        } else if (!f.exists() || !f.isDirectory()) {
-            errorString += "Wekinator directory does not exist or is not a directory\n";
         } else if (!f2.exists() || !f2.isDirectory()) {
-            errorString += "Wekinator directory must be the wekinator directory that you downloaded, containing subdirectories chuck, java, etc.\n";
+            errorString += "Wekinator project directory must be inside the wekinator directory that you downloaded, containing subdirectories chuck, java, etc.\n";
         }
 
         //Check for legal chuck executable
         f = new File(chuckExecutable);
-        s = f.getCanonicalPath();
-        ss = s.split(File.separator);
 
         if (!(f.exists() && f.isFile())) {
             errorString += "Chuck executable must be the chuck binary file called \"chuck\".\n";
-        } else if (!(ss.length > 0 && ss[ss.length - 1].equalsIgnoreCase("chuck"))) {
-            errorString += "Chuck executable must be the chuck binary file called \"chuck\".\n";
+        } else if (!f.getName().equalsIgnoreCase("chuck") && !f.getName().equalsIgnoreCase("chuck.exe")) {
+            errorString += "Chuck executable must be the chuck binary file called \"chuck\" (OS X, linux) or \"chuck.exe\" (windows).\n";
         }
 
         //Check chuck feature extractor
