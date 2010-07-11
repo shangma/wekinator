@@ -336,7 +336,7 @@
                             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                               <Font name="Lucida Grande" size="13" style="2"/>
                             </Property>
-                            <Property name="text" type="java.lang.String" value="Ensure your extractor is sending these to port 6453"/>
+                            <Property name="text" type="java.lang.String" value="Ensure your extractor is sending these to port 6448"/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JFormattedTextField" name="textNumOscFeatures">
@@ -536,7 +536,7 @@
                         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                           <ComponentRef name="buttonGroup1"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="Use a different Max/OSC synth module (launch manually)"/>
+                        <Property name="text" type="java.lang.String" value="Use a different Max/OSC synth module (launch manually, listen on port 12000)"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="radioUseOSCSynthActionPerformed"/>

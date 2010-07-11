@@ -237,7 +237,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         jLabel7.setText("features extracted");
 
         jLabel8.setFont(new java.awt.Font("Lucida Grande", 2, 13));
-        jLabel8.setText("Ensure your extractor is sending these to port 6453");
+        jLabel8.setText("Ensure your extractor is sending these to port 6448");
 
         textNumOscFeatures.setText("0");
         textNumOscFeatures.addActionListener(new java.awt.event.ActionListener() {
@@ -328,7 +328,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                     .add(jLabel5))
                 .add(4, 4, 4)
                 .add(panelOscFeatureExtractor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(41, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("Features (input)", panelFeatures);
@@ -364,7 +364,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         );
 
         buttonGroup1.add(radioUseOSCSynth);
-        radioUseOSCSynth.setText("Use a different Max/OSC synth module (launch manually)");
+        radioUseOSCSynth.setText("Use a different Max/OSC synth module (launch manually, listen on port 12000)");
         radioUseOSCSynth.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 radioUseOSCSynthActionPerformed(evt);
@@ -430,7 +430,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                                 .add(radioUseChuckSynth)
                                 .add(8, 8, 8)
                                 .add(buttonChooseChuckSynth)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 180, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 218, Short.MAX_VALUE)
                                 .add(helpSynth))
                             .add(panelSynthLayout.createSequentialGroup()
                                 .add(27, 27, 27)
@@ -464,7 +464,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                     .add(panelSynthLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(panelBlotar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(45, Short.MAX_VALUE))
         );
         panelSynthLayout.setVerticalGroup(
             panelSynthLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -559,13 +559,13 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                     .add(panelSetupLayout.createSequentialGroup()
                         .add(24, 24, 24)
                         .add(labelCoreChuckDirectory)))
-                .addContainerGap(158, Short.MAX_VALUE))
+                .addContainerGap(189, Short.MAX_VALUE))
             .add(panelSetupLayout.createSequentialGroup()
                 .add(20, 20, 20)
                 .add(jLabel6)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(37, Short.MAX_VALUE))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, panelSetupLayout.createSequentialGroup()
-                .addContainerGap(546, Short.MAX_VALUE)
+                .addContainerGap(577, Short.MAX_VALUE)
                 .add(helpCoreChuck))
         );
         panelSetupLayout.setVerticalGroup(
@@ -614,7 +614,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
 
         jLabel15.setText("Location of ScorePlayer file:");
 
-        jLabel16.setFont(new java.awt.Font("Lucida Grande", 2, 13)); // NOI18N
+        jLabel16.setFont(new java.awt.Font("Lucida Grande", 2, 13));
         jLabel16.setText("You can use a playalong ChucK score in addition to playing the parameter clipboard.");
 
         org.jdesktop.layout.GroupLayout panelPlayalongLayout = new org.jdesktop.layout.GroupLayout(panelPlayalong);
@@ -658,7 +658,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                 .add(jLabel15)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(labelScorePlayer)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(125, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("Playalong", panelPlayalong);
