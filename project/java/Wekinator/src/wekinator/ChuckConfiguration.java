@@ -61,7 +61,12 @@ public class ChuckConfiguration {
 
     public static ChuckConfiguration readFromInputStream(ObjectInputStream in) throws IOException, ClassNotFoundException {
         ChuckConfiguration c = new ChuckConfiguration();
-        int version = in.readInt(); //version number
+        int version;
+        try {
+            version = in.readInt(); //version number
+        } catch (Exception ex) {
+            version = 1;
+        }
         c.setWekDir((String) in.readObject());
         c.setChuckExecutable((String) in.readObject());
         c.setCustomChuckFeatureExtractorEnabled(in.readBoolean());

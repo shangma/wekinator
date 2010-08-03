@@ -56,6 +56,11 @@ public class OscSynthConfiguration {
     }
 
     public OscSynthConfiguration() {
+        numParams = 0;
+        paramNames = new String[0];
+        isDiscrete = new boolean[0];
+        isDistribution = new boolean[0];
+        maxValue = new int[0];
     }
 
     void setMaxVals(int[] maxvals) {

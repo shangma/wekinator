@@ -1047,12 +1047,9 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         } else {
             buttonGroup1.setSelected(radioUseOSCSynth.getModel(), true);
         }
-       /* labelChuckSynthClass.setEnabled(configuration.isUseChuckSynthClass());
-        labelChuckSynthLocation.setEnabled(configuration.isUseChuckSynthClass());
-        labelOSCSynthProps.setEnabled(!configuration.isUseChuckSynthClass());
 
-        labelChuckSynthClass.setText(configuration.getChuckSynthFilename()); */
-                updateChuckSynthLabelsEnabled();
+        labelChuckSynthClass.setText(configuration.getChuckSynthFilename());
+        updateChuckSynthLabelsEnabled();
 
 
         if (synthConfiguration == null) {
