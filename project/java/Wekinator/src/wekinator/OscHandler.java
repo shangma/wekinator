@@ -484,7 +484,38 @@ public class OscHandler {
         }
     }
 
+    public void packageDistAndSendParamsToSynth(double[] rawparams) {
+        double[] outputs;
+        int numOutputs = 0;
+        for (int i = 0; i < rawparams.length; i++) {
+            if (SynthProxy.isParamDiscrete(i) && SynthProxy.isParamDistribution(i)) {
+                numOutputs += SynthProxy.paramMaxValue(i) + 1;
+            } else {
+                numOutputs++;
+            }
+        }
+        outputs = new double[numOutputs];
+        int thisIndex = 0;
+        for (int i = 0; i < rawparams.length; i++) {
+            if (SynthProxy.isParamDiscrete(i) && SynthProxy.isParamDistribution(i)) {
+                for (int j = 0; j <= SynthProxy.paramMaxValue(i); j++) {
+                    if (rawparams[i] == j)
+                        outputs[thisIndex++] = 1.0;
+                    else
+                        outputs[thisIndex++] = 0.0;
+                }
+            } else {
+                outputs[thisIndex++] = rawparams[i];
+            }
+        }
+
+        sendParamsToSynth(outputs);
+    }
+
+
     void sendParamsToSynth(double[] params) {
+        //Issue here: May need to send distribution instead of just params. 
+
         //TODO: replace call with higher-level, for chuck vs osc synth
         if (WekinatorInstance.getWekinatorInstance().getConfiguration().isUseOscSynth()) {
             OscSynthProxy.setParams(params);

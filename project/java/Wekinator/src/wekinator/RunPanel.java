@@ -25,6 +25,7 @@ import wekinator.WekinatorLearningManager.Mode;
 public class RunPanel extends javax.swing.JPanel {
     DecimalFormat dd = new DecimalFormat("#.##");
 
+
     int numParams = 0;
     ParameterMiniViewer[] paramPanels = null;
     boolean[] takesDist = null;
@@ -36,6 +37,9 @@ public class RunPanel extends javax.swing.JPanel {
     /** Creates new form RunPanel */
     public RunPanel() {
         initComponents();
+        dd.setMinimumFractionDigits(2);
+        dd.setMaximumFractionDigits(2);
+        
         WekinatorLearningManager.getInstance().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 learningManagerChange(evt);
@@ -199,10 +203,10 @@ public class RunPanel extends javax.swing.JPanel {
         for (int i = 0; i < paramPanels.length; i++) {
             if (takesDist[i]) {
                 String s = "";
-                for (int j = 0; j < maxClass[i]; j++) {
+                for (int j = 0; j <= maxClass[i]; j++) {
                     
                     s += dd.format(p[next++]);
-                    if (j != maxClass[i] -1) {
+                    if (j != maxClass[i]) {
                         s += "|";
                     }
                     

@@ -162,7 +162,8 @@ public class DataViewer extends javax.swing.JFrame {
         WekinatorLearningManager.getInstance().setParams(d);
 
         OscHandler.getOscHandler().startSound();
-        OscHandler.getOscHandler().sendParamsToSynth(d);
+        //OscHandler.getOscHandler().sendParamsToSynth(d); //TODO: Want dist
+         OscHandler.getOscHandler().packageDistAndSendParamsToSynth(d);
         if (WekinatorRunner.isLogging()) {
             Plog.log(Msg.DATA_VIEWER_LISTEN);
         }

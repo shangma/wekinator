@@ -69,11 +69,16 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
                 WekinatorInstance.getWekinatorInstance().getFeatureConfiguration().getAllEnabledFeatureNames(),
                 ChuckSystem.getChuckSystem().getParamNames()); */
 
+        int[] numParamValues = new int[SynthProxy.getNumParams()];
+        for (int i = 0; i < numParamValues.length; i++) {
+            numParamValues[i] = SynthProxy.paramMaxValue(i)+1;
+        }
+
          SimpleDataset s = new SimpleDataset(
                 WekinatorInstance.getWekinatorInstance().getFeatureConfiguration().getNumFeaturesEnabled(),
                 SynthProxy.getNumParams(),
                 SynthProxy.isParamDiscretes(),
-                SynthProxy.paramMaxValues(),
+                numParamValues,
                 WekinatorInstance.getWekinatorInstance().getFeatureConfiguration().getAllEnabledFeatureNames(),
                 SynthProxy.paramNames());
         return s;

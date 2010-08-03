@@ -294,6 +294,7 @@ public class WekinatorLearningManager {
                 }
 
                 //TODO RAF important TODO TODO TODO: issue of displaying output for dist features
+                //TODO here: this already has a distribution if necessary
                 OscHandler.getOscHandler().sendParamsToSynth(outputs);
 
             } catch (Exception ex) {

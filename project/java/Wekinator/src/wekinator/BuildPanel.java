@@ -411,7 +411,8 @@ public class BuildPanel extends javax.swing.JPanel {
     private void startSynthListenToMe() {
         //Turn sound on
         OscHandler.getOscHandler().startSound();
-        OscHandler.getOscHandler().sendParamsToSynth(getParams());
+        //OscHandler.getOscHandler().sendParamsToSynth(getParams()); //TODO: want dist when appropriate
+        OscHandler.getOscHandler().packageDistAndSendParamsToSynth(getParams());
     }
 
     private void stopSynthListenToMe() {
@@ -423,7 +424,7 @@ public class BuildPanel extends javax.swing.JPanel {
 
     private void buttonAddClipboardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAddClipboardActionPerformed
         if (WekinatorInstance.getWekinatorInstance().getPlayalongScore() != null) {
-            WekinatorInstance.getWekinatorInstance().getPlayalongScore().addParams(getParams(), 1.0);
+            WekinatorInstance.getWekinatorInstance().getPlayalongScore().addParams(getParams(), 1.0); //Just want params
         }
 
         if (WekinatorRunner.isLogging()) {
@@ -486,7 +487,8 @@ public class BuildPanel extends javax.swing.JPanel {
 
     private void buttonSynthPlayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSynthPlayActionPerformed
         OscHandler.getOscHandler().startSound();
-        OscHandler.getOscHandler().sendParamsToSynth(getParams());
+       // OscHandler.getOscHandler().sendParamsToSynth(getParams()); //TODO: want dist
+         OscHandler.getOscHandler().packageDistAndSendParamsToSynth(getParams());
         if (WekinatorRunner.isLogging()) {
             Plog.log(Msg.BUTTON_PLAY_HIT);
         }
@@ -571,6 +573,7 @@ public class BuildPanel extends javax.swing.JPanel {
         WekinatorLearningManager.getInstance().stopDatasetCreation();
     }
 
+    //Issue: Do we want params or distribution (when appropriate)???
     private double[] getParams() {
         double[] p = new double[numParams];
         for (int i = 0; i < paramPanels.length; i++) {
@@ -685,14 +688,15 @@ public class BuildPanel extends javax.swing.JPanel {
     //The user has entered in new parameter values in the minipanes
     //This is coming from minipanels ONLY
     private void paramsChanged(ChangeEvent e) {
-        double[] p = getParams();
+        double[] p = getParams(); //want params
         boolean[] b = getMask();
         if (comboSynthAction.getSelectedIndex() == 0) {
             //Listen
 
             //Send out via osc
 
-            OscHandler.getOscHandler().sendParamsToSynth(getParams());
+//            OscHandler.getOscHandler().sendParamsToSynth(getParams()); //TODO: want to send dist.
+             OscHandler.getOscHandler().packageDistAndSendParamsToSynth(getParams());
             System.out.println("Sending params...");
         }
         //Propogate changes to LM

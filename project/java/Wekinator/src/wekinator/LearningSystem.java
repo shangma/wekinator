@@ -820,7 +820,17 @@ public class LearningSystem {
         }
  */
            this.paramUsingDistribution = paramUsingDistribution; //TODO: check!
-        outputs = new double[numParams];
+
+       int numOutputs = 0;
+       for (int i = 0; i < numParams; i++) {
+            if (paramUsingDistribution[i]) {
+                numOutputs += maxValPerParam[i] + 1;
+            } else
+                numOutputs++;
+       }
+
+
+        outputs = new double[numParams]; //*
         setOutputsArray(paramUsingDistribution, numMaxValsForParameter);
         paramMask = new boolean[numParams];
         for (int i = 0; i < numParams; i++) {
@@ -844,16 +854,23 @@ public class LearningSystem {
         ChuckSystem cs = ChuckSystem.getChuckSystem();
 
         numMaxValsForParameter = SynthProxy.paramMaxValues();
+        int numOutputs = 0;
         for (int i = 0; i < numParams; i++) {
             if (SynthProxy.isParamDiscrete(i)) {
            // if (ChuckSystem.getChuckSystem().isIsParamDiscrete(i)) {
                 paramUsingDistribution[i] = SynthProxy.isParamDistribution(i);
+                if (paramUsingDistribution[i]) {
+                    numOutputs += SynthProxy.paramMaxValue(i) + 1;
+                } else {
+                    numOutputs++;
+                }
             } else {
                 paramUsingDistribution[i] = false;
+                numOutputs++;
             }
         }
 
-        outputs = new double[numParams];
+        outputs = new double[numParams]; //*
         setOutputsArray(paramUsingDistribution, numMaxValsForParameter);
         paramMask = new boolean[numParams];
         for (int i = 0; i < numParams; i++) {
@@ -1091,7 +1108,7 @@ public class LearningSystem {
         int numOutputs = 0;
         for (int i = 0; i < numParams; i++) {
             if (paramUsingDistribution[i]) {
-                numOutputs += maxParamVals[i];
+                numOutputs += maxParamVals[i] + 1; 
             } else {
                 numOutputs++;
             }

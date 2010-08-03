@@ -210,8 +210,8 @@ public class PlayalongScore {
                            
                                 //float f[] = new float[numParams];
                                 WekinatorLearningManager.getInstance().setParams(next);
-                                OscHandler.getOscHandler().sendParamsToSynth(next); //TODO: hack: get out of here!
-                            
+                                //OscHandler.getOscHandler().sendParamsToSynth(next); //TODO: hack: get out of here!
+                                OscHandler.getOscHandler().packageDistAndSendParamsToSynth(next);
 
                             mySleep = (long) (secondLists.get(i) * 1000);
                             i++;
