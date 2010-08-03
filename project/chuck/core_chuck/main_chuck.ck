@@ -1,14 +1,5 @@
 /* Main ChucK wekinator glue.
-
- Wekinator version 0.2
- Copyright 2009 Rebecca Fiebrink
- http://wekinator.cs.princeton.edu
 */
-
-//RAF: collapse osc messages into a few types:
-// /featureMsg, /hidMsg, /extractMsg, /classMsg etc.
-// especially for infrequent messages of same length.
-// Will cut down on # shreds running!
 
 TrackpadFeatureExtractor trackpadFE;
 MotionFeatureExtractor motionFE;
@@ -56,8 +47,6 @@ OscSend xmit;
 OscRecv recv;
 recvport => recv.port;
 
-
-
 //Set up receiver
 recv.listen();
 <<< "ChucK listening on port ", recvport>>>;
@@ -68,26 +57,7 @@ recv.event("/useAudioFeature", "i i i i i i i i i i") @=> OscEvent oscUseAudio;
 recv.event("/useFeatureMessage", "s i") @=> OscEvent oscUseFeatureMessage;
 recv.event("/useFeatureList", "i i i i i i i i i i i i i i i i") @=> OscEvent oscUseFeatureList;
 
-OscEvent oscDist, oscLabel, oscParams;
-
-//TODO: update this to not break 
-if (isDiscrete && wantDist) {
-	"f" => string s;
-	for (1 => int i; i < numClasses * numParams; i++) {
-		s + " f" => s;
-	}
-	//<<< "My string is " + s >>>;
-	recv.event("/classDist", s) @=> oscDist;
-	//spork ~oscDistWait();
-} else {
-	"f" => string ss;
-	for (1 => int i; i < numParams; i++) {
-		ss + " f" =>ss;
-	}
-	recv.event("/realLabel", ss) @=> oscLabel;
-	//spork ~oscLabelWait();
-}
-
+OscEvent oscParams;
 
 0 => int paramArraySize;
 "" => string s2;
@@ -96,7 +66,7 @@ for (0 => int i; i < numParams; i++) {
 		paramArraySize + numClassesArray[i] => paramArraySize;
 		for (0 => int j; j < numClassesArray[i]; j++) {
 			s2 + "f" => s2;
-			if (j != numClassesArray[j] - 1) {
+			if (j != numClassesArray[i] - 1) {
 				s2 + " " => s2;
 			}
 		}
@@ -104,7 +74,7 @@ for (0 => int i; i < numParams; i++) {
 		s2 + "f" => s2;
 		paramArraySize++;
 	}
-	
+
 	if (i != numParams-1) {
 		s2 + " " => s2;
 	}
@@ -119,6 +89,7 @@ int numFeats;
 
 HidDiscoverer hd; //make sure we can open it first before
 
+	<<< "Main chuck new">>>;
 	new HidDiscoverer @=> hd;
 	if (hd.init(otherDevice)) {
 		<<< "Found HID device at ", otherDevice >>>;
@@ -164,32 +135,18 @@ new ScorePlayer @=> ScorePlayer sp;
 sp.setup(mc, xmit);
 
 //Spork OSC shreds
-//spork ~oscHelloWait();
 spork ~oscUseAudioWait();
 spork ~oscUseFeatureMessageWait();
 spork ~oscControlWait();
 spork ~oscUseFeatureListWait();
 
-//spork ~oscExtractWait();
-
-//spork ~oscStopWait();
-// Don't do this until feature extractors set up! spork ~extractFeatures();
-
 //chuck can init handshake too!
 receivedHello();
-
-	spork ~oscHidSetupWait();
-	spork ~oscHidSetupStopWait();
-	spork ~oscHidInitWait();
-	spork ~oscHidRunWait();
-	spork ~oscHidSettingsRequestWait();
-
-
-
-
-
-
-
+spork ~oscHidSetupWait();
+spork ~oscHidSetupStopWait();
+spork ~oscHidInitWait();
+spork ~oscHidRunWait();
+spork ~oscHidSettingsRequestWait();
 
 fun void oscControlWait() {
 	string s;
@@ -254,15 +211,15 @@ fun void receivedHello() {
 //Wait for the signal to enter into hid setup mode
 fun void oscHidSetupWait() {
 	while (true) {
-	<<< "Waiting for hid setup">>>;
-	oscHidSetup => now;
-	while (oscHidSetup.nextMsg() != 0) {
+		<<< "Waiting for hid setup">>>;
+		oscHidSetup => now;
+		while (oscHidSetup.nextMsg() != 0) {
 			oscHidSetup.getInt();
-	}
-	xmit.startMsg( "/hidSetupBegun", "i");
-	0 => xmit.addInt;
-	<<< "Sent setup begun">>>;
-	<<< "Entering hid setup mode">>>;
+		}
+		xmit.startMsg( "/hidSetupBegun", "i");
+		0 => xmit.addInt;
+		<<< "Sent setup begun">>>;
+		<<< "Entering hid setup mode">>>;
 		spork ~hd.setup();
 
 	}
@@ -284,7 +241,7 @@ fun void receivedRequestSettings() {
 fun void receivedRequestSettingsArrays() {
 	<<< "ChucK: received request settings arrays">>>;
 	"i i i" => string s; //# params, whether using chuck feat ext, # chuck feats
-
+	
 	for (0 => int j; j < 3; j++) { //wantDist + isDiscrete + numClasses
 		for (0 => int i; i < numParams; i++) {
 			s + " i" => s;
@@ -297,7 +254,7 @@ fun void receivedRequestSettingsArrays() {
 		for (0 => int i; i < customFE.numFeatures(); i++) {
 			s + " s" => s;
 		}
-	}
+	}	
 
 	xmit.startMsg("/chuckSettingsArrays", s);
 	numParams => xmit.addInt;
@@ -375,14 +332,14 @@ fun void oscHidInitWait() {
 	//Otherwise wait for a bunch of stuff!
 	"i" => string s; //HACK
 	for (0 => int i; i < numHidAxes; i++) {
-			s + " f" => s;
-		}
+		s + " f" => s;
+	}	
 	for (0 => int i; i < numHidHats; i++) {
-			s + " i" => s;
-		}
+		s + " i" => s;
+	}
 	for (0 => int i; i < numHidButtons; i++) {
-			s + " i" => s;
-		}
+		s + " i" => s;
+	}
 	for (0 => int i; i< numHidAxes + numHidHats + numHidButtons; i++) {
 		s + " i" => s;
 	}
@@ -410,12 +367,12 @@ fun void oscHidRunWait() {
 
 //New 11/25: Streamlined this.
 fun void oscHidInitAllWait() {
-	oscHidInitAll => now;
+	oscHidInitAll => now;	
 	while (oscHidInitAll.nextMsg() != 0) {
 		oscHidInitAll.getInt() => int dummy;
 
 		for (0 => int i; i < numHidAxes; i++) {			
-
+		
 			oscHidInitAll.getFloat() => hidAxesInits[i];
 		}
 
@@ -430,7 +387,7 @@ fun void oscHidInitAllWait() {
 		for (0 => int i; i < hidMaskInits.size(); i++) {			
 			oscHidInitAll.getInt() => hidMaskInits[i];
 		}
-	}
+	} 
 	hd.initialize(hidAxesInits.size(), hidButtonsInits.size(), hidHatsInits.size(), hidAxesInits, hidButtonsInits, hidHatsInits, hidMaskInits);
 	hd.run();
 }
@@ -484,10 +441,10 @@ fun void oscHidSettingsRequestWait() {
 	}
 
 	//if (hd.getNumButtons() > 0 || hd.getNumHats() > 0 || hd.getNumAxes() > 0) {
-	hd.getMask() @=> int vals[];
-	for (0 => int i; i < vals.size(); i++) {
-		vals[i] => xmit.addInt;
-	}
+		hd.getMask() @=> int vals[];
+		for (0 => int i; i < vals.size(); i++) {
+			vals[i] => xmit.addInt;
+		}
 //	}
   }
 }
@@ -619,6 +576,11 @@ fun void computeNumFeats() {
 fun void sendFeatures() {
 	//<<< "sending " , numFeats>>>;
 	//don't recompute # feats here every time-- it's expensive!	
+
+	if (!(useAudio || useTrackpadXY || useMotionXYZ || useOtherHid || useProcessing || useCustom)) {
+		return;
+	}
+
 	xmit.startMsg( "/features", featureMessageString);
 	if (useAudio) {
 		for (0 => int i; i < audioFE.numFeatures(); i++) {
@@ -657,39 +619,11 @@ fun void sendFeatures() {
 	}
 }
 
-//TODO: Way to gracefully change this? Enforce class # agreement on java?
-//Wait for a distribution
-fun void oscDistWait() {
-	float vals[numParams * numClasses];
-	while (true) {
-		oscDist => now;
-		while (oscDist.nextMsg() != 0) {
-			for (0 => int i; i < numParams * numClasses; i++) {
-				oscDist.getFloat() => vals[i];
-			}
-			mc.setParams(vals);
-		}
-	}
-}
-
-//Wait for a label (or vector of labels), from classifier or NN
-fun void oscLabelWait() {
-	float vals[numParams];
-	while (true) {
-		oscLabel => now;
-		while (oscLabel.nextMsg() != 0) {
-			for (0 => int i; i < numParams; i++) {
-				oscLabel.getFloat() => vals[i];
-			}
-			mc.setParams(vals);
-		}
-	}
-}
-
 fun void oscParamsWait() {
 	float vals[paramArraySize];
 	while (true) {
 		oscParams => now;
+		<<< "Received osc parameters">>>;
 		while (oscParams.nextMsg() != 0) {
 			for (0 => int i; i < paramArraySize; i++) {
 				oscParams.getFloat() => vals[i];
@@ -758,7 +692,7 @@ fun void oscUseFeatureListWait() {
 			} else {
 				0 => useMotionXYZ;
 			}
-
+	
 			//other hid
 			oscUseFeatureList.getInt() => useOtherHid;
 
@@ -784,18 +718,20 @@ fun void oscUseFeatureListWait() {
 				oscCustomFE.stop();
 			}
 			if (use > 0) {
-				1 => useOscCustom;
+			/*	1 => useOscCustom;
 				new CustomOSCFeatureExtractor @=> oscCustomFE;
 				oscCustomFE.setup(use, recv);
 				if (!oscCustomFE.isOK) {
 					0 => useOscCustom;
-				}
+				} */
+			//NEW:
+				0 => useOscCustom;
 			} else {
 				0 => useOscCustom;
 			}
-
+	
 			//custom chuck
-			oscUseFeatureList.getInt() => use;
+			oscUseFeatureList.getInt() => use;	
 			<<< "Chuck received ", use, " for use custom CHUCK">>>;
 			if (customFE != null) {
 				customFE.stop();
@@ -820,7 +756,7 @@ fun void oscUseFeatureListWait() {
 fun void oscUseFeatureMessageWait() {
 	while (true) {
 		oscUseFeatureMessage => now;
-		<<< "Chuck: received feature MESSAGE: BAD ">>>;
+		<<< "BAD BAD BAD Chuck: received feature MESSAGE: BAD ">>>;
 		string s;
 		int i;
 		<<< "Received feature message" >>>;

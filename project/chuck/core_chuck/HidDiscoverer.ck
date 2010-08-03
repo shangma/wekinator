@@ -14,7 +14,7 @@ public class HidDiscoverer
 	int deviceID;
 
 	public int init(int i) {
-	<<< "In hd init ", i>>>;
+	<<< "In hd init real", i>>>;
 		i => deviceID;
 		return js.openJoystick(i);
 	}
