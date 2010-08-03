@@ -843,10 +843,11 @@ public class LearningSystem {
         //tmp
         ChuckSystem cs = ChuckSystem.getChuckSystem();
 
-        numMaxValsForParameter = ChuckSystem.getChuckSystem().getNumSynthMaxParamVals();
+        numMaxValsForParameter = SynthProxy.paramMaxValues();
         for (int i = 0; i < numParams; i++) {
-            if (ChuckSystem.getChuckSystem().isIsParamDiscrete(i)) {
-                paramUsingDistribution[i] = ChuckSystem.getChuckSystem().isDoesParamUseDistribution(i);
+            if (SynthProxy.isParamDiscrete(i)) {
+           // if (ChuckSystem.getChuckSystem().isIsParamDiscrete(i)) {
+                paramUsingDistribution[i] = SynthProxy.isParamDistribution(i);
             } else {
                 paramUsingDistribution[i] = false;
             }

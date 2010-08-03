@@ -32,9 +32,9 @@ public class ChuckConfiguration {
     private boolean useChuckSynthClass = true;
     private String chuckSynthFilename = "No file selected";
     private boolean useOscSynth = false;
-    private int numOscSynthParams = 0;
-    private boolean isOscSynthParamDiscrete[] = new boolean[0];
-    private boolean oscUseDistribution[] = new boolean[0];
+    // private int numOscSynthParams = 0;
+    // private boolean isOscSynthParamDiscrete[] = new boolean[0];
+    // private boolean oscUseDistribution[] = new boolean[0];
     protected boolean usable = false;
     public static final String PROP_USABLE = "usable";
     private int oscSynthReceivePort = 12000; //Matches defaults in chuck code
@@ -42,7 +42,8 @@ public class ChuckConfiguration {
     private boolean isPlayalongLearningEnabled = false;
     private String playalongLearningFile = "No file selected";
     private String locationToSaveMyself = "myConfiguration.chuckconfiguration";
-    private int numOscSynthMaxParamVals = 2;
+    // private int numOscSynthMaxParamVals = 2;
+    protected OscSynthConfiguration oscSynthConfiguration = new OscSynthConfiguration();
 
     public static String getFileExtension() {
         return "wckconf";
@@ -60,7 +61,7 @@ public class ChuckConfiguration {
 
     public static ChuckConfiguration readFromInputStream(ObjectInputStream in) throws IOException, ClassNotFoundException {
         ChuckConfiguration c = new ChuckConfiguration();
-        in.readInt(); //version number
+        int version = in.readInt(); //version number
         c.setWekDir((String) in.readObject());
         c.setChuckExecutable((String) in.readObject());
         c.setCustomChuckFeatureExtractorEnabled(in.readBoolean());
@@ -72,9 +73,9 @@ public class ChuckConfiguration {
         c.setUseChuckSynthClass(in.readBoolean());
         c.setChuckSynthFilename((String) in.readObject());
         c.setUseOscSynth(in.readBoolean());
-        c.setNumOscSynthParams(in.readInt());
-        c.setIsOscSynthParamDiscrete((boolean[]) in.readObject());
-        c.setOscUseDistribution((boolean[]) in.readObject());
+        c.getOscSynthConfiguration().setNumParams(in.readInt());
+        c.getOscSynthConfiguration().setDiscrete((boolean[]) in.readObject());
+        c.getOscSynthConfiguration().setDistribution((boolean[]) in.readObject());
 
         boolean usable = in.readBoolean();
         c.setOscSynthReceivePort(in.readInt());
@@ -82,7 +83,20 @@ public class ChuckConfiguration {
         c.setIsPlayalongLearningEnabled(in.readBoolean());
         c.setPlayalongLearningFile((String) in.readObject());
         c.setLocationToSaveMyself((String) in.readObject());
-        c.setNumOscSynthMaxParamVals(in.readInt());
+        if (version == 1) {
+            int maxVal = in.readInt();
+            int[] maxvals = new int[c.getOscSynthConfiguration().numParams];
+            String[] oscSynthNames = new String[maxvals.length];
+            for (int i = 0; i < maxvals.length; i++) {
+                maxvals[i] = maxVal;
+                oscSynthNames[i] = "Param" + i;
+            }
+            c.getOscSynthConfiguration().setMaxVals(maxvals);
+            c.getOscSynthConfiguration().setNames(oscSynthNames);
+        } else { //version 2
+            c.getOscSynthConfiguration().setMaxVals((int[]) in.readObject());
+            c.getOscSynthConfiguration().setNames((String[]) in.readObject());
+        }
         c.setUsable(usable);
         return c;
     }
@@ -110,7 +124,7 @@ public class ChuckConfiguration {
     }
 
     protected void writeToOutputStream(ObjectOutputStream out) throws IOException {
-        out.writeInt(1); //version number
+        out.writeInt(2); //version number
         out.writeObject(wekDir);
         out.writeObject(chuckExecutable);
         out.writeBoolean(customChuckFeatureExtractorEnabled);
@@ -122,16 +136,17 @@ public class ChuckConfiguration {
         out.writeBoolean(useChuckSynthClass);
         out.writeObject(chuckSynthFilename);
         out.writeBoolean(useOscSynth);
-        out.writeInt(numOscSynthParams);
-        out.writeObject(isOscSynthParamDiscrete);
-        out.writeObject(oscUseDistribution);
+        out.writeInt(oscSynthConfiguration.numParams);
+        out.writeObject(oscSynthConfiguration.getIsDiscrete());
+        out.writeObject(oscSynthConfiguration.getIsDistribution());
         out.writeBoolean(usable);
         out.writeInt(oscSynthReceivePort);
         out.writeInt(oscSynthSendPort);
         out.writeBoolean(isPlayalongLearningEnabled);
         out.writeObject(playalongLearningFile);
         out.writeObject(locationToSaveMyself);
-        out.writeInt(numOscSynthMaxParamVals);
+        out.writeObject(oscSynthConfiguration.getMaxValue());
+        out.writeObject(oscSynthConfiguration.getParamNames());
     }
 
     /**
@@ -174,24 +189,26 @@ public class ChuckConfiguration {
     }
 
     public boolean[] getOscUseDistribution() {
-        return oscUseDistribution;
+        //return oscUseDistribution;
+        return oscSynthConfiguration.isDistribution;
     }
 
-    public void setOscUseDistribution(boolean[] oscUseDistribution) {
-        this.oscUseDistribution = new boolean[oscUseDistribution.length];
-        for (int i = 0; i < oscUseDistribution.length; i++) {
-            this.oscUseDistribution[i] = oscUseDistribution[i];
-        }
+    public void setOscSynthConfiguration(OscSynthConfiguration c) {
+        this.oscSynthConfiguration = c;
+    }
+
+    public OscSynthConfiguration getOscSynthConfiguration() {
+        return oscSynthConfiguration;
     }
 
     // private boolean oscSynthUseDistribution = false;
     public ChuckConfiguration() {
-        isOscSynthParamDiscrete = new boolean[0];
+        // isOscSynthParamDiscrete = new boolean[0];
         try {
             File f = new File(Util.getCanonicalPath(new File("")));
             String preferredPath = f.getParentFile().getParentFile().getParentFile().getAbsolutePath();
             File f2 = new File(preferredPath);
-            if (f2.exists() && !f2.getName().equals("project") ) {
+            if (f2.exists() && !f2.getName().equals("project")) {
                 wekDir = Util.getCanonicalPath(f2) + File.separator + "project";
             }
             if (File.separator.equals("/")) {
@@ -219,20 +236,6 @@ public class ChuckConfiguration {
     public void validate() throws Exception {
         String errorString = "";
 
-        //Check for legal chuck directory
-      /*  String s;
-        String[] ss;
-        if (wekDir.contains(File.separator)) {
-            ss = wekDir.split(File.separator); //AAA
-            if (ss.length > 0) {
-                s = ss[ss.length - 1];
-            } else {
-                s = "";
-            }
-        } else {
-            s = wekDir;
-        } */
-
         File f = new File(wekDir);
         String coreString = wekDir + File.separator + "chuck" + File.separator + "core_chuck" + File.separator; //TODO: make work for windows
         File f2 = new File(coreString);
@@ -241,7 +244,7 @@ public class ChuckConfiguration {
         //File wekDirFile = new File(wekDir);
         if (!f.exists() || !f.isDirectory()) {
             errorString += "Wekinator project directory does not exist or is not a directory\n";
-        }  else if(!f.exists() || !f.getName().equals("project")) {
+        } else if (!f.exists() || !f.getName().equals("project")) {
             errorString += "Wekinator project directory must refer to a directory called \"project/\"\n";
         } else if (!f2.exists() || !f2.isDirectory()) {
             errorString += "Wekinator project directory must be inside the wekinator directory that you downloaded, containing subdirectories chuck, java, etc.\n";
@@ -277,12 +280,11 @@ public class ChuckConfiguration {
         }
 
         if (useOscSynth) {
-            if (numOscSynthParams <= 0) {
-                errorString += "Number of OSC synth params must be > 0.\n";
-            }
-            if (isOscSynthParamDiscrete.length > 0 && isOscSynthParamDiscrete[0]) {
-                if (numOscSynthMaxParamVals <= 0) {
-                    errorString += "Max number of discrete parameter values must be > 0 for OSC synth.\n";
+            if (oscSynthConfiguration == null) {
+                errorString += "OSC synth has not been configured\n";
+            } else {
+                if (!oscSynthConfiguration.validate()) {
+                    errorString += oscSynthConfiguration.getValidationReport();
                 }
                 if (oscSynthSendPort <= 0) {
                     errorString += "OSC synth send port must be > 0.\n";
@@ -334,23 +336,15 @@ public class ChuckConfiguration {
         useChuckSynthClass = c.useChuckSynthClass;
         chuckSynthFilename = c.chuckSynthFilename;
         useOscSynth = c.useOscSynth;
-        numOscSynthParams = c.numOscSynthParams;
-        isOscSynthParamDiscrete = new boolean[c.isOscSynthParamDiscrete.length];
-        for (int i = 0; i < isOscSynthParamDiscrete.length; i++) {
-            isOscSynthParamDiscrete[i] = c.isOscSynthParamDiscrete[i];
-        }
-        oscUseDistribution = new boolean[c.oscUseDistribution.length];
+        oscSynthConfiguration = new OscSynthConfiguration(c.oscSynthConfiguration);
 
-        for (int i = 0; i < oscUseDistribution.length; i++) {
-            oscUseDistribution[i] = c.oscUseDistribution[i];
-        }
 
         oscSynthReceivePort = c.oscSynthReceivePort;
         oscSynthSendPort = c.oscSynthSendPort;
         isPlayalongLearningEnabled = c.isPlayalongLearningEnabled;
         playalongLearningFile = c.playalongLearningFile;
         locationToSaveMyself = c.locationToSaveMyself;
-        numOscSynthMaxParamVals = c.numOscSynthMaxParamVals;
+        oscSynthConfiguration = new OscSynthConfiguration(c.oscSynthConfiguration);
 
         setUsable(false);
         //       setUsable(c.usable);
@@ -411,17 +405,7 @@ public class ChuckConfiguration {
     }
 
     public boolean[] getIsOscSynthParamDiscrete() {
-        return isOscSynthParamDiscrete;
-    }
-
-    public void setIsOscSynthParamDiscrete(boolean[] isOscSynthParamDiscrete) {
-        //    this.isOscSynthParamDiscrete = isOscSynthParamDiscrete;
-        this.isOscSynthParamDiscrete = new boolean[isOscSynthParamDiscrete.length];
-        for (int i = 0; i < isOscSynthParamDiscrete.length; i++) {
-            this.isOscSynthParamDiscrete[i] = isOscSynthParamDiscrete[i];
-        }
-        setUsable(false);
-
+        return oscSynthConfiguration.isDiscrete;
     }
 
     public boolean isIsPlayalongLearningEnabled() {
@@ -454,16 +438,6 @@ public class ChuckConfiguration {
 
     }
 
-    public int getNumOscSynthParams() {
-        return numOscSynthParams;
-    }
-
-    public void setNumOscSynthParams(int numOscSynthParams) {
-        this.numOscSynthParams = numOscSynthParams;
-        setUsable(false);
-
-    }
-
     public boolean isOscFeatureExtractorEnabled() {
         return oscFeatureExtractorEnabled;
     }
@@ -491,7 +465,6 @@ public class ChuckConfiguration {
     public void setOscSynthReceivePort(int oscSynthReceivePort) {
         this.oscSynthReceivePort = oscSynthReceivePort;
         setUsable(false);
-
     }
 
     public int getOscSynthSendPort() {
@@ -564,13 +537,25 @@ public class ChuckConfiguration {
 
     }
 
-    public int getNumOscSynthMaxParamVals() {
-        return numOscSynthMaxParamVals;
+    /*  public int[] getNumOscSynthMaxParamVals() {
+    return oscSynthConfiguration.maxValue;
     }
 
-    public void setNumOscSynthMaxParamVals(int numOscSynthMaxParamVals) {
-        this.numOscSynthMaxParamVals = numOscSynthMaxParamVals;
-        setUsable(false);
-
+    public void setNumOscSynthMaxParamVals(int[] numOscSynthMaxParamVals) {
+    oscSynthConfiguration.maxValue = new int[numOscSynthMaxParamVals.length];
+    for (int i = 0; i < numOscSynthMaxParamVals.length; i++) {
+    oscSynthConfiguration.maxValue[i] = numOscSynthMaxParamVals[i];
     }
+    setUsable(false);
+
+    } */
+
+    /* public void setOscSynthNames(String[] names) {
+    oscSynthConfiguration.paramNames = new String[names.length];
+    for (int i = 0; i < names.length; i++) {
+    oscSynthConfiguration.paramNames[i] = names[i];
+    }
+    setUsable(false);
+
+    } */
 }

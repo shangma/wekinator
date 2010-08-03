@@ -100,14 +100,14 @@ public class WekinatorInstance {
         ChuckSystem cs = ChuckSystem.getChuckSystem();
         if (evt.getPropertyName().equals(ChuckSystem.PROP_STATE)) {
             if (evt.getOldValue() != ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID && evt.getNewValue() == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID) {
-                this.setNumParams(cs.getNumParams());
+                this.setNumParams(SynthProxy.getNumParams());
                 if (learningSystem != null) {
-                    if (learningSystem.getNumParams() != cs.getNumParams()) {
+                    if (learningSystem.getNumParams() != SynthProxy.getNumParams()) {
                         setLearningSystem(null);
                     } else {
                         if (learningSystem.getDataset() != null) {
                             for (int i = 0; i < learningSystem.getNumParams(); i++) {
-                                  if (learningSystem.getDataset().isParameterDiscrete(i) != cs.isIsParamDiscrete(i)) {
+                                  if (learningSystem.getDataset().isParameterDiscrete(i) != SynthProxy.isParamDiscrete(i)) {
                                       setLearningSystem(null);
                                       break;
                                   }
@@ -222,9 +222,9 @@ public class WekinatorInstance {
 
 
             if (sd.getNumFeatures() != featureConfiguration.getNumFeaturesEnabled()
-            || sd.getNumParameters() != ChuckSystem.getChuckSystem().getNumParams()) {
+            || sd.getNumParameters() != SynthProxy.getNumParams()) {
                 System.out.println("cannot use: feature/param mismatch");
-                System.out.println(sF + "/" + tF + ", " + sP + "/" + ChuckSystem.getChuckSystem().getNumParams());
+                System.out.println(sF + "/" + tF + ", " + sP + "/" + SynthProxy.getNumParams());
                 return false;
             }
 

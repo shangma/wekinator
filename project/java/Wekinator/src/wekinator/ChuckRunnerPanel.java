@@ -300,8 +300,9 @@ public class ChuckRunnerPanel extends javax.swing.JPanel {
         if (c.isUseChuckSynthClass()) {
             s = "Using chuck synth " + getLastPart(c.getChuckSynthFilename()) + ".";
         } else {
-            s = "Using OSC synth: ";
-            int n = c.getNumOscSynthParams();
+           // s = "Using OSC synth: ";
+            s = c.getOscSynthConfiguration().getDescription();
+            /*int n = c.getNumOscSynthParams();
             s += Integer.toString(n);
             if (n > 0) {
                 if (c.getIsOscSynthParamDiscrete()[0]) {
@@ -312,7 +313,7 @@ public class ChuckRunnerPanel extends javax.swing.JPanel {
                 } else {
                     s += " real-valued params";
                 }
-            }
+            } */
         }
         labelSynth.setText(s);
 

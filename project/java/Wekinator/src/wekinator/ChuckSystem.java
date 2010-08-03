@@ -222,7 +222,7 @@ public class ChuckSystem {
     public boolean isDoesParamUseDistribution(int index) {
         return this.doesParamUseDistribution[index];
     }
-
+    
     /**
      * Set the value of doesParamUseDistribution at specified index.
      *

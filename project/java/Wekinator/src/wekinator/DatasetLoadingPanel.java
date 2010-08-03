@@ -61,13 +61,21 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
     }
 
     protected SimpleDataset createNewDataset() {
-        SimpleDataset s = new SimpleDataset(
+      /*  SimpleDataset s = new SimpleDataset(
                 WekinatorInstance.getWekinatorInstance().getFeatureConfiguration().getNumFeaturesEnabled(),
                 ChuckSystem.getChuckSystem().getNumParams(),
                 ChuckSystem.getChuckSystem().isParamDiscrete,
                 ChuckSystem.getChuckSystem().getNumSynthMaxParamVals(),
                 WekinatorInstance.getWekinatorInstance().getFeatureConfiguration().getAllEnabledFeatureNames(),
-                ChuckSystem.getChuckSystem().getParamNames());
+                ChuckSystem.getChuckSystem().getParamNames()); */
+
+         SimpleDataset s = new SimpleDataset(
+                WekinatorInstance.getWekinatorInstance().getFeatureConfiguration().getNumFeaturesEnabled(),
+                SynthProxy.getNumParams(),
+                SynthProxy.isParamDiscretes(),
+                SynthProxy.paramMaxValues(),
+                WekinatorInstance.getWekinatorInstance().getFeatureConfiguration().getAllEnabledFeatureNames(),
+                SynthProxy.paramNames());
         return s;
     }
 
@@ -312,13 +320,13 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
             }
 
             ChuckSystem cs = ChuckSystem.getChuckSystem();
-            if (s.getNumParameters() != cs.getNumParams()) {
+            if (s.getNumParameters() != SynthProxy.getNumParams()) {
                 JOptionPane.showMessageDialog(this, "The number of parameters of this dataset does not match the number of parameters used by your current synth.", "Dataset not usable", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            boolean[] isPDiscrete = cs.isIsParamDiscrete();
-            int[] maxClasses = cs.getNumSynthMaxParamVals();
+            boolean[] isPDiscrete = SynthProxy.isParamDiscretes();
+            int[] maxClasses = SynthProxy.paramMaxValues();
             for (int i = 0; i < isPDiscrete.length; i++) {
                 if (isPDiscrete[i] != s.isParameterDiscrete(i)) {
                     JOptionPane.showMessageDialog(this, "The type of parameters used in this dataset does not match the type of parameters used by your current synth - mismatch of real/discrete parameter number " + i, "Dataset not usable", JOptionPane.ERROR_MESSAGE);
@@ -355,7 +363,7 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
                 }
             }
 
-            String[] currentParams = cs.getParamNames();
+            String[] currentParams = SynthProxy.paramNames();
             String[] dbNames = s.getParameterNames();
             warning = "There is a mismatch between the following parameters being used and the parameters stored in the dataset:\n";
             numMismatch = 0;

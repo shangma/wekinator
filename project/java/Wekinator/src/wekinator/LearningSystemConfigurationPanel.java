@@ -85,11 +85,17 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
         ChuckSystem cs = ChuckSystem.getChuckSystem();
         if (evt.getPropertyName().equals(ChuckSystem.PROP_STATE)) {
             if (evt.getOldValue() != ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID && evt.getNewValue() == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID) {
-                this.configure(cs.getNumParams(),
-                        cs.getParamNames(),
-                        cs.isIsParamDiscrete(),
-                        cs.getNumSynthMaxParamVals(),
+                if (!WekinatorInstance.getWekinatorInstance().getConfiguration().isUseOscSynth()) {
+
+                this.configure(SynthProxy.getNumParams(),
+                        SynthProxy.paramNames(),
+                        SynthProxy.isParamDiscretes(),
+                        SynthProxy.paramMaxValues(),
                         WekinatorInstance.getWekinatorInstance().getFeatureConfiguration());
+                } else {
+                   OscSynthConfiguration config = WekinatorInstance.getWekinatorInstance().getConfiguration().getOscSynthConfiguration();
+                   this.configure(config.getNumParams(), config.getParamNames(), config.isDiscrete, config.getMaxValue(), WekinatorInstance.getWekinatorInstance().getFeatureConfiguration());
+                }
             }
         }
     }

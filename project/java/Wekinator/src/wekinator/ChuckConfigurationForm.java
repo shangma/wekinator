@@ -16,6 +16,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import wekinator.OscSynthConfiguration;
 import wekinator.ChuckRunner.ChuckRunnerState;
 import wekinator.util.OverwritePromptingFileChooser;
 import wekinator.util.Util;
@@ -28,6 +31,8 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
 
     ChuckConfiguration configuration;
     ChuckConfiguration initialConfiguration;
+    OscSynthConfigurationFrame2 synthConfigurationFrame = null;
+    OscSynthConfiguration synthConfiguration = null;
     String homePath = ".." + File.separator + ".." + File.separator; //TODO: get from settings
 
     /** Creates new form ChuckConfigurationForm */
@@ -35,31 +40,23 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         configuration = c;
         initialConfiguration = new ChuckConfiguration(configuration);
         initComponents();
+        synthConfiguration = new OscSynthConfiguration(c.getOscSynthConfiguration()); //Copy from my config
+        synthConfiguration.addChangeListener(new ChangeListener() {
 
+            public void stateChanged(ChangeEvent e) {
+                updateOscSynthDescription();
+            }
+        });
+
+
+        //Hid OSC Features for plork
         panelOscFeatureExtractor.setVisible(!WekinatorRunner.isPlork());
-        panelBlotar.setVisible(WekinatorRunner.isPlork());
-        //panelPlayalong.setVisible(!WekinatorRunner.isPlork());
-
-        //panelFeatures.repaint();
         repaint();
         updateAllComponents();
     }
 
-    /* public ChuckConfigurationForm(File configurationFile) throws FileNotFoundException, IOException, ClassNotFoundException {
-    configuration = ChuckConfiguration.loadFromFile(configurationFile);
-    initialConfiguration = new ChuckConfiguration(configuration);
-    initComponents();
-    updateAllComponents();
-    } */
     public void setHomePath(String s) {
         homePath = s;
-    }
-
-    private void enableDiscreteSynthStuff(boolean b) {
-        labelSynthMaxParamVals.setEnabled(b);
-        labelSynthExpects.setEnabled(b);
-        textSynthMaxParamVals.setEnabled(b);
-        comboUseDist.setEnabled(b);
     }
 
     private File findExportChuckFile() {
@@ -116,21 +113,13 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         textNumOscFeatures = new javax.swing.JFormattedTextField();
         panelSynth = new javax.swing.JPanel();
         radioUseChuckSynth = new javax.swing.JRadioButton();
-        labelSynthClass = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
+        labelChuckSynthClass = new javax.swing.JLabel();
+        labelChuckSynthLocation = new javax.swing.JLabel();
         buttonChooseChuckSynth = new javax.swing.JButton();
         helpSynth = new javax.swing.JButton();
-        panelBlotar = new javax.swing.JPanel();
-        radioUseBlotar = new javax.swing.JRadioButton();
         radioUseOSCSynth = new javax.swing.JRadioButton();
-        jLabel10 = new javax.swing.JLabel();
-        textSynthNumParams = new javax.swing.JFormattedTextField();
-        comboRealInteger = new javax.swing.JComboBox();
-        jLabel11 = new javax.swing.JLabel();
-        labelSynthMaxParamVals = new javax.swing.JLabel();
-        textSynthMaxParamVals = new javax.swing.JFormattedTextField();
-        labelSynthExpects = new javax.swing.JLabel();
-        comboUseDist = new javax.swing.JComboBox();
+        buttonEditRealInteger = new javax.swing.JButton();
+        labelOSCSynthProps = new javax.swing.JLabel();
         panelSetup = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         buttonChangeChuckExecutable = new javax.swing.JButton();
@@ -265,7 +254,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jLabel8))
                     .add(checkEnableOSCFeature))
-                .addContainerGap(50, Short.MAX_VALUE))
+                .addContainerGap(49, Short.MAX_VALUE))
         );
         panelOscFeatureExtractorLayout.setVerticalGroup(
             panelOscFeatureExtractorLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -302,11 +291,11 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                                     .add(jLabel1))))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(buttonChooseChuckFeatureExtractor)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 156, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 155, Short.MAX_VALUE)
                         .add(helpFeatures))
                     .add(panelFeaturesLayout.createSequentialGroup()
                         .add(52, 52, 52)
-                        .add(labelCustomFeatureExtractor, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 551, Short.MAX_VALUE)))
+                        .add(labelCustomFeatureExtractor, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 550, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         panelFeaturesLayout.setVerticalGroup(
@@ -328,19 +317,24 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                     .add(jLabel5))
                 .add(4, 4, 4)
                 .add(panelOscFeatureExtractor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(41, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("Features (input)", panelFeatures);
 
         buttonGroup1.add(radioUseChuckSynth);
         radioUseChuckSynth.setText("Use a ChucK synth class");
+        radioUseChuckSynth.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                radioUseChuckSynthActionPerformed(evt);
+            }
+        });
 
-        labelSynthClass.setText("/user/rebecca/stuff/core_chuck/");
+        labelChuckSynthClass.setText("/user/rebecca/stuff/core_chuck/");
 
-        jLabel9.setText("Location of SynthClass file:");
+        labelChuckSynthLocation.setText("Location of SynthClass file:");
 
-        buttonChooseChuckSynth.setText("Choose file");
+        buttonChooseChuckSynth.setText("Choose file...");
         buttonChooseChuckSynth.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonChooseChuckSynthActionPerformed(evt);
@@ -348,20 +342,6 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         });
 
         helpSynth.setIcon(new javax.swing.ImageIcon(getClass().getResource("/wekinator/info.png"))); // NOI18N
-
-        buttonGroup1.add(radioUseBlotar);
-        radioUseBlotar.setText("Use Max/MSP blotar (you'll have to launch the blotar patch yourself)");
-
-        org.jdesktop.layout.GroupLayout panelBlotarLayout = new org.jdesktop.layout.GroupLayout(panelBlotar);
-        panelBlotar.setLayout(panelBlotarLayout);
-        panelBlotarLayout.setHorizontalGroup(
-            panelBlotarLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(radioUseBlotar)
-        );
-        panelBlotarLayout.setVerticalGroup(
-            panelBlotarLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(radioUseBlotar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 29, Short.MAX_VALUE)
-        );
 
         buttonGroup1.add(radioUseOSCSynth);
         radioUseOSCSynth.setText("Use a different Max/OSC synth module (launch manually, listen on port 12000)");
@@ -371,100 +351,46 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
             }
         });
 
-        jLabel10.setText("My synth takes");
-
-        textSynthNumParams.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0"))));
-        textSynthNumParams.addActionListener(new java.awt.event.ActionListener() {
+        buttonEditRealInteger.setText("Configure...");
+        buttonEditRealInteger.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                textSynthNumParamsActionPerformed(evt);
-            }
-        });
-        textSynthNumParams.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                textSynthNumParamsPropertyChange(evt);
+                buttonEditRealIntegerActionPerformed(evt);
             }
         });
 
-        comboRealInteger.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Real-valued", "Integer-valued" }));
-        comboRealInteger.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                comboRealIntegerActionPerformed(evt);
-            }
-        });
-
-        jLabel11.setText("parameters");
-
-        labelSynthMaxParamVals.setText("Its max # values per parameter is ");
-        labelSynthMaxParamVals.setEnabled(false);
-
-        textSynthMaxParamVals.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0"))));
-        textSynthMaxParamVals.setText("0");
-        textSynthMaxParamVals.setEnabled(false);
-        textSynthMaxParamVals.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                textSynthMaxParamValsActionPerformed(evt);
-            }
-        });
-        textSynthMaxParamVals.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                textSynthMaxParamValsPropertyChange(evt);
-            }
-        });
-
-        labelSynthExpects.setText("My synth expects");
-        labelSynthExpects.setEnabled(false);
-
-        comboUseDist.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "just the parameters, please", "a probability distribution over all parameter values" }));
-        comboUseDist.setEnabled(false);
+        labelOSCSynthProps.setText("OSC synth not configured.");
+        labelOSCSynthProps.setEnabled(false);
 
         org.jdesktop.layout.GroupLayout panelSynthLayout = new org.jdesktop.layout.GroupLayout(panelSynth);
         panelSynth.setLayout(panelSynthLayout);
         panelSynthLayout.setHorizontalGroup(
             panelSynthLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(panelSynthLayout.createSequentialGroup()
+                .add(51, 51, 51)
+                .add(labelChuckSynthClass))
+            .add(panelSynthLayout.createSequentialGroup()
+                .addContainerGap()
                 .add(panelSynthLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(panelSynthLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(panelSynthLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(panelSynthLayout.createSequentialGroup()
-                                .add(radioUseChuckSynth)
-                                .add(8, 8, 8)
-                                .add(buttonChooseChuckSynth)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 218, Short.MAX_VALUE)
-                                .add(helpSynth))
-                            .add(panelSynthLayout.createSequentialGroup()
-                                .add(27, 27, 27)
-                                .add(jLabel9))))
+                        .add(27, 27, 27)
+                        .add(labelChuckSynthLocation))
                     .add(panelSynthLayout.createSequentialGroup()
-                        .add(51, 51, 51)
-                        .add(labelSynthClass))
+                        .add(radioUseChuckSynth)
+                        .add(8, 8, 8)
+                        .add(buttonChooseChuckSynth)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 244, Short.MAX_VALUE)
+                        .add(helpSynth)))
+                .addContainerGap())
+            .add(panelSynthLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(panelSynthLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                     .add(panelSynthLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(panelSynthLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(panelSynthLayout.createSequentialGroup()
-                                .add(29, 29, 29)
-                                .add(panelSynthLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(panelSynthLayout.createSequentialGroup()
-                                        .add(labelSynthMaxParamVals)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(textSynthMaxParamVals, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 63, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                    .add(panelSynthLayout.createSequentialGroup()
-                                        .add(jLabel10)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(textSynthNumParams, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 63, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(comboRealInteger, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .add(8, 8, 8)
-                                        .add(jLabel11))
-                                    .add(panelSynthLayout.createSequentialGroup()
-                                        .add(labelSynthExpects)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                        .add(comboUseDist, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                            .add(radioUseOSCSynth)))
-                    .add(panelSynthLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(panelBlotar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(45, Short.MAX_VALUE))
+                        .add(29, 29, 29)
+                        .add(labelOSCSynthProps)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(buttonEditRealInteger))
+                    .add(radioUseOSCSynth))
+                .addContainerGap(73, Short.MAX_VALUE))
         );
         panelSynthLayout.setVerticalGroup(
             panelSynthLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -475,32 +401,17 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                             .add(buttonChooseChuckSynth)
                             .add(radioUseChuckSynth))
                         .add(3, 3, 3)
-                        .add(jLabel9)
+                        .add(labelChuckSynthLocation)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(labelSynthClass)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(panelBlotar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(radioUseOSCSynth))
+                        .add(labelChuckSynthClass))
                     .add(helpSynth))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(panelSynthLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(panelSynthLayout.createSequentialGroup()
-                        .add(28, 28, 28)
-                        .add(textSynthMaxParamVals, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(panelSynthLayout.createSequentialGroup()
-                        .add(panelSynthLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jLabel10)
-                            .add(textSynthNumParams, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(comboRealInteger, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jLabel11))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(labelSynthMaxParamVals)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(panelSynthLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(labelSynthExpects)
-                            .add(comboUseDist, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(radioUseOSCSynth)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(panelSynthLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(labelOSCSynthProps)
+                    .add(buttonEditRealInteger))
+                .addContainerGap(52, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("Synthesis (output)", panelSynth);
@@ -559,13 +470,13 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                     .add(panelSetupLayout.createSequentialGroup()
                         .add(24, 24, 24)
                         .add(labelCoreChuckDirectory)))
-                .addContainerGap(189, Short.MAX_VALUE))
+                .addContainerGap(188, Short.MAX_VALUE))
             .add(panelSetupLayout.createSequentialGroup()
                 .add(20, 20, 20)
                 .add(jLabel6)
-                .addContainerGap(37, Short.MAX_VALUE))
+                .addContainerGap(36, Short.MAX_VALUE))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, panelSetupLayout.createSequentialGroup()
-                .addContainerGap(577, Short.MAX_VALUE)
+                .addContainerGap(576, Short.MAX_VALUE)
                 .add(helpCoreChuck))
         );
         panelSetupLayout.setVerticalGroup(
@@ -589,7 +500,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(labelCoreChuckDirectory))
                     .add(helpCoreChuck))
-                .addContainerGap(63, Short.MAX_VALUE))
+                .addContainerGap(28, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("System", panelSetup);
@@ -658,7 +569,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                 .add(jLabel15)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(labelScorePlayer)
-                .addContainerGap(125, Short.MAX_VALUE))
+                .addContainerGap(90, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("Playalong", panelPlayalong);
@@ -667,28 +578,27 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel3Layout.createSequentialGroup()
+            .add(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jTabbedPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
+                    .add(jTabbedPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 629, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jPanel3Layout.createSequentialGroup()
                         .add(buttonLoadConfiguration)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(buttonSaveConfiguration)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(buttonSaveConfiguration1)
-                        .addContainerGap(96, Short.MAX_VALUE))
+                        .add(buttonSaveConfiguration1))
                     .add(jPanel3Layout.createSequentialGroup()
                         .add(buttonCancel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(buttonOK)
-                        .addContainerGap(463, Short.MAX_VALUE))))
+                        .add(buttonOK)))
+                .add(23, 23, 23))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jTabbedPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 267, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jTabbedPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(buttonLoadConfiguration)
@@ -698,7 +608,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(buttonCancel)
                     .add(buttonOK))
-                .addContainerGap(57, Short.MAX_VALUE))
+                .addContainerGap(82, Short.MAX_VALUE))
         );
 
         jScrollPane1.setViewportView(jPanel3);
@@ -715,7 +625,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -758,84 +668,18 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         } else {
             configuration.setUseChuckSynthClass(false);
             configuration.setUseOscSynth(true);
+            configuration.setOscSynthConfiguration(synthConfiguration);
         }
 
-        configuration.setChuckSynthFilename(labelSynthClass.getText());
+        configuration.setChuckSynthFilename(labelChuckSynthClass.getText());
 
-        if (radioUseBlotar.getModel().isSelected()) {
-            configuration.setNumOscSynthParams(9);
-            boolean isDiscreteArray[] = new boolean[9];
-            for (int i = 0; i < isDiscreteArray.length; i++) {
-                isDiscreteArray[i] = false;
-            }
-            configuration.setIsOscSynthParamDiscrete(isDiscreteArray);
-            configuration.setNumOscSynthMaxParamVals(0);
-
-            try {
-                configuration.setNumOscSynthMaxParamVals(Integer.parseInt(textSynthMaxParamVals.getText()));
-            } catch (Exception ex) {
-                configuration.setNumOscSynthMaxParamVals(0);
-                textSynthMaxParamVals.setText("0");
-            }
-
-            boolean isDist = (false); //blotar only
-            System.out.println("isDist ? " + isDist); //TODO: fix in future!
-
-            boolean isDistArray[] = new boolean[configuration.getNumOscSynthParams()];
-            for (int i = 0; i < configuration.getNumOscSynthParams(); i++) {
-                isDistArray[i] = isDist;
-            }
-            configuration.setOscUseDistribution(isDistArray);
-
-        } else {
-            try {
-                configuration.setNumOscSynthParams(Integer.parseInt(textSynthNumParams.getText()));
-            } catch (Exception ex) {
-                configuration.setNumOscSynthParams(0);
-                textSynthNumParams.setText("0");
-            }
-            boolean isDiscrete = false;
-            if (comboRealInteger.getSelectedIndex() == 0) {
-                isDiscrete = false;
-            } else {
-                isDiscrete = true;
-            }
-
-            enableDiscreteSynthStuff(isDiscrete);
-            boolean isDiscreteArray[] = new boolean[configuration.getNumOscSynthParams()];
-            for (int i = 0; i < configuration.getNumOscSynthParams(); i++) {
-                isDiscreteArray[i] = isDiscrete;
-            }
-            configuration.setIsOscSynthParamDiscrete(isDiscreteArray);
-
-            try {
-                configuration.setNumOscSynthMaxParamVals(Integer.parseInt(textSynthMaxParamVals.getText()));
-            } catch (Exception ex) {
-                configuration.setNumOscSynthMaxParamVals(0);
-                textSynthMaxParamVals.setText("0");
-            }
-
-            boolean isDist = (comboUseDist.getSelectedIndex() == 1);
-            System.out.println("isDist ? " + isDist); //TODO: fix in future!
-
-            boolean isDistArray[] = new boolean[configuration.getNumOscSynthParams()];
-            for (int i = 0; i < configuration.getNumOscSynthParams(); i++) {
-                isDistArray[i] = isDist;
-            }
-            configuration.setOscUseDistribution(isDistArray);
-        }
-        
-//        configuration.setOscSynthReceivePort(Integer.parseInt(textSynthReceivePort.getText()));
+        //TODO: Allow user editing of these ports in Osc synth configure panel.
         configuration.setOscSynthReceivePort(12000);
         configuration.setOscSynthSendPort(6448);
 
-      //  if (WekinatorRunner.isPlork()) {
-      //      configuration.setIsPlayalongLearningEnabled(false);
-      //      configuration.setPlayalongLearningFile("");
-      //  } else {
-            configuration.setIsPlayalongLearningEnabled(checkEnablePlayalong.getModel().isSelected());
-            configuration.setPlayalongLearningFile(labelScorePlayer.getText());
-     //   }
+        configuration.setIsPlayalongLearningEnabled(checkEnablePlayalong.getModel().isSelected());
+        configuration.setPlayalongLearningFile(labelScorePlayer.getText());
+    //   }
     }
 
     private void textNumCustomFeaturesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textNumCustomFeaturesActionPerformed
@@ -844,14 +688,6 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
 
     private void textNumCustomFeaturesPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_textNumCustomFeaturesPropertyChange
 }//GEN-LAST:event_textNumCustomFeaturesPropertyChange
-
-    private void textSynthNumParamsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textSynthNumParamsActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_textSynthNumParamsActionPerformed
-
-    private void textSynthNumParamsPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_textSynthNumParamsPropertyChange
-        // TODO add your handling code here:
-}//GEN-LAST:event_textSynthNumParamsPropertyChange
 
     private void buttonLoadConfigurationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonLoadConfigurationActionPerformed
         //Pop up findConfigurationFile dialog box
@@ -941,9 +777,9 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         File f = findChuckFile();
         if (f != null) {
             try {
-                labelSynthClass.setText(f.getCanonicalPath());
+                labelChuckSynthClass.setText(f.getCanonicalPath());
             } catch (IOException ex) {
-                labelSynthClass.setText(f.getAbsolutePath());
+                labelChuckSynthClass.setText(f.getAbsolutePath());
 
             }
         }
@@ -988,25 +824,8 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_buttonSaveConfiguration1ActionPerformed
 
-    private void textSynthMaxParamValsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textSynthMaxParamValsActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_textSynthMaxParamValsActionPerformed
-
-    private void textSynthMaxParamValsPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_textSynthMaxParamValsPropertyChange
-        // TODO add your handling code here:
-}//GEN-LAST:event_textSynthMaxParamValsPropertyChange
-
-    private void comboRealIntegerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboRealIntegerActionPerformed
-        if (comboRealInteger.getSelectedIndex() == 0) {
-            enableDiscreteSynthStuff(false);
-        } else {
-            enableDiscreteSynthStuff(true);
-
-        }
-    }//GEN-LAST:event_comboRealIntegerActionPerformed
-
     private void radioUseOSCSynthActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioUseOSCSynthActionPerformed
-        // TODO add your handling code here:
+        updateChuckSynthLabelsEnabled();
     }//GEN-LAST:event_radioUseOSCSynthActionPerformed
 
     private void checkEnableOSCFeatureActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkEnableOSCFeatureActionPerformed
@@ -1035,6 +854,22 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
     private void checkEnablePlayalongActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkEnablePlayalongActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_checkEnablePlayalongActionPerformed
+
+    private void buttonEditRealIntegerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonEditRealIntegerActionPerformed
+        OscSynthConfigurationFrame2 f = new OscSynthConfigurationFrame2(synthConfiguration);
+        f.setAlwaysOnTop(true);
+        f.setVisible(true);
+    }//GEN-LAST:event_buttonEditRealIntegerActionPerformed
+
+    private void radioUseChuckSynthActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioUseChuckSynthActionPerformed
+        updateChuckSynthLabelsEnabled();
+    }//GEN-LAST:event_radioUseChuckSynthActionPerformed
+
+    private void updateChuckSynthLabelsEnabled() {
+        labelChuckSynthClass.setEnabled(radioUseChuckSynth.isSelected());
+        labelChuckSynthLocation.setEnabled(radioUseChuckSynth.isSelected());
+        labelOSCSynthProps.setEnabled(!radioUseChuckSynth.isSelected());
+    }
 
     /*    private File findConfigurationLoadFile() {
     JFileChooser fc = new JFileChooser(homePath);
@@ -1150,6 +985,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
     private javax.swing.JButton buttonChooseChuckFeatureExtractor;
     private javax.swing.JButton buttonChooseChuckSynth;
     private javax.swing.JButton buttonChoosePlayalongFile;
+    private javax.swing.JButton buttonEditRealInteger;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton buttonLoadConfiguration;
     private javax.swing.JButton buttonOK;
@@ -1158,15 +994,11 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
     private javax.swing.JCheckBox checkEnableCustomChuckFeature;
     private javax.swing.JCheckBox checkEnableOSCFeature;
     private javax.swing.JCheckBox checkEnablePlayalong;
-    private javax.swing.JComboBox comboRealInteger;
-    private javax.swing.JComboBox comboUseDist;
     private javax.swing.JButton helpCoreChuck;
     private javax.swing.JButton helpFeatures;
     private javax.swing.JButton helpPlayalong;
     private javax.swing.JButton helpSynth;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel2;
@@ -1176,30 +1008,25 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTabbedPane jTabbedPane2;
     private javax.swing.JLabel labelChuckExecutable;
+    private javax.swing.JLabel labelChuckSynthClass;
+    private javax.swing.JLabel labelChuckSynthLocation;
     private javax.swing.JLabel labelCoreChuckDirectory;
     private javax.swing.JLabel labelCustomFeatureExtractor;
+    private javax.swing.JLabel labelOSCSynthProps;
     private javax.swing.JLabel labelScorePlayer;
-    private javax.swing.JLabel labelSynthClass;
-    private javax.swing.JLabel labelSynthExpects;
-    private javax.swing.JLabel labelSynthMaxParamVals;
-    private javax.swing.JPanel panelBlotar;
     private javax.swing.JPanel panelFeatures;
     private javax.swing.JPanel panelOscFeatureExtractor;
     private javax.swing.JPanel panelPlayalong;
     private javax.swing.JPanel panelSetup;
     private javax.swing.JPanel panelSynth;
-    private javax.swing.JRadioButton radioUseBlotar;
     private javax.swing.JRadioButton radioUseChuckSynth;
     private javax.swing.JRadioButton radioUseOSCSynth;
     private javax.swing.JFormattedTextField textNumCustomFeatures;
     private javax.swing.JFormattedTextField textNumOscFeatures;
-    private javax.swing.JFormattedTextField textSynthMaxParamVals;
-    private javax.swing.JFormattedTextField textSynthNumParams;
     // End of variables declaration//GEN-END:variables
 
     private void updateAllComponents() {
@@ -1216,43 +1043,33 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
 
         if (configuration.isUseChuckSynthClass()) {
             buttonGroup1.setSelected(radioUseChuckSynth.getModel(), true);
+
         } else {
             buttonGroup1.setSelected(radioUseOSCSynth.getModel(), true);
         }
+       /* labelChuckSynthClass.setEnabled(configuration.isUseChuckSynthClass());
+        labelChuckSynthLocation.setEnabled(configuration.isUseChuckSynthClass());
+        labelOSCSynthProps.setEnabled(!configuration.isUseChuckSynthClass());
 
-        labelSynthClass.setText(configuration.getChuckSynthFilename());
+        labelChuckSynthClass.setText(configuration.getChuckSynthFilename()); */
+                updateChuckSynthLabelsEnabled();
 
-        textSynthNumParams.setText(Integer.toString(configuration.getNumOscSynthParams()));
-        boolean[] isParamDiscrete = configuration.getIsOscSynthParamDiscrete();
-        if (isParamDiscrete.length > 0 && isParamDiscrete[0]) {
-            comboRealInteger.setSelectedIndex(1);
-            enableDiscreteSynthStuff(true);
+
+        if (synthConfiguration == null) {
+            labelOSCSynthProps.setText("OSC Synth not configured");
         } else {
-            comboRealInteger.setSelectedIndex(0);
-            enableDiscreteSynthStuff(false);
-        } //TODO TEST!s
+            updateOscSynthDescription();
+        }
 
-        //  textSynthReceivePort.setText(Integer.toString(configuration.getOscSynthReceivePort()));
-        //  textSynthSendPort.setText(Integer.toString(configuration.getOscSynthSendPort()));
 
         checkEnablePlayalong.getModel().setSelected(configuration.isIsPlayalongLearningEnabled());
         labelScorePlayer.setText(configuration.getPlayalongLearningFile());
-        textSynthMaxParamVals.setText(Integer.toString(configuration.getNumOscSynthMaxParamVals()));
-
-        boolean[] isUseDist = configuration.getOscUseDistribution();
-
-        if (isUseDist.length > 0 && isUseDist[0]) {
-            comboUseDist.setSelectedIndex(1);
-        } else {
-            comboUseDist.setSelectedIndex(0);
-        }
-        /* if (configuration.isOscSynthIsDiscrete()) {
-        enableDiscreteSynthStuff(true);
-        } else {
-        enableDiscreteSynthStuff(false);
-        } */
-
 
         repaint();
+    }
+
+    private void updateOscSynthDescription() {
+        String s = synthConfiguration.getDescription();
+        labelOSCSynthProps.setText(s);
     }
 }

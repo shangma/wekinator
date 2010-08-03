@@ -197,7 +197,7 @@ public class ChuckRunner {
         s[0] = configuration.getChuckExecutable();
         s[1] = "+";
         if (configuration.isUseOscSynth()) {
-            s[2] = configuration.getChuckDir() + File.separator + "synths" + File.separator + "OSC_synth_proxy.ck";
+            s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "OSC_synth_proxy.ck";
         } else {
             s[2] = configuration.getChuckSynthFilename();
         }
@@ -216,16 +216,19 @@ public class ChuckRunner {
         cmds.add(s);
 
         if (configuration.isUseOscSynth()) {
+            //TODOTODOTODO: Get chuck out of this OSC loop!
             s = new String[3];
             s[0] = configuration.getChuckExecutable();
             s[1] = "+";
-            String args = ":synthNumParams:" + configuration.getNumOscSynthParams();
+            String args = "";
+            /*
+            String args = ":synthNumParams:" + configuration.getOscSynthConfiguration().numParams;
 
-            args += ":synthIsDiscrete:" + (configuration.getIsOscSynthParamDiscrete()[0] ? "1" : "0");
+            args += ":synthIsDiscrete:" + (configuration.getOscSynthConfiguration().isDiscrete[0] ? "1" : "0");
             args += ":synthUsingDistribution:" + (configuration.getOscUseDistribution()[0] ? "1" : "0");
             args += ":synthNumClasses:" + configuration.getNumOscSynthMaxParamVals();
-            args += ":synthPort:" + configuration.getOscSynthReceivePort();
-            s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "main_chuck_new.ck" + args;
+            args += ":synthPort:" + configuration.getOscSynthReceivePort(); */
+            s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "main_chuck.ck" + args;
             //s[3] = args;
             s[2] = removeC(s[2]);
             cmds.add(s);
@@ -305,6 +308,10 @@ public class ChuckRunner {
             if (WekinatorRunner.isLogging()) {
                 Plog.chuckRunSuccessful(configuration);
             }
+            //TODO: Move elsewhere: If using OSC synth, call its setup now too
+            if (configuration.isUseOscSynth()) {
+                OscSynthProxy.setup(configuration.getOscSynthReceivePort());
+            }
         }
     }
 
@@ -374,7 +381,7 @@ public class ChuckRunner {
         }
 
         if (configuration.isUseOscSynth()) {
-            w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "synths" + File.separator + "OSC_synth_proxy.ck" + "\");\n");
+            w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "OSC_synth_proxy.ck" + "\");\n");
         } else {
             w.write("Machine.add(\"" + configuration.getChuckSynthFilename() + "\");\n");
         }
@@ -386,13 +393,17 @@ public class ChuckRunner {
         }
 
         if (configuration.isUseOscSynth()) {
+            //TODOTODOTODO check this -- no CHuck involvement in OSC synth
+            String args = "";
+            /*
+            
             String args = ":synthNumParams:" + configuration.getNumOscSynthParams();
 
             args += ":synthIsDiscrete:" + (configuration.getIsOscSynthParamDiscrete()[0] ? "1" : "0");
             args += ":synthUsingDistribution:" + (configuration.getOscUseDistribution()[0] ? "1" : "0");
             args += ":synthNumClasses:" + configuration.getNumOscSynthMaxParamVals();
-            args += ":synthPort:" + configuration.getOscSynthReceivePort();
-            w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "main_chuck_new.ck" + args + "\");\n");
+            args += ":synthPort:" + configuration.getOscSynthReceivePort(); */
+            w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "main_chuck.ck" + args + "\");\n");
         } else {
             w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "main_chuck.ck" + "\");\n");
         }

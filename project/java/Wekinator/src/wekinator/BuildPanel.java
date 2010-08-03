@@ -516,6 +516,12 @@ public class BuildPanel extends javax.swing.JPanel {
             }
 
         } else {
+            //Set combo box appropriately: Must be getting from synth for this to work
+            int selected = comboSynthAction.getSelectedIndex();
+            if (selected != 1) {
+                comboSynthAction.setSelectedIndex(1);
+            }
+
             startPlayalongChuck();
         }
     }//GEN-LAST:event_buttonPlayScoreActionPerformed
@@ -548,7 +554,7 @@ public class BuildPanel extends javax.swing.JPanel {
         OscHandler.getOscHandler().stopPlayback();
         setButtonPlayalong(false);
         isPlayalongChuck = false;
-        stopMeListenToSynth();
+       // stopMeListenToSynth();
     }
 
     private void startRecording() {
