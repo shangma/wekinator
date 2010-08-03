@@ -12,6 +12,7 @@ import weka.classifiers.Classifier;
 import wekinator.LearningAlgorithms.LearningAlgorithm.TrainingState;
 import weka.classifiers.meta.AdaBoostM1;
 import weka.classifiers.trees.DecisionStump;
+import weka.classifiers.trees.J48;
 
 /**
  *
@@ -21,6 +22,7 @@ public class AdaboostM1LearningAlgorithm extends ClassifierLearningAlgorithm {
 
     protected AdaboostM1SettingsPanel myPanel = null;
     protected int defaultNumRounds = 100;
+    protected boolean isBaseTree = true;
 
     public AdaboostM1LearningAlgorithm() {
         initClassifier();
@@ -33,8 +35,10 @@ public class AdaboostM1LearningAlgorithm extends ClassifierLearningAlgorithm {
 
     protected void initClassifier() {
         classifier = new AdaBoostM1();
-        ((AdaBoostM1) classifier).setClassifier(new DecisionStump());
+       // ((AdaBoostM1) classifier).setClassifier(new DecisionStump());
+        ((AdaBoostM1)classifier).setClassifier(new J48());
         ((AdaBoostM1) classifier).setNumIterations(defaultNumRounds);
+        AdaBoostM1 tmp = new AdaBoostM1();
     }
 
     public LearningAlgorithm copy() {
@@ -80,6 +84,12 @@ public class AdaboostM1LearningAlgorithm extends ClassifierLearningAlgorithm {
         }
 
         a.classifier = (AdaBoostM1) i.readObject();
+        Classifier base = ((AdaBoostM1)a.classifier).getClassifier();
+        if (base instanceof J48)
+            a.isBaseTree = true;
+        else
+            a.isBaseTree = false;
+        
         a.setTrainingState((TrainingState) i.readObject());
         return a;
     }

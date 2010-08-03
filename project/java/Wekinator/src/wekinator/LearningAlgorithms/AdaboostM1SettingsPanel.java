@@ -13,6 +13,8 @@ package wekinator.LearningAlgorithms;
 
 import javax.swing.JPanel;
 import weka.classifiers.meta.AdaBoostM1;
+import weka.classifiers.trees.DecisionStump;
+import weka.classifiers.trees.J48;
 
 /**
  *
@@ -35,6 +37,8 @@ public class AdaboostM1SettingsPanel extends javax.swing.JPanel implements Learn
     public void setLearningAlgorithm(AdaboostM1LearningAlgorithm la) {
         this.la = la;
         textNumRounds.setText(la.getClassifier().getNumIterations() + ""); //TODO: Might classifier be null?
+        int index = la.isBaseTree ? 0 : 1;
+        comboBaseClassifier.setSelectedIndex(index);
     }
 
 
@@ -49,26 +53,44 @@ public class AdaboostM1SettingsPanel extends javax.swing.JPanel implements Learn
 
         textNumRounds = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        comboBaseClassifier = new javax.swing.JComboBox();
 
         textNumRounds.setText("100");
 
         jLabel1.setText("Number of training rounds");
+
+        jLabel2.setText("Base classifier");
+
+        comboBaseClassifier.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Decision Tree", "Decision Stump" }));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(textNumRounds, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel1)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 34, Short.MAX_VALUE)
+                        .add(textNumRounds, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(jLabel2)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(comboBaseClassifier, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                .add(textNumRounds, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(jLabel1))
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel1)
+                    .add(textNumRounds, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel2)
+                    .add(comboBaseClassifier, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -77,6 +99,11 @@ public class AdaboostM1SettingsPanel extends javax.swing.JPanel implements Learn
         if (valid) {
             int i = Integer.parseInt(textNumRounds.getText());
             la.getClassifier().setNumIterations(i);
+            if (comboBaseClassifier.getSelectedIndex() == 0) {
+                la.getClassifier().setClassifier(new J48());
+            } else {
+                la.getClassifier().setClassifier(new DecisionStump());
+            }
         } else {
             throw new Exception("Invalid settings");
         }
@@ -103,7 +130,9 @@ public class AdaboostM1SettingsPanel extends javax.swing.JPanel implements Learn
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox comboBaseClassifier;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JTextField textNumRounds;
     // End of variables declaration//GEN-END:variables
 
