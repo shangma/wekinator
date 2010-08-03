@@ -299,7 +299,7 @@ public class ChuckSystem {
 
             boolean newDistArray[] = new boolean[p];
             boolean newDiscreteArray[] = new boolean[p];
-            int newClassesArray[] = new int[p];
+            int newMaxValsArray[] = new int[p];
             String newNamesArray[] = new String[p];
 
 
@@ -317,7 +317,7 @@ public class ChuckSystem {
             }
            for (int i = 0; i < p; i++) {
                 int b = (Integer)o[current];
-                newClassesArray[i] = b;
+                newMaxValsArray[i] = b-1;
                 current++;
             }
             for (int i = 0; i < p; i++) {
@@ -332,7 +332,7 @@ public class ChuckSystem {
             }
             setDoesParamUseDistribution(newDistArray);
             setIsParamDiscrete(newDiscreteArray);
-            setNumSynthMaxParamVals(newClassesArray);
+            setNumSynthMaxParamVals(newMaxValsArray);
             setParamNames(newNamesArray);
             setChuckFeatureNames(newChuckFeatNamesArray);
             setState(ChuckSystemState.CONNECTED_AND_VALID);
