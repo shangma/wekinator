@@ -12,10 +12,13 @@ package wekinator;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.TableColumn;
 import wekinator.Plog.Msg;
+import wekinator.util.Util;
 
 /**
  *
@@ -170,14 +173,30 @@ public class DataViewer extends javax.swing.JFrame {
 }//GEN-LAST:event_buttonListenActionPerformed
 
     private void buttonListen1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonListen1ActionPerformed
-        try {
+        /*try {
             File file = findArffFileToSave();
             if (file != null) {
                 myDataset.writeInstancesToArff(file);
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid feature configuration", JOptionPane.ERROR_MESSAGE);
+        } */
+        if (myDataset != null) {
+
+        File file = Util.findSaveFile("arff",
+                "arff file",
+                SimpleDataset.getDefaultLocation(),
+                this);
+        if (file != null) {
+            try {
+                myDataset.writeInstancesToArff(file);
+                Util.setLastFile(SimpleDataset.getFileExtension(), file);
+            } catch (Exception ex) {
+                Logger.getLogger(DataViewer.class.getName()).log(Level.INFO, null, ex);
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Could not save to file", JOptionPane.ERROR_MESSAGE);
+            }
         }
+    }
     }//GEN-LAST:event_buttonListen1ActionPerformed
 
     private File findArffFileToSave() throws IOException {

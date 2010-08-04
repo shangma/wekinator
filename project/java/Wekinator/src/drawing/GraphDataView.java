@@ -73,7 +73,7 @@ public class GraphDataView {
             }
         }
 
-        numClasses = maxNumClasses;
+        numClasses = maxNumClasses; //TODO: may be error, numclasses shoudl be max value + 1
         setColors();
 
 

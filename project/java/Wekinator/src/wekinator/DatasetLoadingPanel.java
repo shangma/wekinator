@@ -267,7 +267,6 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
                 false);
 
         fc.addChoosableFileFilter(new javax.swing.filechooser.FileFilter() {
-
             @Override
             public boolean accept(File f) {
                 if (f.isDirectory()) {
@@ -341,6 +340,7 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
                 //If loaded dataset has values too high, delete those rows
                 //If loaded dataset has values too low, expand ceiling
                 if (isPDiscrete[i] && (maxClasses[i] != s.getMaxLegalDiscreteParamValues()[i])) {
+                    System.out.println(maxClasses[i] + "," + s.getMaxLegalDiscreteParamValues()[i]);
                     JOptionPane.showMessageDialog(this, "The type of parameters used in this dataset does not match the type of parameters used by your current synth\n"
                             + "Mismatch of # of legal parameter values", "Dataset not usable", JOptionPane.ERROR_MESSAGE);
                     return;

@@ -60,7 +60,7 @@ public class TrackSet {
         int maxNumClasses = 0;
         int numDiscrete = 0;
         int numContinuous = 0;
-        int maxValues[] = d.getMaxLegalDiscreteParamValues();
+        int maxValues[] = d.getMaxLegalDiscreteParamValues(); //TODO: potential problem: num classes != max value
       //  LinkedList<Integer> discIds = new LinkedList<Integer>();
       //  LinkedList<Integer> contIds = new LinkedList<Integer>();
         for (int i = 0; i < d.getNumParameters(); i++) {

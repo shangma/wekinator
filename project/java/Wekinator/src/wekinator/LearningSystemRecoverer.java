@@ -46,7 +46,7 @@ public class LearningSystemRecoverer {
                 o.writeObject(d.isParamDiscrete); /// for all!! TODO
                 o.writeObject(d.getFeatureNames());
                 o.writeObject(d.getParameterNames());
-                o.writeObject(d.getMaxLegalDiscreteParamValues());
+                o.writeObject(d.getMaxLegalDiscreteParamValues()); //Potential problem here: implementation of this method has changed 8/3/10
                 o.writeObject(d.allInstances); 
                 o.writeInt(d.nextID);
                 o.writeObject(d.audioSegments);

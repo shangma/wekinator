@@ -99,6 +99,15 @@ public class FileChooserWithExtension extends JFileChooser {
             
             String extt = Util.getExtension(selected);
             if (extt == null || !extt.equals(extension)) {
+                     FileFilter[] myFilters = this.getChoosableFileFilters();
+                     String acceptables = "";
+                     for (int i = 1; i < myFilters.length; i++) {
+                         if (myFilters[i].accept(selected)) {
+                             super.approveSelection();
+                             return;
+                         }
+                       
+                     }
 
                     int lResponse = JOptionPane.showConfirmDialog(this,
                             "This file does not match the recommended " +

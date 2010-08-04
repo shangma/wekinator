@@ -58,8 +58,10 @@ public class SimpleDataset {
     protected int idIndex = 0;
     protected int timestampIndex = 1;
     protected int trainingIndex = 2;
-    protected static final SimpleDateFormat dateFormat = new SimpleDateFormat("HHmmss");
-    public static final SimpleDateFormat prettyDateFormat = new SimpleDateFormat("HH:mm:ss");
+    protected static final SimpleDateFormat oldDateFormat = new SimpleDateFormat("HHmmss");
+    public static final SimpleDateFormat oldPrettyDateFormat = new SimpleDateFormat("HH:mm:ss");
+    protected static final SimpleDateFormat dateFormat = new SimpleDateFormat("HHmmssSSS");
+    public static final SimpleDateFormat prettyDateFormat = new SimpleDateFormat("HH:mm:ss:SSS");
     protected boolean hasInstances = false;
     public static final String PROP_HASINSTANCES = "hasInstances";
     protected FeatureLearnerConfiguration featureLearnerConfiguration = null;
@@ -838,6 +840,7 @@ public class SimpleDataset {
         }
     }
 
+    //Gets the maximum legal value for this parameter
     public int maxLegalDiscreteParamValue(int paramNum) {
         if (paramNum >= 0 && paramNum < numParams && isParamDiscrete[paramNum]) {
             return numParamValues[paramNum] - 1;
@@ -846,8 +849,14 @@ public class SimpleDataset {
         return -1; //TODO: something better?
     }
 
+    //Returns array of maximum *legal class ID* values (not number of classes)
     public int[] getMaxLegalDiscreteParamValues() {
-        return numParamValues;
+        int[] maxValues = new int[numParamValues.length];
+        for (int i = 0; i < maxValues.length; i++) {
+            maxValues[i] = numParamValues[i] - 1;
+        }
+        //return numParamValues;
+        return maxValues;
     }
 
     public String datasetToString() {
@@ -876,10 +885,13 @@ public class SimpleDataset {
     public String dateDoubleToString(double d) { //TODO: test!
         Date date;
         try {
-            String ds = Double.toString(d);
-            while (ds.length() < 8) {
+           /* String ds = Double.toString(d); */ //hack
+            String ds = "" + (int)d;
+
+            while (ds.length() < 9) {
                 ds = "0" + ds;
             }
+            
             date = dateFormat.parse(ds);
             return prettyDateFormat.format(date);
 
