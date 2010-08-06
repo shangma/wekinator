@@ -91,22 +91,22 @@ public class TrainRunPanel extends javax.swing.JPanel {
     protected Panes currentPane = Panes.COLLECT;
 
     /**
-     * Get the value of currentPane
+     * Get the value of nextPane
      *
-     * @return the value of currentPane
+     * @return the value of nextPane
      */
     public Panes getCurrentPane() {
-        return currentPane;
+        return currentPane; //TODO: never changes!
     }
 
     /**
-     * Set the value of currentPane
+     * Set the value of nextPane
      *
-     * @param currentPane new value of currentPane
+     * @param nextPane new value of nextPane
      */
-    public void setCurrentPane(Panes currentPane) {
+    public void setCurrentPane(Panes nextPane) {
         CardLayout c = (CardLayout) layoutPanel.getLayout();
-        switch (currentPane) {
+        switch (nextPane) {
             case CONFIGURE:
                 toggleConfigure.setSelected(true);
                 toggleCollect.setSelected(false);
@@ -137,6 +137,7 @@ public class TrainRunPanel extends javax.swing.JPanel {
                 c.show(layoutPanel, "cardBuild");
                 break;
         }
+        currentPane = nextPane;
     }
 
 

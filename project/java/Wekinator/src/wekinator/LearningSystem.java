@@ -1136,6 +1136,8 @@ public class LearningSystem {
      */
     public void setParamUsingDistribution(int index, boolean newParamUsingDistribution) {
         this.paramUsingDistribution[index] = newParamUsingDistribution;
+       setOutputsArray(paramUsingDistribution, numMaxValsForParameter);
+
     }
 
     /**

@@ -81,8 +81,10 @@ public class FeatureExtractionController {
         //TODO: update when global features change!
         if (ref.featureViewer == null) {
             ref.featureViewer = new FeatureViewer();
-            ref.featureViewer.setNames(WekinatorInstance.getWekinatorInstance().getFeatureConfiguration().getAllEnabledFeatureNames());
         }
+        //So names will refresh if necessary:
+        ref.featureViewer.setNames(WekinatorInstance.getWekinatorInstance().getFeatureConfiguration().getAllEnabledFeatureNames());
+
         ref.featureViewer.setVisible(true);
         ref.featureViewer.toFront();
     }

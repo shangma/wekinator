@@ -34,7 +34,7 @@ public class WekinatorRunner {
     protected static OptionSpec<Void> connect;
     protected static OptionSpec<Void> min;
     protected static OptionSpec<Void> isp;
-    protected static boolean isLogging = false;
+    protected static boolean isLogging = true; //Can change default here
     protected static boolean isPlork = false;
     private static final WekinatorRunner ref = new WekinatorRunner();
 

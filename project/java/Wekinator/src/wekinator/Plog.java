@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.swing.JOptionPane;
 import javax.swing.event.ChangeEvent;
@@ -39,6 +40,7 @@ public class Plog {
     static int chuckConfNum = 0;
     protected static LearningSystem ls = null;
     protected static boolean performanceMode = false;
+    protected static long sessionID = 0;
 
     private Plog() {
     }
@@ -68,6 +70,7 @@ public class Plog {
             if (oldMode == Mode.DATASET_CREATION && newMode != Mode.DATASET_CREATION) {
                 recordStopped();
             }
+            
            /* if (newMode == Mode.EVALUATING && oldMode != Mode.EVALUATING) {
                 log(Msg.EVAL_START);
             } else if (oldMode == Mode.EVALUATING && newMode != Mode.EVALUATING) {
@@ -211,6 +214,9 @@ public class Plog {
             });
             isSetup = true;
         }
+        Date d = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+        sessionID = Long.parseLong(dateFormat.format(d));
         filename = parentDir + File.separator + "log.txt";
         rfilename = parentDir + File.separator + "run.txt";
         logDir = parentDir + File.separator;
@@ -218,7 +224,7 @@ public class Plog {
         p = new PrintWriter(fw);
         rfw = new FileWriter(rfilename, true);
         r = new PrintWriter(rfw);
-        log(Msg.NEW_SESSION);
+        log(Msg.NEW_SESSION, "" + sessionID);
         resetRun();
 
     }
@@ -455,7 +461,7 @@ public class Plog {
     }
 
     protected static void saveLearningSystem(int num, LearningSystem ls) {
-        File f = new File(logDir + "ls" + num + "." + LearningSystem.getFileExtension());
+        File f = new File(logDir + sessionID + "ls" + num + "." + LearningSystem.getFileExtension());
         try {
             ls.writeToFile(f);
         } catch (IOException ex) {
@@ -464,7 +470,7 @@ public class Plog {
     }
 
     public static void saveChuckConfiguration(int num, ChuckConfiguration c) {
-        File f = new File(logDir + "ck" + num + "." + ChuckConfiguration.getFileExtension());
+        File f = new File(logDir + sessionID + "ck" + num + "." + ChuckConfiguration.getFileExtension());
         try {
             c.writeToFile(f);
         } catch (Exception ex) {
@@ -474,7 +480,7 @@ public class Plog {
     }
 
     public static void saveFeatureConfiguration(int num, FeatureConfiguration fc) {
-        File f = new File(logDir + "fc" + num + "." + FeatureConfiguration.getFileExtension());
+        File f = new File(logDir + sessionID + "fc" + num + "." + FeatureConfiguration.getFileExtension());
         try {
             fc.writeToFile(f);
         } catch (Exception ex) {

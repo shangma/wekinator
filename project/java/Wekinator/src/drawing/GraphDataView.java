@@ -65,8 +65,8 @@ public class GraphDataView {
         for (int i = 0; i < d.getNumParameters(); i++) {
             if (d.isParameterDiscrete(i)) {
                 numDiscrete++;
-                if (maxValues[i] > maxNumClasses) {
-                    maxNumClasses = maxValues[i];
+                if (maxValues[i] + 1 > maxNumClasses) {
+                    maxNumClasses = maxValues[i] + 1;
                 }
             } else {
                 numContinuous++;
@@ -126,7 +126,7 @@ public class GraphDataView {
             return;
         }
         
-        if (c < d.getMaxLegalDiscreteParamValues()[selectedParam])  {
+        if (c <= d.getMaxLegalDiscreteParamValues()[selectedParam])  {
             for (int i = selectedMin; i <= selectedMax && i < d.getNumDatapoints(); i++) {
                 d.setParameterValue(i, selectedParam, c);
             }

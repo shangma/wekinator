@@ -68,7 +68,7 @@ public class TrackSet {
                 numDiscrete++;
                // discIds.add(i);
                 if (maxValues[i] > maxNumClasses) {
-                    maxNumClasses = maxValues[i];
+                    maxNumClasses = maxValues[i]+1;
                 }
             } else {
                // contIds.add(i);

@@ -44,7 +44,7 @@ public class SynthProxy {
         }
     }
 
-        static boolean[] isParamDistribution() {
+    static boolean[] isParamDistribution() {
         if (WekinatorInstance.getWekinatorInstance().getConfiguration().isUseChuckSynthClass()) {
             return ChuckSystem.getChuckSystem().isDoesParamUseDistribution();
         } else {

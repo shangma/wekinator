@@ -286,6 +286,11 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
                 }
 
                 setLearningSystem(newS); //TODO: Problematic: What do we do w/ backup?; make usre to deal with hid there
+                //New: Allow change of dist
+                for (int i = 0; i < SynthProxy.getNumParams(); i++) {
+                    newS.setParamUsingDistribution(i, SynthProxy.isParamDistribution(i));
+                }
+
                 WekinatorInstance.getWekinatorInstance().setLearningSystem(newS);
                 labelLearningSystemStatus.setText("Learning system loaded successfully.");
 
