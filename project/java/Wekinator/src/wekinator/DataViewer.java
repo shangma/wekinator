@@ -190,6 +190,9 @@ public class DataViewer extends javax.swing.JFrame {
         if (file != null) {
             try {
                 myDataset.writeInstancesToArff(file);
+                if (WekinatorRunner.isLogging()) {
+                    Plog.log(Msg.DATA_VIEWER_SAVE_ARFF_BUTTON, file.getAbsolutePath() + "/" + file.getName());
+                }
                 Util.setLastFile(SimpleDataset.getFileExtension(), file);
             } catch (Exception ex) {
                 Logger.getLogger(DataViewer.class.getName()).log(Level.INFO, null, ex);

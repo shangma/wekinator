@@ -15,6 +15,7 @@ import java.util.Date;
 import javax.swing.JOptionPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import sun.security.timestamp.TSRequest;
 import wekinator.LearningAlgorithms.LearningAlgorithm;
 import wekinator.LearningSystem.EvalStatus;
 import wekinator.WekinatorLearningManager.Mode;
@@ -30,10 +31,13 @@ public class Plog {
     static PrintWriter p = null;
     static FileWriter rfw = null;
     static PrintWriter r = null;
+    static FileWriter ratingw = null;
+    static PrintWriter rating = null;
     static int runRound = 0;
     static String logDir = null;
     static String filename = null;
     static String rfilename = null;
+    static String ratingFilename = null;
     public static boolean isLogging = true;
     static int lsNum = 0;
     static int fcNum = 0;
@@ -41,6 +45,7 @@ public class Plog {
     protected static LearningSystem ls = null;
     protected static boolean performanceMode = false;
     protected static long sessionID = 0;
+    protected static String lastRunStartTime = "0";
 
     private Plog() {
     }
@@ -155,8 +160,8 @@ public class Plog {
         DATA_VIWER_DELETE_SELECTED, //done
         DATA_VIEWER_ADD_ROW, //done
         DATA_VIEWER_LISTEN, //done
-        DATA_VIEWER_SAVE_ARFF_BUTTON,
-        DATA_VIEWER_DONE,
+        DATA_VIEWER_SAVE_ARFF_BUTTON, //done
+        DATA_VIEWER_DONE, //done
         DATA_VIEWER_DATA_EDITED, //done
         BUTTON_UNTRAIN, //done
         TRAIN_CANCELLED, //special: still log stuff! -- log ls so far & training data
@@ -194,7 +199,14 @@ public class Plog {
         PANEL_CHUCK_VIEW,
         PANEL_FEATURES_VIEW,
         PANEL_LEARNING_VIEW,
-        PANEL_USE_VIEW
+        PANEL_USE_VIEW,
+        MENU_SAVE_ARFF, //done
+        DATASET_LOADED_FROM_FILE, //done
+        SYNTH_INFO, //done for osc synth, need more info for chuck synth
+        LEARNING_ALGORITHM_SAVED, //done
+        PARAM_CHECKBOX_CHANGED, //done
+        TRAINING_ERROR,
+        RATING_BUTTON_HIT
     };
 
     public static void setWekinatorLearningManager(WekinatorLearningManager lm) {
@@ -231,11 +243,14 @@ public class Plog {
         sessionID = Long.parseLong(dateFormat.format(d));
         filename = parentDir + File.separator + "log.txt";
         rfilename = parentDir + File.separator + "run.txt";
+        ratingFilename = parentDir + File.separator + "rating.txt";
         logDir = parentDir + File.separator;
         fw = new FileWriter(filename, true);
         p = new PrintWriter(fw);
         rfw = new FileWriter(rfilename, true);
         r = new PrintWriter(rfw);
+        ratingw = new FileWriter(ratingFilename, true);
+        rating = new PrintWriter(ratingw);
         log(Msg.NEW_SESSION, "" + sessionID);
         resetRun();
 
@@ -252,6 +267,12 @@ public class Plog {
             rfw.close();
             rfw = new FileWriter(rfilename, false);
             r = new PrintWriter(rfw);
+
+            rating.close();
+            ratingw.close();
+            ratingw = new FileWriter(ratingFilename, false);
+            rating = new PrintWriter(ratingw);
+
             log(Msg.RESET);
             resetRun();
         } catch (Exception ex) {
@@ -264,18 +285,39 @@ public class Plog {
         runRound = 0;
     }
 
+    private static void resetRating() {
+        rating.println(ts() + ",#RESET#");
+    }
+
     public static void close() throws IOException {
         p.flush();
         p.close();
         fw.close();
+
         r.flush();
         r.close();
         rfw.close();
+        
+        rating.flush();
+        rating.close();
+        ratingw.close();
+    }
+
+    public static void rate(int r) {
+        rating.println(ts() + "," + lastRunStartTime + "," + r);
     }
 
     protected static String ts() {
         return Long.toString((new Date()).getTime());
     }
+
+   public static void log(String ts, Msg which, String m) {
+        if (p == null) {
+            System.out.println("ERROR: logging with null log!");
+            return;
+        }
+        p.println(ts + "," + which.ordinal() + "," + which + "," + m);
+   }
 
     public static void log(Msg which, String m) {
         if (p == null) {
@@ -327,6 +369,7 @@ public class Plog {
         updateLearningSystemListeners(ls);
     }
     private static ChangeListener learnerChangeListener = new ChangeListener() {
+
         public void stateChanged(ChangeEvent e) {
             learnerChanged(e);
         }
@@ -465,67 +508,106 @@ public class Plog {
         }
         log(Msg.CHUCK_RUNNING, s);
         saveChuckConfiguration(chuckConfNum, c);
+        //Also save some info on synth
+        logSynthInfo(c);
+    }
+
+    public static void logSynthInfo(ChuckConfiguration c) {
+        boolean isChuck = c.isUseChuckSynthClass();
+        String s;
+        if (!isChuck) {
+            s = "isChuck=" + (c.isUseChuckSynthClass() ? "1" : "0") + ",";
+            s += "nParams=" + SynthProxy.getNumParams() + ",discrete={";
+            for (int i = 0; i < SynthProxy.getNumParams(); i++) {
+                if (SynthProxy.isParamDiscrete(i)) {
+                    s += "1,";
+                } else {
+                    s += "0,";
+                }
+            }
+            s += "},distributions={";
+            for (int i = 0; i < SynthProxy.getNumParams(); i++) {
+                if (SynthProxy.isParamDiscrete(i)) {
+                    s += SynthProxy.isParamDistribution(i) + ",";
+                } else {
+                    s += "-1,";
+                }
+            }
+            s += "},maxLegalValue={";
+            for (int i = 0; i < SynthProxy.getNumParams(); i++) {
+                if (SynthProxy.isParamDiscrete(i)) {
+                    s += SynthProxy.paramMaxValue(i) + ",";
+                } else {
+                    s += "-1,";
+                }
+            }
+            s += "}";
+        } else {
+            s = "isChuck=1,filename=" + c.getChuckSynthFilename();
+            
+        }
+        log(Msg.SYNTH_INFO, s);
     }
 
     public static void logFeatureMap(int learner) {
         if (ls != null && ls.getDataset() != null) {
-                FeatureLearnerConfiguration flc = ls.getDataset().getFeatureLearnerConfiguration();
-                if (flc != null) {
-                   // for (int i = 0; i < flc.numLearners; i++) {
-                        int[] mapping = flc.getFeatureMappingForLearner(learner);
-                        String s = "{";
-                        for (int j = 0; j < mapping.length; j++) {
-                            s += mapping[j] + ",";
-                        }
-                        s += "}";
-                        log(Msg.LEARNING_SYSTEM_INFO_FEATURE_MAP, "param=" + learner + ",mapping=" + s);
-                   // }
+            FeatureLearnerConfiguration flc = ls.getDataset().getFeatureLearnerConfiguration();
+            if (flc != null) {
+                // for (int i = 0; i < flc.numLearners; i++) {
+                int[] mapping = flc.getFeatureMappingForLearner(learner);
+                String s = "{";
+                for (int j = 0; j < mapping.length; j++) {
+                    s += mapping[j] + ",";
                 }
-            } else {
-                log(Msg.LEARNING_SYSTEM_INFO_FEATURE_MAP, "Null configuration");
+                s += "}";
+                log(Msg.LEARNING_SYSTEM_INFO_FEATURE_MAP, "param=" + learner + ",mapping=" + s);
+            // }
             }
+        } else {
+            log(Msg.LEARNING_SYSTEM_INFO_FEATURE_MAP, "Null configuration");
+        }
     }
 
     public static void logFeatureMaps() {
 
         if (ls != null && ls.getDataset() != null) {
-                FeatureLearnerConfiguration flc = ls.getDataset().getFeatureLearnerConfiguration();
-                if (flc != null) {
-                    for (int i = 0; i < flc.numLearners; i++) {
-                        int[] mapping = flc.getFeatureMappingForLearner(i);
-                        String s = "{";
-                        for (int j = 0; j < mapping.length; j++) {
-                            s += mapping[j] + ",";
-                        }
-                        s += "}";
-                        log(Msg.LEARNING_SYSTEM_INFO_FEATURE_MAP, "param=" + i + ",mapping=" + s);
+            FeatureLearnerConfiguration flc = ls.getDataset().getFeatureLearnerConfiguration();
+            if (flc != null) {
+                for (int i = 0; i < flc.numLearners; i++) {
+                    int[] mapping = flc.getFeatureMappingForLearner(i);
+                    String s = "{";
+                    for (int j = 0; j < mapping.length; j++) {
+                        s += mapping[j] + ",";
                     }
+                    s += "}";
+                    log(Msg.LEARNING_SYSTEM_INFO_FEATURE_MAP, "param=" + i + ",mapping=" + s);
                 }
-            } else {
-                log(Msg.LEARNING_SYSTEM_INFO_FEATURE_MAP, "Null configuration");
             }
+        } else {
+            log(Msg.LEARNING_SYSTEM_INFO_FEATURE_MAP, "Null configuration");
+        }
     }
 
     protected static void saveLearningSystem(int num, LearningSystem ls) {
         File f = new File(logDir + sessionID + "ls" + num + "." + LearningSystem.getFileExtension());
         try {
             ls.writeToFile(f);
-           /* if (ls != null && ls.getDataset() != null) {
-                FeatureLearnerConfiguration flc = ls.getDataset().getFeatureLearnerConfiguration();
-                if (flc != null) {
-                    for (int i = 0; i < flc.numLearners; i++) {
-                        int[] mapping = flc.getFeatureMappingForLearner(i);
-                        String s = "{";
-                        for (int j = 0; j < mapping.length; j++) {
-                            s += mapping[j] + ",";
-                        }
-                        s += "}";
-                        log(Msg.LEARNING_SYSTEM_INFO_FEATURE_MAP, "param=" + i + ",mapping=" + s);
-                    }
-                }
-            } else {
-                log(Msg.LEARNING_SYSTEM_INFO_FEATURE_MAP, "Null configuration");
-            } */
+        /* if (ls != null && ls.getDataset() != null) {
+        FeatureLearnerConfiguration flc = ls.getDataset().getFeatureLearnerConfiguration();
+        if (flc != null) {
+        for (int i = 0; i < flc.numLearners; i++) {
+        int[] mapping = flc.getFeatureMappingForLearner(i);
+        String s = "{";
+        for (int j = 0; j < mapping.length; j++) {
+        s += mapping[j] + ",";
+        }
+        s += "}";
+        log(Msg.LEARNING_SYSTEM_INFO_FEATURE_MAP, "param=" + i + ",mapping=" + s);
+        }
+        }
+        } else {
+        log(Msg.LEARNING_SYSTEM_INFO_FEATURE_MAP, "Null configuration");
+        } */
         } catch (IOException ex) {
             log(Msg.ERROR, "Couldn't write ls number " + num + " to file: " + ex.getMessage());
         }
@@ -571,12 +653,14 @@ public class Plog {
 
     public static void runStart() {
         runRound++;
-        log(Msg.RUN_START, runRound + "," + lsNum);
+        lastRunStartTime = ts();
+        log(lastRunStartTime, Msg.RUN_START, runRound + "," + lsNum);
     }
 
     public static void flush() {
         p.flush();
         r.flush();
+        rating.flush();
     }
 
     public static void runStep(double[] features, double[] params) {

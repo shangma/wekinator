@@ -8,6 +8,7 @@ package wekinator;
 
 import drawing.GraphDataViewFrame;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Frame;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -648,6 +649,19 @@ private void panelMainTabsComponentShown(java.awt.event.ComponentEvent evt) {//G
 }//GEN-LAST:event_panelMainTabsComponentShown
 
 private void panelMainTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_panelMainTabsStateChanged
+   if (WekinatorRunner.isLogging()) {
+        Component c = panelMainTabs.getSelectedComponent();
+        if (c == panelOSC) {
+            Plog.log(Msg.PANEL_CHUCK_VIEW);
+        } else if (c == panelTabFeatureConfiguration) {
+            Plog.log(Msg.PANEL_FEATURES_VIEW);
+        } else if (c == panelTabLearningSystemConfiguration) {
+            Plog.log(Msg.PANEL_LEARNING_VIEW);
+        } else if (c == trainRunPanel1) {
+            Plog.log(Msg.PANEL_USE_VIEW);
+        }
+    }
+
 }//GEN-LAST:event_panelMainTabsStateChanged
 
 private void exit() {
@@ -743,6 +757,9 @@ private void menuSaveDatasetActionPerformed(java.awt.event.ActionEvent evt) {//G
         if (file != null) {
             try {
                 ls.getDataset().writeInstancesToArff(file);
+                if (WekinatorRunner.isLogging()) {
+                    Plog.log(Msg.MENU_SAVE_ARFF, file.getAbsolutePath() + "/" + file.getName());
+                }
             // ls.writeToFile(file); //TODOTODOTODO: update last path on this.
              Util.setLastFile(SimpleDataset.getFileExtension(), file);
             } catch (Exception ex) {

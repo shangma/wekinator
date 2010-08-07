@@ -517,12 +517,15 @@ public class LearningSystem {
                                 learners[i].train(ii);
                                 numTrained++;
                             } catch (InterruptedException ex) {
-                                System.out.println("I was cancelled5");
+                                System.out.println("I was cancelled");
                                 return new Integer(0);
                             } catch (Exception ex) {
                                 numErr++;
                                 JOptionPane.showMessageDialog(null, "Could not train model for parameter " + i + "\n" + ex.getMessage(), "Training error", JOptionPane.ERROR_MESSAGE);
                                 Logger.getLogger(LearningSystem.class.getName()).log(Level.SEVERE, null, ex);
+                                if (WekinatorRunner.isLogging()) {
+                                    Plog.log(Msg.TRAINING_ERROR, "{" + ex.getMessage() + "}");
+                                }
                             //TODO lower priority: test this works when error actually occurs in learner
                             }
                             //    setProgress(progress++);

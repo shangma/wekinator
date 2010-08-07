@@ -113,6 +113,9 @@ public class TrainRunPanel extends javax.swing.JPanel {
                 toggleRun.setSelected(false);
                 toggleTrain.setSelected(false);
                 c.show(layoutPanel, "cardEdit");
+                if (WekinatorRunner.isLogging()) {
+                    Plog.log(Msg.SUBPANEL_CONFIG_VIEWED);
+                }
                 break;
             case RUN:
                 toggleConfigure.setSelected(false);
@@ -120,6 +123,9 @@ public class TrainRunPanel extends javax.swing.JPanel {
                 toggleRun.setSelected(true);
                 toggleTrain.setSelected(false);
                 c.show(layoutPanel, "cardRun");
+                if (WekinatorRunner.isLogging()) {
+                    Plog.log(Msg.SUBPANEL_RUN_VIEWED);
+                }
                 break;
             case TRAIN:
                 toggleConfigure.setSelected(false);
@@ -127,6 +133,9 @@ public class TrainRunPanel extends javax.swing.JPanel {
                 toggleRun.setSelected(false);
                 toggleTrain.setSelected(true);
                 c.show(layoutPanel, "cardTrain");
+                if (WekinatorRunner.isLogging()) {
+                    Plog.log(Msg.SUBPANEL_TRAIN_VIEWED);
+                }
                 break;
             case COLLECT:
             default:
@@ -135,6 +144,9 @@ public class TrainRunPanel extends javax.swing.JPanel {
                 toggleRun.setSelected(false);
                 toggleTrain.setSelected(false);
                 c.show(layoutPanel, "cardBuild");
+                if (WekinatorRunner.isLogging()) {
+                    Plog.log(Msg.SUBPANEL_COLLECT_VIEWED);
+                }
                 break;
         }
         currentPane = nextPane;

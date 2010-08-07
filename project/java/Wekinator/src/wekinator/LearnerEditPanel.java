@@ -21,6 +21,7 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import wekinator.LearningAlgorithms.AdaboostM1LearningAlgorithm;
+import wekinator.LearningAlgorithms.ClassifierLearningAlgorithm;
 import wekinator.LearningAlgorithms.LearningAlgorithm;
 import wekinator.LearningAlgorithms.LearningAlgorithm.TrainingState;
 import wekinator.LearningAlgorithms.NNLearningAlgorithm;
@@ -197,8 +198,9 @@ public class LearnerEditPanel extends javax.swing.JPanel {
         jButton1 = new javax.swing.JButton();
         checkNNGui = new javax.swing.JCheckBox();
         panelLearnerSettings = new javax.swing.JPanel();
-        sMOSettingsPanel1 = new wekinator.LearningAlgorithms.SMOSettingsPanel();
         labelTrainingStatus = new javax.swing.JLabel();
+        buttonSaveLearner1 = new javax.swing.JButton();
+        sMOSettingsPanel1 = new wekinator.LearningAlgorithms.SMOSettingsPanel();
         accuracyPanel = new wekinator.AllAccuracy();
 
         jPanel9.setBorder(javax.swing.BorderFactory.createTitledBorder("Edit model settings"));
@@ -237,56 +239,66 @@ public class LearnerEditPanel extends javax.swing.JPanel {
         });
 
         panelLearnerSettings.setLayout(new javax.swing.BoxLayout(panelLearnerSettings, javax.swing.BoxLayout.LINE_AXIS));
-        panelLearnerSettings.add(sMOSettingsPanel1);
 
         labelTrainingStatus.setText("jLabel1"); // NOI18N
+
+        buttonSaveLearner1.setText("W"); // NOI18N
+        buttonSaveLearner1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonSaveLearner1ActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout jPanel9Layout = new org.jdesktop.layout.GroupLayout(jPanel9);
         jPanel9.setLayout(jPanel9Layout);
         jPanel9Layout.setHorizontalGroup(
             jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel9Layout.createSequentialGroup()
-                .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .addContainerGap()
+                .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(labelLearnerDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 344, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jPanel9Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(labelLearnerDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
-                            .add(jPanel9Layout.createSequentialGroup()
-                                .add(buttonSaveLearner)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(jButton15))))
-                    .add(jPanel9Layout.createSequentialGroup()
-                        .add(checkNNGui)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(labelTrainingStatus, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 308, Short.MAX_VALUE))
-                    .add(jPanel9Layout.createSequentialGroup()
-                        .addContainerGap()
                         .add(buttonRetrain)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jButton1))
                     .add(jPanel9Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(panelLearnerSettings, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 400, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                        .add(checkNNGui)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(labelTrainingStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 188, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jPanel9Layout.createSequentialGroup()
+                        .add(buttonSaveLearner)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(buttonSaveLearner1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jButton15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 153, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jPanel9Layout.createSequentialGroup()
+                        .add(sMOSettingsPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(panelLearnerSettings, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(96, Short.MAX_VALUE))
         );
         jPanel9Layout.setVerticalGroup(
             jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel9Layout.createSequentialGroup()
-                .add(labelLearnerDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(labelLearnerDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(buttonSaveLearner)
-                    .add(jButton15))
+                    .add(buttonSaveLearner1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jButton15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(panelLearnerSettings, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 124, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(panelLearnerSettings, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 124, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(sMOSettingsPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(buttonRetrain)
-                    .add(jButton1))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 9, Short.MAX_VALUE)
+                    .add(jButton1)
+                    .add(buttonRetrain))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(checkNNGui)
-                    .add(labelTrainingStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(labelTrainingStatus))
+                .addContainerGap())
         );
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
@@ -294,10 +306,11 @@ public class LearnerEditPanel extends javax.swing.JPanel {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, accuracyPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel9, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(accuracyPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 742, Short.MAX_VALUE)
                 .addContainerGap(36, Short.MAX_VALUE))
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(jPanel9, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -355,6 +368,9 @@ public class LearnerEditPanel extends javax.swing.JPanel {
             try {
                 al.writeToFile(file); //TODOTODOTODO: update last path on this.
                 Util.setLastFile(LearningAlgorithm.getFileExtension(), file);
+                if (WekinatorRunner.isLogging()) {
+                    Plog.log(Msg.LEARNING_ALGORITHM_SAVED, file.getAbsolutePath() + "/" + file.getName());
+                }
             } catch (Exception ex) {
                 Logger.getLogger(LearnerEditPanel.class.getName()).log(Level.INFO, null, ex);
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Could not save to file", JOptionPane.ERROR_MESSAGE);
@@ -369,10 +385,32 @@ public class LearnerEditPanel extends javax.swing.JPanel {
         al.getSettingsPanel().reset();
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void buttonSaveLearner1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSaveLearner1ActionPerformed
+       if (al instanceof ClassifierLearningAlgorithm) {
+        File file = Util.findSaveFile("classifier",
+                "Serialized weka classifier",
+                LearningAlgorithm.getDefaultLocation(),
+                this);
+        if (file != null) {
+            try {
+                ((ClassifierLearningAlgorithm)al).saveAsSerializedWekaClassifier(file);
+                Util.setLastFile(LearningAlgorithm.getFileExtension(), file);
+                if (WekinatorRunner.isLogging()) {
+                    Plog.log(Msg.LEARNING_ALGORITHM_SAVED, file.getAbsolutePath() + "/" + file.getName());
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(LearnerEditPanel.class.getName()).log(Level.INFO, null, ex);
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Could not save to file", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+       }
+    }//GEN-LAST:event_buttonSaveLearner1ActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private wekinator.AllAccuracy accuracyPanel;
     private javax.swing.JButton buttonRetrain;
     private javax.swing.JButton buttonSaveLearner;
+    private javax.swing.JButton buttonSaveLearner1;
     private javax.swing.JCheckBox checkNNGui;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton15;

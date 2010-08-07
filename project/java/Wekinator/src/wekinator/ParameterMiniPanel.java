@@ -14,6 +14,7 @@ import java.awt.CardLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFrame;
 import javax.swing.event.*;
+import wekinator.Plog.Msg;
 
 /**
  *
@@ -117,6 +118,9 @@ public class ParameterMiniPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void checkUseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkUseActionPerformed
+        if (WekinatorRunner.isLogging()) {
+            Plog.log(Msg.PARAM_CHECKBOX_CHANGED, "name=" + name + "check=" + (checkUse.isSelected() ? "1" : "0"));
+        }
         fireStateChanged();
 }//GEN-LAST:event_checkUseActionPerformed
 

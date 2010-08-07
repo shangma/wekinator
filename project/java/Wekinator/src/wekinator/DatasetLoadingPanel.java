@@ -19,6 +19,7 @@ import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import wekinator.Plog.Msg;
 import wekinator.util.FileChooserWithExtension;
 import wekinator.util.Util;
 
@@ -391,6 +392,9 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
 
             //Made it here? Then we're good to go.
             setLoadedDataset(s);
+             if (WekinatorRunner.isLogging()) {
+                    Plog.log(Msg.DATASET_LOADED_FROM_FILE, file.getAbsolutePath() + "/" + file.getName());
+                }
             radioUseFile.setSelected(true);
             Util.setLastFile(SimpleDataset.getFileExtension(), file);
 

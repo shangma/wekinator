@@ -16,6 +16,7 @@ import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import wekinator.Plog.Msg;
 import wekinator.WekinatorLearningManager.Mode;
 
 /**
@@ -105,6 +106,8 @@ public class RunPanel extends javax.swing.JPanel {
         buttonAddToClipboard = new javax.swing.JButton();
         scrollOutputPanel = new javax.swing.JScrollPane();
         panelOutputs = new javax.swing.JPanel();
+        comboRating = new javax.swing.JComboBox();
+        buttonRate = new javax.swing.JButton();
         buttonRun = new javax.swing.JButton();
 
         jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder("Generated parameters"));
@@ -119,21 +122,37 @@ public class RunPanel extends javax.swing.JPanel {
         panelOutputs.setLayout(new javax.swing.BoxLayout(panelOutputs, javax.swing.BoxLayout.Y_AXIS));
         scrollOutputPanel.setViewportView(panelOutputs);
 
+        comboRating.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" }));
+
+        buttonRate.setText("Rate");
+        buttonRate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonRateActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout jPanel5Layout = new org.jdesktop.layout.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
             jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel5Layout.createSequentialGroup()
                 .add(buttonAddToClipboard)
-                .addContainerGap(153, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(comboRating, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(buttonRate)
+                .addContainerGap(49, Short.MAX_VALUE))
             .add(jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(org.jdesktop.layout.GroupLayout.TRAILING, scrollOutputPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE))
+                .add(org.jdesktop.layout.GroupLayout.TRAILING, scrollOutputPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE))
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel5Layout.createSequentialGroup()
                 .addContainerGap(256, Short.MAX_VALUE)
-                .add(buttonAddToClipboard))
+                .add(jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(buttonAddToClipboard)
+                    .add(comboRating, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(buttonRate)))
             .add(jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(jPanel5Layout.createSequentialGroup()
                     .add(scrollOutputPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 246, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -151,15 +170,18 @@ public class RunPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(buttonRun, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
-            .add(jPanel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(buttonRun, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(jPanel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(buttonRun, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jPanel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(jPanel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -178,6 +200,13 @@ public class RunPanel extends javax.swing.JPanel {
             stopRunning();
         }
 }//GEN-LAST:event_buttonRunActionPerformed
+
+    private void buttonRateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRateActionPerformed
+        if (WekinatorRunner.isLogging()) {
+            Plog.log(Msg.RATING_BUTTON_HIT);
+            Plog.rate(comboRating.getSelectedIndex());
+        }
+    }//GEN-LAST:event_buttonRateActionPerformed
 
     private void learningManagerChange(PropertyChangeEvent evt) {
          if (evt.getPropertyName().equals(WekinatorLearningManager.PROP_MODE)) {
@@ -229,7 +258,9 @@ public class RunPanel extends javax.swing.JPanel {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonAddToClipboard;
+    private javax.swing.JButton buttonRate;
     private javax.swing.JButton buttonRun;
+    private javax.swing.JComboBox comboRating;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel panelOutputs;
     private javax.swing.JScrollPane scrollOutputPanel;
