@@ -517,7 +517,7 @@ public class LearningSystem {
                                 learners[i].train(ii);
                                 numTrained++;
                             } catch (InterruptedException ex) {
-                                System.out.println("I was cancelled");
+                                System.out.println("I was cancelled5");
                                 return new Integer(0);
                             } catch (Exception ex) {
                                 numErr++;
@@ -543,7 +543,7 @@ public class LearningSystem {
                         TrainingStatus t = new TrainingStatus(trainingProgress.numToTrain, trainingProgress.numTrained, trainingProgress.numErrorsEncountered, true);
                         // trainingProgress.wasCancelled = true;
                         setTrainingProgress(t);
-                        System.out.println("I was cancelled");
+                        System.out.println("I was cancelled4");
                     }
                 }
             };
@@ -1226,7 +1226,7 @@ public class LearningSystem {
                             }
                             numDone++;
                         } catch (InterruptedException ex) {
-                            System.out.println("I was cancelled");
+                            System.out.println("I was cancelled3");
                             return new Integer(0);
                         } catch (Exception ex) {
                             numErrs++; //TODO: popup box
@@ -1255,7 +1255,7 @@ public class LearningSystem {
                         }
                         setEvalStatus(new EvalStatus(learnerToEvaluate, 1, 1, 0, (evaluationType == EvaluationType.CV), false));
                     } catch (InterruptedException ex) {
-                        System.out.println("I was cancelled");
+                        System.out.println("I was cancelled2");
                         return new Integer(0);
                     } catch (Exception ex) {
                         System.out.println("ERROR encountered here" + ex.getMessage());
@@ -1282,7 +1282,7 @@ public class LearningSystem {
                 //new EvalStatus(
                 EvalStatus t = new EvalStatus(evalStatus.myParam, evalStatus.numModelsToEval, evalStatus.numModelsDone, evalStatus.numModelsWithErrors, evalStatus.isCV, true);
                 setEvalStatus(t);
-                System.out.println("I was cancelled");
+                System.out.println("I was cancelled1");
                 System.out.println("State is " + getState());
             }
 

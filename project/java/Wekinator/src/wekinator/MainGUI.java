@@ -126,6 +126,9 @@ public class MainGUI extends javax.swing.JFrame {
         runChuckIfNeeded();
         updatePanels();
         updateMenus();
+        if (WekinatorRunner.isLogging()) {
+                    Plog.log(Msg.PANEL_CHUCK_VIEW);
+         }
     }
 
      // Generic registration with the Mac OS X application menu
@@ -713,7 +716,9 @@ private void menuItemViewGraphDatasetActionPerformed(java.awt.event.ActionEvent 
     LearningSystem ls = WekinatorInstance.getWekinatorInstance().getLearningSystem();
     if (ls != null && ls.getDataset() != null) {
         new GraphDataViewFrame(ls.getDataset()).setVisible(true);
-
+        if (WekinatorRunner.isLogging()) {
+            Plog.log(Msg.GRAPHICAL_VIEWER_OPENED);
+        }
     }
 
 }//GEN-LAST:event_menuItemViewGraphDatasetActionPerformed
@@ -868,7 +873,8 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
             OscHandler.ConnectionState n = (OscHandler.ConnectionState) evt.getNewValue();
 
             if (n == OscHandler.ConnectionState.CONNECTED) {
-                panelMainTabs.setSelectedComponent(panelTabFeatureConfiguration);
+               // panelMainTabs.setSelectedComponent(panelTabFeatureConfiguration);
+                showFeatureConfigurationPanel();
                 if (WekinatorRunner.getFeatureFile() != null) {
                     try {
                         FeatureConfiguration fc = FeatureConfiguration.readFromFile(WekinatorRunner.getFeatureFile());
@@ -895,18 +901,30 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
 
     public void showOscPanel() {
         panelMainTabs.setSelectedComponent(panelOSC);
+        if (WekinatorRunner.isLogging()) {
+                    Plog.log(Msg.PANEL_CHUCK_VIEW);
+         }
     }
 
     public void showTrainRunPanel() {
         panelMainTabs.setSelectedComponent(trainRunPanel1);
+        if (WekinatorRunner.isLogging()) {
+                    Plog.log(Msg.PANEL_USE_VIEW);
+         }
     }
 
     public void showFeatureConfigurationPanel() {
         panelMainTabs.setSelectedComponent(panelTabFeatureConfiguration);
+        if (WekinatorRunner.isLogging()) {
+                    Plog.log(Msg.PANEL_FEATURES_VIEW);
+         }
     }
 
     public void showLearningSystemPanel() {
         panelMainTabs.setSelectedComponent(panelTabLearningSystemConfiguration);
+        if (WekinatorRunner.isLogging()) {
+                    Plog.log(Msg.PANEL_LEARNING_VIEW);
+         }
     }
 
     protected void updatePanels() {
@@ -1028,8 +1046,8 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
 
                 //This was causing problem when feature config changed but learning system became invalid!
                 if (WekinatorInstance.getWekinatorInstance().getLearningSystem() == null) {
-                    panelMainTabs.setSelectedComponent(panelTabLearningSystemConfiguration);
-
+                   // panelMainTabs.setSelectedComponent(panelTabLearningSystemConfiguration);
+                   showLearningSystemPanel();
                     if (WekinatorRunner.getLearningSystemFile() != null) {
                         try {
                             LearningSystem ls = LearningSystem.readFromFile(WekinatorRunner.getLearningSystemFile());

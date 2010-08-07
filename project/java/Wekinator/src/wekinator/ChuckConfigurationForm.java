@@ -34,6 +34,12 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
     OscSynthConfigurationFrame2 synthConfigurationFrame = null;
     OscSynthConfiguration synthConfiguration = null;
     String homePath = ".." + File.separator + ".." + File.separator; //TODO: get from settings
+    ChangeListener synthChangeListener = new ChangeListener() {
+
+        public void stateChanged(ChangeEvent e) {
+            updateOscSynthDescription();
+        }
+    };
 
     /** Creates new form ChuckConfigurationForm */
     public ChuckConfigurationForm(ChuckConfiguration c) {
@@ -41,12 +47,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         initialConfiguration = new ChuckConfiguration(configuration);
         initComponents();
         synthConfiguration = new OscSynthConfiguration(c.getOscSynthConfiguration()); //Copy from my config
-        synthConfiguration.addChangeListener(new ChangeListener() {
-
-            public void stateChanged(ChangeEvent e) {
-                updateOscSynthDescription();
-            }
-        });
+        synthConfiguration.addChangeListener(synthChangeListener);
 
 
         //Hid OSC Features for plork
@@ -699,7 +700,10 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         if (file != null) {
             try {
                 //configuration = ChuckConfiguration.loadFromFile(file); //this is where it goes wrong...  TODO
-                configuration = ChuckConfiguration.readFromFile(file);
+                configuration = ChuckConfiguration.readFromFile(file); // This is a problem: New object assigned to reference; main gui maintains old ref value
+                
+                setSynthConfiguration(synthConfiguration);
+
                 updateAllComponents();
             } catch (Exception ex) {
                 //TODO: handle:
@@ -708,6 +712,12 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_buttonLoadConfigurationActionPerformed
 
+    private void setSynthConfiguration(OscSynthConfiguration c) {
+        synthConfiguration = configuration.getOscSynthConfiguration();
+        if (synthConfiguration != null) {
+            synthConfiguration.addChangeListener(synthChangeListener);
+        }
+    }
     private void buttonSaveConfigurationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSaveConfigurationActionPerformed
         setConfigurationFromForm();
         try {

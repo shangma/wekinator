@@ -40,6 +40,7 @@ public abstract class LearningAlgorithm {
     public static String PROP_TRAININGSTATE = "trainingState";
     protected TrainingState trainingState = TrainingState.NOT_TRAINED;
 
+    public abstract String getSettingsDescription();
 
     public enum TrainingState {
         NOT_TRAINED, TRAINING, TRAINED

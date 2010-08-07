@@ -330,6 +330,7 @@ public class LearnerEditPanel extends javax.swing.JPanel {
             }
             if (WekinatorRunner.isLogging()) {
                 Plog.log(Msg.LEARNER_SETTINGS_EDITED, "" + paramNum);
+                Plog.log(Msg.LEARNER_SETTINGS_NEW_VALUES, al.getSettingsDescription());
             }
         //  WekinatorLearningManager.getInstance().startTraining(paramNum);
         } catch (Exception ex) {

@@ -98,4 +98,12 @@ public class AdaboostM1LearningAlgorithm extends ClassifierLearningAlgorithm {
     public String getName() {
         return "Adaboost.M1";
     }
+
+    @Override
+    public String getSettingsDescription() {
+        String s = "{";
+        s += "numRounds=" + ((AdaBoostM1)classifier).getNumIterations() + ","
+                + "tree=" + (((AdaBoostM1)classifier).getClassifier() instanceof J48) + "}";
+        return s;
+    }
 }

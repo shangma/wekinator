@@ -70,13 +70,13 @@ public class Plog {
             if (oldMode == Mode.DATASET_CREATION && newMode != Mode.DATASET_CREATION) {
                 recordStopped();
             }
-            
-           /* if (newMode == Mode.EVALUATING && oldMode != Mode.EVALUATING) {
-                log(Msg.EVAL_START);
-            } else if (oldMode == Mode.EVALUATING && newMode != Mode.EVALUATING) {
-                
 
-            }*/
+        /* if (newMode == Mode.EVALUATING && oldMode != Mode.EVALUATING) {
+        log(Msg.EVAL_START);
+        } else if (oldMode == Mode.EVALUATING && newMode != Mode.EVALUATING) {
+
+
+        }*/
 
         }
     }
@@ -123,10 +123,10 @@ public class Plog {
         LEARNING_SYSTEM_LOADED,
         LEARNING_SYSTEM_SET, //special
         LEARNING_ALGORITHM_SET_WITH_LS,
-        PANEL_COLLECT_VIEWED,
-        PANEL_TRAIN_VIEWED,
-        PANEL_RUN_VIEWED,
-        PANEL_CONFIG_VIEWED,
+        SUBPANEL_COLLECT_VIEWED,
+        SUBPANEL_TRAIN_VIEWED,
+        SUBPANEL_RUN_VIEWED,
+        SUBPANEL_CONFIG_VIEWED,
         SCORE_START_BUTTON,
         SCORE_STOP_BUTTON,
         AUDIO_OFF_BUTTON,
@@ -178,13 +178,23 @@ public class Plog {
         EVAL_END,
         EVAL_CV_RESULTS, //done
         EVAL_TRAIN_RESULTS, //done
-                LEARNER_SETTINGS_EDITED, //done
-                BUTTON_TRAIN_HIT, //done
-                NN_GUI_PREF_SET, //done
-                BUTTON_TRAIN_MODEL_SELECT, //done
-                BUTTON_EVAL_CANCELLED, //done
-                BUTTON_LS_SAVE_HIT //done
-
+        LEARNER_SETTINGS_EDITED, //done
+        BUTTON_TRAIN_HIT, //done
+        NN_GUI_PREF_SET, //done
+        BUTTON_TRAIN_MODEL_SELECT, //done
+        BUTTON_EVAL_CANCELLED, //done
+        BUTTON_LS_SAVE_HIT, //done
+        LEARNER_SETTINGS_NEW_VALUES, //done
+        GRAPHICAL_VIEWER_OPENED, //done
+        GRAPHICAL_VIEWER_EDIT_MADE, //done
+        GRAPHICAL_VIEWER_CLOSED, //done, works on "DONE" button only
+        FEATURE_CHOOSER_OPENED, //done
+        FEATURE_CHOOSER_CLOSED, //done
+        LEARNING_SYSTEM_INFO_FEATURE_MAP, //done
+        PANEL_CHUCK_VIEW,
+        PANEL_FEATURES_VIEW,
+        PANEL_LEARNING_VIEW,
+        PANEL_USE_VIEW
     };
 
     public static void setWekinatorLearningManager(WekinatorLearningManager lm) {
@@ -199,15 +209,17 @@ public class Plog {
 
     private static void wekInstPropChanged(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(WekinatorInstance.PROP_FEATURECONFIGURATION)) {
-            featConfigSet((FeatureConfiguration)evt.getNewValue());
+            featConfigSet((FeatureConfiguration) evt.getNewValue());
         } else if (evt.getPropertyName().equals(WekinatorInstance.PROP_LEARNINGSYSTEM)) {
-            learningSystemSet((LearningSystem)evt.getNewValue());
+            learningSystemSet((LearningSystem) evt.getNewValue());
+            logFeatureMaps();
         }
     }
 
     public static void setup(String parentDir) throws IOException {
         if (!isSetup) {
             WekinatorInstance.getWekinatorInstance().addPropertyChangeListener(new PropertyChangeListener() {
+
                 public void propertyChange(PropertyChangeEvent evt) {
                     wekInstPropChanged(evt);
                 }
@@ -275,11 +287,11 @@ public class Plog {
 
     public static void featConfigSet(FeatureConfiguration f) {
         //log feat config properties as well as save to file
-          fcNum++;
-          String s = "" + fcNum + "," + "NULL=" + (f == null);
-          if (f != null) {
+        fcNum++;
+        String s = "" + fcNum + "," + "NULL=" + (f == null);
+        if (f != null) {
             s += ",MOTION=" + f.isUseMotionSensor() + ", COLOR=" + f.isUseProcessing() + ", HID=" + f.isUseOtherHid();
-          }
+        }
 
         log(Msg.FEAT_CONF_SET, s);
         if (f != null) {
@@ -287,12 +299,10 @@ public class Plog {
         }
     }
 
-
-
-        public static void learningSystemSet(LearningSystem ls) {
+    public static void learningSystemSet(LearningSystem ls) {
         //log feat config properties as well as save to file
-          lsNum++;
-          String s;
+        lsNum++;
+        String s;
         if (ls != null) {
             s = "nParams=" + ls.getNumParams() + ",LEARNERS=(";
             LearningAlgorithm[] algs = ls.getLearners();
@@ -300,15 +310,15 @@ public class Plog {
                 if (algs[i] != null) {
                     s += algs[i].getName() + ",";
                 } else {
-                    s += "NULL,";     
+                    s += "NULL,";
                 }
             }
             s += ")";
         } else {
             s = "LS=NULL";
         }
-          log(Msg.LEARNING_SYSTEM_SET, "" + lsNum + "," + s);
-        
+        log(Msg.LEARNING_SYSTEM_SET, "" + lsNum + "," + s);
+
 
         if (ls != null) {
             saveLearningSystem(lsNum, ls);
@@ -316,14 +326,12 @@ public class Plog {
 
         updateLearningSystemListeners(ls);
     }
-
-        private static ChangeListener learnerChangeListener = new ChangeListener() {
-                public void stateChanged(ChangeEvent e) {
-                    learnerChanged(e);
-                }
-            };
-
-            private static PropertyChangeListener lsChangeListener = new PropertyChangeListener() {
+    private static ChangeListener learnerChangeListener = new ChangeListener() {
+        public void stateChanged(ChangeEvent e) {
+            learnerChanged(e);
+        }
+    };
+    private static PropertyChangeListener lsChangeListener = new PropertyChangeListener() {
 
         public void propertyChange(PropertyChangeEvent evt) {
             lsPropertyChanged(evt);
@@ -333,20 +341,20 @@ public class Plog {
     private static void lsPropertyChanged(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(LearningSystem.PROP_ISEVALUATING)) {
             if (!ls.isEvaluating) {
-             EvalStatus es = ls.getEvalStatus();
-             String s;
-             double[] results;
-             if (es.isCV) {
-                results = ls.getCvResults();
-                //updateResults(results, true);
-               s = "CV_RESULTS=(";
-                
+                EvalStatus es = ls.getEvalStatus();
+                String s;
+                double[] results;
+                if (es.isCV) {
+                    results = ls.getCvResults();
+                    //updateResults(results, true);
+                    s = "CV_RESULTS=(";
+
 
                 } else {
-                 results = ls.getTrainResults();
-                 s = "TRAIN_RESULTS=(";
+                    results = ls.getTrainResults();
+                    s = "TRAIN_RESULTS=(";
                 }
-             for (int i = 0; i < results.length; i++) {
+                for (int i = 0; i < results.length; i++) {
                     s += results[i] + ",";
                 }
                 s += ")";
@@ -356,26 +364,26 @@ public class Plog {
                 } else {
                     log(Msg.EVAL_TRAIN_RESULTS, s);
                 }
-            } 
+            }
         }
     }
 
-        private static void updateLearningSystemListeners(LearningSystem newls) {
-            if (ls != null) {
-                ls.removeLearnerChangeListener(learnerChangeListener);
-                ls.removePropertyChangeListener(lsChangeListener);
-            }
-
-            ls = newls;
-            if (ls != null) {
-                ls.addLearnerChangeListener(learnerChangeListener);
-                ls.addPropertyChangeListener(lsChangeListener);
-            }
+    private static void updateLearningSystemListeners(LearningSystem newls) {
+        if (ls != null) {
+            ls.removeLearnerChangeListener(learnerChangeListener);
+            ls.removePropertyChangeListener(lsChangeListener);
         }
 
-        private static void learnerChanged(ChangeEvent e) {
-            lsNum++;
-          String s;
+        ls = newls;
+        if (ls != null) {
+            ls.addLearnerChangeListener(learnerChangeListener);
+            ls.addPropertyChangeListener(lsChangeListener);
+        }
+    }
+
+    private static void learnerChanged(ChangeEvent e) {
+        lsNum++;
+        String s;
         if (ls != null) {
             s = lsNum + ",nParams=" + ls.getNumParams() + ",";
             LearningAlgorithm[] algs = ls.getLearners();
@@ -389,11 +397,11 @@ public class Plog {
         } else {
             s = "LS=NULL";
         }
-            log(Msg.LEARNER_CHANGED, s);
-            if (ls != null) {
-                saveLearningSystem(lsNum, ls);
-            }
+        log(Msg.LEARNER_CHANGED, s);
+        if (ls != null) {
+            saveLearningSystem(lsNum, ls);
         }
+    }
 
     public static void lsSet(LearningSystem l) {
         //log ls properties, including each algorithm and which feature used; save to file
@@ -402,7 +410,6 @@ public class Plog {
     public static void datasetLoaded(SimpleDataset d) {
         //log dataset properties (# instances), save to file
     }
-
 
     public void learningAlgorithmSet(LearningAlgorithm la, int paramNum) {
     }
@@ -440,7 +447,7 @@ public class Plog {
     }
 
     public static void trainCancelled() {
-    //save ls and dataset so I can compute train error later and eval against other learners
+        //save ls and dataset so I can compute train error later and eval against other learners
         lsNum++;
         log(Msg.TRAIN_CANCELLED, "" + lsNum);
         saveLearningSystem(lsNum, WekinatorInstance.getWekinatorInstance().getLearningSystem());
@@ -454,16 +461,71 @@ public class Plog {
         if (isChuckSynth) {
             s += "chuckSynth=" + c.getChuckSynthFilename() + ",";
         } else {
-            s += "oscSynth,numFeats=" + c.getNumOSCFeaturesExtracted() +",isDiscrete=" + c.getIsOscSynthParamDiscrete()[0];
+            s += "oscSynth,numFeats=" + c.getNumOSCFeaturesExtracted() + ",isDiscrete=" + c.getIsOscSynthParamDiscrete()[0];
         }
         log(Msg.CHUCK_RUNNING, s);
         saveChuckConfiguration(chuckConfNum, c);
+    }
+
+    public static void logFeatureMap(int learner) {
+        if (ls != null && ls.getDataset() != null) {
+                FeatureLearnerConfiguration flc = ls.getDataset().getFeatureLearnerConfiguration();
+                if (flc != null) {
+                   // for (int i = 0; i < flc.numLearners; i++) {
+                        int[] mapping = flc.getFeatureMappingForLearner(learner);
+                        String s = "{";
+                        for (int j = 0; j < mapping.length; j++) {
+                            s += mapping[j] + ",";
+                        }
+                        s += "}";
+                        log(Msg.LEARNING_SYSTEM_INFO_FEATURE_MAP, "param=" + learner + ",mapping=" + s);
+                   // }
+                }
+            } else {
+                log(Msg.LEARNING_SYSTEM_INFO_FEATURE_MAP, "Null configuration");
+            }
+    }
+
+    public static void logFeatureMaps() {
+
+        if (ls != null && ls.getDataset() != null) {
+                FeatureLearnerConfiguration flc = ls.getDataset().getFeatureLearnerConfiguration();
+                if (flc != null) {
+                    for (int i = 0; i < flc.numLearners; i++) {
+                        int[] mapping = flc.getFeatureMappingForLearner(i);
+                        String s = "{";
+                        for (int j = 0; j < mapping.length; j++) {
+                            s += mapping[j] + ",";
+                        }
+                        s += "}";
+                        log(Msg.LEARNING_SYSTEM_INFO_FEATURE_MAP, "param=" + i + ",mapping=" + s);
+                    }
+                }
+            } else {
+                log(Msg.LEARNING_SYSTEM_INFO_FEATURE_MAP, "Null configuration");
+            }
     }
 
     protected static void saveLearningSystem(int num, LearningSystem ls) {
         File f = new File(logDir + sessionID + "ls" + num + "." + LearningSystem.getFileExtension());
         try {
             ls.writeToFile(f);
+           /* if (ls != null && ls.getDataset() != null) {
+                FeatureLearnerConfiguration flc = ls.getDataset().getFeatureLearnerConfiguration();
+                if (flc != null) {
+                    for (int i = 0; i < flc.numLearners; i++) {
+                        int[] mapping = flc.getFeatureMappingForLearner(i);
+                        String s = "{";
+                        for (int j = 0; j < mapping.length; j++) {
+                            s += mapping[j] + ",";
+                        }
+                        s += "}";
+                        log(Msg.LEARNING_SYSTEM_INFO_FEATURE_MAP, "param=" + i + ",mapping=" + s);
+                    }
+                }
+            } else {
+                log(Msg.LEARNING_SYSTEM_INFO_FEATURE_MAP, "Null configuration");
+            } */
         } catch (IOException ex) {
             log(Msg.ERROR, "Couldn't write ls number " + num + " to file: " + ex.getMessage());
         }
@@ -518,18 +580,18 @@ public class Plog {
     }
 
     public static void runStep(double[] features, double[] params) {
-       if (!performanceMode) {
+        if (!performanceMode) {
 
-        //Really want to log this in a file; 1 file per run round.
-        r.print(ts() + "," + runRound + "," + features.length + "," + params.length);
-        for (int j = 0; j < features.length; j++) {
-            r.print("," + features[j]);
+            //Really want to log this in a file; 1 file per run round.
+            r.print(ts() + "," + runRound + "," + features.length + "," + params.length);
+            for (int j = 0; j < features.length; j++) {
+                r.print("," + features[j]);
+            }
+            for (int j = 0; j < params.length; j++) {
+                r.print("," + params[j]);
+            }
+            r.print("\n");
         }
-        for (int j = 0; j < params.length; j++) {
-            r.print("," + params[j]);
-        }
-        r.print("\n");
-       }
     }
 
     public static void evalStart(int paramNum, boolean isCV, int numFolds) {

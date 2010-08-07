@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package drawing;
 
 import java.awt.Color;
@@ -22,10 +21,9 @@ import javax.swing.JFrame;
 public class Drawing2 extends JComponent {
 
     @Override
-    public Dimension getPreferredSize(){
+    public Dimension getPreferredSize() {
         return new Dimension(450, 125);
     }
-
 
     @Override
     public void paintComponent(Graphics g) {
@@ -38,20 +36,20 @@ public class Drawing2 extends JComponent {
     }
 
     public static JFrame openInJFrame(Container content,
-                                    int width,
-                                    int height,
-                                    String title,
-                                    Color bgColor) {
-    JFrame frame = new JFrame(title);
-    frame.setBackground(bgColor);
-    content.setBackground(bgColor);
-    frame.setSize(width, height);
-    frame.setContentPane(content);
-    //frame.setC
-    //frame.addWindowListener(new ExitListener());
-    frame.setVisible(true);
-    return(frame);
-  }
+            int width,
+            int height,
+            String title,
+            Color bgColor) {
+        JFrame frame = new JFrame(title);
+        frame.setBackground(bgColor);
+        content.setBackground(bgColor);
+        frame.setSize(width, height);
+        frame.setContentPane(content);
+        //frame.setC
+        //frame.addWindowListener(new ExitListener());
+        frame.setVisible(true);
+        return (frame);
+    }
 
     public static void main(String[] args) {
         Drawing2.openInJFrame(new Drawing2(), 200, 300, "title", Color.WHITE);

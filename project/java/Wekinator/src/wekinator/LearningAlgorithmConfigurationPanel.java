@@ -32,6 +32,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import wekinator.LearningAlgorithms.HmmLearningAlgorithm;
+import wekinator.Plog.Msg;
 import wekinator.util.Util;
 
 /**
@@ -51,10 +52,8 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
     protected int[] loadedFeatureMapping = null;
     protected File fileToLoadFrom = null;
     protected boolean hasUsableLoadedFile = false;
-
     protected int[] myFeatureMapping = null;
     protected ChangeListener featureNamesListener = new ChangeListener() {
-    
 
         public void stateChanged(ChangeEvent e) {
             featureNamesChanged();
@@ -98,8 +97,9 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
 
     //MappingToCommit should never be null
     protected void commitFeatureMapping(int[] mappingToCommit) {
-        if (mappingToCommit == null)
+        if (mappingToCommit == null) {
             return;
+        }
 
         if (myFeatureMapping == null || myFeatureMapping.length != mappingToCommit.length) {
             myFeatureMapping = new int[mappingToCommit.length];
@@ -115,34 +115,34 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
     public int[] getFeatureMapping() {
         return myFeatureMapping;
 
-       /* ButtonModel bb = buttonGroup1.getSelection();
-        if (radioUseNew.isSelected()) { //false here??
+    /* ButtonModel bb = buttonGroup1.getSelection();
+    if (radioUseNew.isSelected()) { //false here??
 
-            if (featureSelected == null) {
-                System.out.println("Should not be null here - fix this");
-                return null;
-            } else {
-                int numSelected = 0;
-                for (int i = 0; i < featureSelected.length; i++) {
-                    if (featureSelected[i]) {
-                        numSelected++;
-                    }
-                }
-                int mapping[] = new int[numSelected];
-                int n = 0;
-                for (int i = 0; i < featureSelected.length; i++) {
-                    if (featureSelected[i]) {
-                        mapping[n++] = i;
-                    }
-                }
-                return mapping;
-            }
+    if (featureSelected == null) {
+    System.out.println("Should not be null here - fix this");
+    return null;
+    } else {
+    int numSelected = 0;
+    for (int i = 0; i < featureSelected.length; i++) {
+    if (featureSelected[i]) {
+    numSelected++;
+    }
+    }
+    int mapping[] = new int[numSelected];
+    int n = 0;
+    for (int i = 0; i < featureSelected.length; i++) {
+    if (featureSelected[i]) {
+    mapping[n++] = i;
+    }
+    }
+    return mapping;
+    }
 
-        } else if (radioUseFile.isSelected()) {
-            return loadedFeatureMapping;
-        } else {
-            return null; //TODO: Handle more gracefully.
-        } */
+    } else if (radioUseFile.isSelected()) {
+    return loadedFeatureMapping;
+    } else {
+    return null; //TODO: Handle more gracefully.
+    } */
     }
 
     /**
@@ -376,7 +376,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
         LearningAlgorithm l = null;
         try {
             l = LearningAlgorithm.readFromFile(f);
-         //   l = (LearningAlgorithm) SerializedFileUtil.readFromFile(f);
+        //   l = (LearningAlgorithm) SerializedFileUtil.readFromFile(f);
         } catch (OptionalDataException ex) {
             Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
             JOptionPane.showMessageDialog(this, "Invalid learning algorithm file", "Could not load algorithm from file", JOptionPane.ERROR_MESSAGE);
@@ -402,7 +402,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
                 }
             } else if (l instanceof NNLearningAlgorithm) {
                 if (!discrete) {
-                                        fileToLoadFrom = f;
+                    fileToLoadFrom = f;
 
                     setLoadedLearningAlgorithm(l);
                     setHasUsableLoadedFile(true);
@@ -1013,6 +1013,9 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
     private void buttonFeaturesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonFeaturesActionPerformed
         featureMapFrame.setVisible(true);
         featureMapFrame.toFront();
+        if (WekinatorRunner.isLogging()) {
+            Plog.log(Msg.FEATURE_CHOOSER_OPENED);
+        }
     }//GEN-LAST:event_buttonFeaturesActionPerformed
 
     private void buttonLoadedFeaturesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonLoadedFeaturesActionPerformed
@@ -1030,6 +1033,9 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
             featureBoxes[i].setSelected(featureSelected[i]);
         }
         featureMapFrame.setVisible(false);
+        if (WekinatorRunner.isLogging()) {
+            Plog.log(Msg.FEATURE_VIEWER_CLOSED);
+        }
 
 }//GEN-LAST:event_buttonCancelActionPerformed
 
@@ -1063,6 +1069,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
         }
 
         for (int i = 0; i < featureBoxes.length; i++) {
+            //AAA
             featureSelected[i] = featureBoxes[i].isSelected();
         } //this does its job 6/28
         featureMapFrame.setVisible(false);
@@ -1070,6 +1077,10 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
             labelFeatures.setText("Using all features");
         } else {
             labelFeatures.setText("Using " + numSelected + " features");
+        }
+
+        if (WekinatorRunner.isLogging()) {
+            Plog.log(Msg.FEATURE_CHOOSER_CLOSED);
         }
 
 }//GEN-LAST:event_buttonOKActionPerformed
@@ -1359,8 +1370,8 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
         } else if (radioUseNew.isSelected()) {
             int numSelected = 0;
             for (int i = 0; i < featureSelected.length; i++) {
-               if (featureSelected[i]) {
-                  numSelected++;
+                if (featureSelected[i]) {
+                    numSelected++;
                 }
             }
             int mapping[] = new int[numSelected];
@@ -1369,7 +1380,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
                 if (featureSelected[i]) {
                     mapping[n++] = i;
                 }
-             }
+            }
             commitFeatureMapping(mapping);
         }
     }
@@ -1407,7 +1418,11 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
                 featureBoxes = new JCheckBox[featureNames.length];
 
                 for (int i = 0; i < featureNames.length; i++) {
+
                     featureSelected[i] = true;
+                    if (WekinatorRunner.isKbow() && i == 0) {
+                        featureSelected[i] = false;
+                    }
                 }
             }
 

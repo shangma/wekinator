@@ -75,4 +75,9 @@ public class OtherClassifierLearningAlgorithm extends ClassifierLearningAlgorith
         return "other";
     }
 
+    @Override
+    public String getSettingsDescription() {
+        return "{}";
+    }
+
 }

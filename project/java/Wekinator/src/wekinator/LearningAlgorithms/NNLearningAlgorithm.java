@@ -152,4 +152,9 @@ public class NNLearningAlgorithm extends ClassifierLearningAlgorithm {
         return a;
     }
 
+    @Override
+    public String getSettingsDescription() {
+        return "{}";
+    }
+
 }

@@ -533,6 +533,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
                     System.out.println("Error with setting mapping for learner " + i);
                 }
             }
+         //   Plog.logFeatureMap(i);
         }
     }
 

@@ -128,4 +128,25 @@ public class SMOLearningAlgorithm extends ClassifierLearningAlgorithm {
     public static String getFileIdentifier() {
         return "smo";
     }
+
+    @Override
+    public String getSettingsDescription() {
+        String s = "{";
+        Kernel k = ((SMO)classifier).getKernel();
+        if (k instanceof RBFKernel) {
+            s += "RBF,gamma=" + ((RBFKernel)k).getGamma() + ",";
+        } else if (k instanceof PolyKernel) {
+            double e = ((PolyKernel)k).getExponent();
+            if (e == 1.0) {
+                s += "Linear,";
+            } else {
+                s += "Poly,exp=" + e + "," + "lowerorder=";
+                s += ((PolyKernel)k).getUseLowerOrder() + ",";
+            }
+        } else {
+            s += "Other";
+        }
+        s += "C=" + ((SMO)classifier).getC() + "}";
+        return s;
+    }
 }

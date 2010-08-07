@@ -36,6 +36,7 @@ public class WekinatorRunner {
     protected static OptionSpec<Void> isp;
     protected static boolean isLogging = true; //Can change default here
     protected static boolean isPlork = false;
+    protected static boolean isKbow = true;
     private static final WekinatorRunner ref = new WekinatorRunner();
 
     public static boolean isLogging() {
@@ -44,6 +45,10 @@ public class WekinatorRunner {
 
     public static boolean isPlork() {
         return isPlork;
+    }
+
+    public static boolean isKbow() {
+        return isKbow;
     }
 
     public static boolean isMinimizeOnRun() {

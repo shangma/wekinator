@@ -87,4 +87,10 @@ public class IbkLearningAlgorithm extends ClassifierLearningAlgorithm {
         return a;
     }
 
+    @Override
+    public String getSettingsDescription() {
+        String s = "{" + ((IBk)classifier).getKNN() + "}";
+        return s;
+    }
+
 }

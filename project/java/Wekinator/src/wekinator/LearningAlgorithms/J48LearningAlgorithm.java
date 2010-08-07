@@ -87,4 +87,9 @@ public class J48LearningAlgorithm extends ClassifierLearningAlgorithm {
         a.setTrainingState((TrainingState) i.readObject());
         return a;
     }
+
+    @Override
+    public String getSettingsDescription() {
+        return "{}";
+    }
 }

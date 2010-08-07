@@ -114,7 +114,11 @@ public class SimpleDataset {
     }
 
     public void setMappingForLearner(int learner, int[] mapping) throws Exception {
+        
         featureLearnerConfiguration.setFeatureMappingForLearner(learner, mapping);
+        if (WekinatorRunner.isLogging) {
+            Plog.logFeatureMap(learner);
+        }
         updateFilters(); //TODO: set to only update this learner's filter
     }
 

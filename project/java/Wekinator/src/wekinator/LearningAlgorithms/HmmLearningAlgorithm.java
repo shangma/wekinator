@@ -336,4 +336,9 @@ public class HmmLearningAlgorithm extends LearningAlgorithm {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public String getSettingsDescription() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }

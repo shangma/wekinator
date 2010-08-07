@@ -6,7 +6,10 @@
 package drawing;
 import drawing.TrackSet.ClickState;
 import processing.core.*;
+import wekinator.Plog;
+import wekinator.Plog.Msg;
 import wekinator.SimpleDataset;
+import wekinator.WekinatorRunner;
 
 /**
  *
@@ -44,6 +47,9 @@ public class GraphDataView {
             int clicked = cs.processMouseClick(mouseX-csRegion.x1, mouseY-csRegion.y1, mouseButton);
             if (clicked != -1 && ts.clickState != ClickState.NONE) {
                changeLabels(ts.selectedTrack, ts.getSelectedMin(), ts.getSelectedMax(), clicked);
+                       if (WekinatorRunner.isLogging()) {
+                        Plog.log(Msg.GRAPHICAL_VIEWER_EDIT_MADE);
+                }
             }
         }
     }

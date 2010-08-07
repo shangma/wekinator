@@ -1,6 +1,9 @@
 package drawing;
 
+import wekinator.Plog;
+import wekinator.Plog.Msg;
 import wekinator.SimpleDataset;
+import wekinator.WekinatorRunner;
 
 /*
  * To change this template, choose Tools | Templates
@@ -12,25 +15,24 @@ import wekinator.SimpleDataset;
  *
  * Created on Feb 27, 2010, 12:50:59 PM
  */
-
 /**
  *
  * @author rebecca
  */
 public class GraphDataViewFrame extends javax.swing.JFrame {
-    GraphDataViewApplet d = new GraphDataViewApplet();
-   SimpleDataset myDataset = null;
 
+    GraphDataViewApplet d = new GraphDataViewApplet();
+    SimpleDataset myDataset = null;
 
     /** Creates new form GraphDataViewFrame */
     public GraphDataViewFrame(SimpleDataset dataset) {
         initComponents();
-      //  add(d);
-       // jPanel1.add(d);
-      //  myDataset = dataset;
+        //  add(d);
+        // jPanel1.add(d);
+        //  myDataset = dataset;
         d.setDataset(dataset);
         jPanel1.add(d);
-       // jPanel1.setPreferredSize(new Dimension(600,400));
+        // jPanel1.setPreferredSize(new Dimension(600,400));
         d.init();
     }
 
@@ -94,39 +96,43 @@ public class GraphDataViewFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        if (WekinatorRunner.isLogging()) {
+            Plog.log(Msg.GRAPHICAL_VIEWER_CLOSED);
+        }
         this.dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
-    * @param args the command line arguments
-    */
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
-    boolean isDiscrete[] = {false, false, false, false};
-        int numVals[] = {3, 2, 3, 4};
-        String featureNames[] = {"F1", "f2", "F3", "f4", "f5", "f6"};
-        String paramNames[] = {"P1", "p2", "p3", "p4"};
-        SimpleDataset s = new SimpleDataset(6, 4, isDiscrete, numVals, featureNames, paramNames);
-        for (int i = 0; i < 100; i++) {
-            double[] featureVals = new double[s.getNumFeatures()];
-            for (int j = 0; j < featureVals.length; j++) {
-                featureVals[j] = Math.random() * 10;
-            }
-            double[] paramVals = new double[s.getNumParameters()];
-            for (int j = 0; j < paramVals.length; j++) {
-                if (isDiscrete[j]) {
-                    if (i % 5 == 0) {
-                       paramVals[j] = Double.NaN;
-                    } else {
-                        paramVals[j] = (int)(Math.random() * (numVals[j]));
+                boolean isDiscrete[] = {false, false, false, false};
+                int numVals[] = {3, 2, 3, 4};
+                String featureNames[] = {"F1", "f2", "F3", "f4", "f5", "f6"};
+                String paramNames[] = {"P1", "p2", "p3", "p4"};
+                SimpleDataset s = new SimpleDataset(6, 4, isDiscrete, numVals, featureNames, paramNames);
+                for (int i = 0; i < 100; i++) {
+                    double[] featureVals = new double[s.getNumFeatures()];
+                    for (int j = 0; j < featureVals.length; j++) {
+                        featureVals[j] = Math.random() * 10;
                     }
-                } else {
-                    paramVals[j] = Math.random()* 10;
+                    double[] paramVals = new double[s.getNumParameters()];
+                    for (int j = 0; j < paramVals.length; j++) {
+                        if (isDiscrete[j]) {
+                            if (i % 5 == 0) {
+                                paramVals[j] = Double.NaN;
+                            } else {
+                                paramVals[j] = (int) (Math.random() * (numVals[j]));
+                            }
+                        } else {
+                            paramVals[j] = Math.random() * 10;
+                        }
+                    }
+                    s.addInstance(featureVals, paramVals);
                 }
-            }
-            s.addInstance(featureVals, paramVals);
-        }
 
 
 
@@ -139,5 +145,4 @@ public class GraphDataViewFrame extends javax.swing.JFrame {
     private javax.swing.JButton jButton1;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
-
 }

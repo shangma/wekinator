@@ -51,12 +51,16 @@ public abstract class ClassifierLearningAlgorithm extends LearningAlgorithm {
         TrainingState backupState = this.trainingState;
         setTrainingState(TrainingState.TRAINING);
         Classifier backup = Classifier.makeCopy(this.classifier);
+        //If classifier null, should we reset?
+        
         try {
         //    Thread.sleep(3000);
+            //ERROR: Null pointer exception here 8/6
             classifier.buildClassifier(instances);
 
             setTrainingState(TrainingState.TRAINED);
         } catch (Exception ex) {
+            System.out.println("In exception caught... ");
             setClassifier(backup);
             setTrainingState(backupState);
            // Logger.getLogger(ClassifierLearningAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
