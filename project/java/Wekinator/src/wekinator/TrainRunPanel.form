@@ -4,7 +4,9 @@
   <NonVisualComponents>
     <Component class="javax.swing.JLabel" name="jLabel3">
       <Properties>
-        <Property name="text" type="java.lang.String" value="jLabel3"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <PlainString value="jLabel3"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.ButtonGroup" name="buttonGroup1">
@@ -118,19 +120,24 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                      <Component id="toggleConfigure" alignment="0" max="32767" attributes="1"/>
-                      <Component id="toggleRun" alignment="0" max="32767" attributes="1"/>
-                      <Component id="toggleTrain" alignment="0" max="32767" attributes="1"/>
-                      <Component id="toggleCollect" alignment="0" pref="226" max="32767" attributes="1"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                          <Component id="toggleConfigure" alignment="0" max="32767" attributes="1"/>
+                          <Component id="toggleRun" alignment="0" max="32767" attributes="1"/>
+                          <Component id="toggleTrain" alignment="0" max="32767" attributes="1"/>
+                          <Component id="toggleCollect" alignment="0" min="-2" pref="226" max="-2" attributes="1"/>
+                      </Group>
                   </Group>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
+                  <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
                   <Component id="toggleCollect" min="-2" pref="37" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="toggleTrain" min="-2" pref="37" max="-2" attributes="0"/>
@@ -138,7 +145,7 @@
                   <Component id="toggleRun" min="-2" pref="37" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="toggleConfigure" min="-2" pref="37" max="-2" attributes="0"/>
-                  <EmptySpace pref="172" max="32767" attributes="0"/>
+                  <EmptySpace pref="150" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -146,7 +153,9 @@
       <SubComponents>
         <Component class="javax.swing.JToggleButton" name="toggleCollect">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Collect data..."/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <PlainString value="Collect data..."/>
+            </Property>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="toggleCollectActionPerformed"/>
@@ -154,7 +163,9 @@
         </Component>
         <Component class="javax.swing.JToggleButton" name="toggleTrain">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Train..."/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <PlainString value="Train..."/>
+            </Property>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="toggleTrainActionPerformed"/>
@@ -162,7 +173,9 @@
         </Component>
         <Component class="javax.swing.JToggleButton" name="toggleRun">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Run..."/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <PlainString value="Run..."/>
+            </Property>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="toggleRunActionPerformed"/>
@@ -170,17 +183,28 @@
         </Component>
         <Component class="javax.swing.JToggleButton" name="toggleConfigure">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Configure &amp; evaluate..."/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <PlainString value="Configure &amp; evaluate..."/>
+            </Property>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="toggleConfigureActionPerformed"/>
           </Events>
         </Component>
+        <Component class="javax.swing.JLabel" name="jLabel1">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <PlainString value="Choose a view:"/>
+            </Property>
+          </Properties>
+        </Component>
       </SubComponents>
     </Container>
     <Component class="javax.swing.JButton" name="buttonShh">
       <Properties>
-        <Property name="text" type="java.lang.String" value="audio off"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <PlainString value="audio off"/>
+        </Property>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonShhActionPerformed"/>
