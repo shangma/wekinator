@@ -655,6 +655,7 @@ public class SimpleDataset {
             throw new IllegalArgumentException(err);
         }
         if (paramVals == null || paramVals.length != numParams || paramMask == null || paramMask.length != numParams) {
+            //TODO: Error happens here when switch to discrete params:
             throw new IllegalArgumentException("Wrong parameter values or mask");
         }
 
@@ -764,6 +765,8 @@ public class SimpleDataset {
         }
     }
 
+    //Deprecated: Don't trust this function!
+    //TODO: Remove!
     public void setIsFeatureActiveForParameter(boolean isActive, int featNum, int paramNum) {
         /*      if (featNum < 0 || featNum >= numFeatures || paramNum < 0 || paramNum >= numParams) {
         throw new IllegalArgumentException("Invalid paramNum or featNum");
@@ -785,6 +788,7 @@ public class SimpleDataset {
          * */
     }
 
+    //Deprecated! TODO: remove
     public boolean isFeatureActiveForParameter(int featNum, int paramNum) {
         /* if (featNum < 0 || featNum >= numFeatures || paramNum < 0 || paramNum >= numParams) {
         System.out.println("Error: invalid featNum / paramNum");
@@ -910,8 +914,9 @@ public class SimpleDataset {
         //TODO: export arff files, 1 per parameter, as filePrefix_p1.arff ... filePrefix_pN.arff
     }
 
-    public void exportAsArffFile(String filename) {
+    public void exportAsArffFile(String filename) throws IOException {
         //TODO: export arff file - 1 file, each param as an attribute, no class set
+        writeInstancesToArff(new File(filename));
     }
 
     public void importFromArffFile(String filename) {
