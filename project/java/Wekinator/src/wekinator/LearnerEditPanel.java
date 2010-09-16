@@ -198,40 +198,40 @@ public class LearnerEditPanel extends javax.swing.JPanel {
         jButton1 = new javax.swing.JButton();
         checkNNGui = new javax.swing.JCheckBox();
         panelLearnerSettings = new javax.swing.JPanel();
+        sMOSettingsPanel1 = new wekinator.LearningAlgorithms.SMOSettingsPanel();
         labelTrainingStatus = new javax.swing.JLabel();
         buttonSaveLearner1 = new javax.swing.JButton();
-        sMOSettingsPanel1 = new wekinator.LearningAlgorithms.SMOSettingsPanel();
         accuracyPanel = new wekinator.AllAccuracy();
 
         jPanel9.setBorder(javax.swing.BorderFactory.createTitledBorder("Edit model settings"));
 
-        labelLearnerDescription.setText("Using kNN, 3 features"); // NOI18N
+        labelLearnerDescription.setText("Using kNN, 3 features");
 
-        jButton15.setText("Change model type or load..."); // NOI18N
+        jButton15.setText("Change model type or load...");
         jButton15.setEnabled(false);
 
-        buttonRetrain.setText("Apply these settings"); // NOI18N
+        buttonRetrain.setText("Apply these settings");
         buttonRetrain.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonRetrainActionPerformed(evt);
             }
         });
 
-        buttonSaveLearner.setText("Save to file..."); // NOI18N
+        buttonSaveLearner.setText("Save learner...");
         buttonSaveLearner.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonSaveLearnerActionPerformed(evt);
             }
         });
 
-        jButton1.setText("Undo changes"); // NOI18N
+        jButton1.setText("Undo changes");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
 
-        checkNNGui.setText("View NN GUIs"); // NOI18N
+        checkNNGui.setText("View NN GUIs");
         checkNNGui.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 checkNNGuiActionPerformed(evt);
@@ -239,10 +239,11 @@ public class LearnerEditPanel extends javax.swing.JPanel {
         });
 
         panelLearnerSettings.setLayout(new javax.swing.BoxLayout(panelLearnerSettings, javax.swing.BoxLayout.LINE_AXIS));
+        panelLearnerSettings.add(sMOSettingsPanel1);
 
-        labelTrainingStatus.setText("jLabel1"); // NOI18N
+        labelTrainingStatus.setText("jLabel1");
 
-        buttonSaveLearner1.setText("W"); // NOI18N
+        buttonSaveLearner1.setText("Export classifier...");
         buttonSaveLearner1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonSaveLearner1ActionPerformed(evt);
@@ -255,27 +256,29 @@ public class LearnerEditPanel extends javax.swing.JPanel {
             jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel9Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(labelLearnerDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 344, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel9Layout.createSequentialGroup()
-                        .add(buttonRetrain)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jButton1))
-                    .add(jPanel9Layout.createSequentialGroup()
-                        .add(checkNNGui)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(labelTrainingStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 188, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(labelLearnerDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 344, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(jPanel9Layout.createSequentialGroup()
+                                .add(buttonRetrain)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jButton1))
+                            .add(jPanel9Layout.createSequentialGroup()
+                                .add(checkNNGui)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(labelTrainingStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 188, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(jPanel9Layout.createSequentialGroup()
+                                .add(6, 6, 6)
+                                .add(panelLearnerSettings, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 326, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .addContainerGap(103, Short.MAX_VALUE))
                     .add(jPanel9Layout.createSequentialGroup()
                         .add(buttonSaveLearner)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(buttonSaveLearner1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(buttonSaveLearner1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 140, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jButton15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 153, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(jPanel9Layout.createSequentialGroup()
-                        .add(sMOSettingsPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(panelLearnerSettings, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(96, Short.MAX_VALUE))
+                        .add(jButton15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 158, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())))
         );
         jPanel9Layout.setVerticalGroup(
             jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -287,9 +290,7 @@ public class LearnerEditPanel extends javax.swing.JPanel {
                     .add(buttonSaveLearner1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jButton15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(panelLearnerSettings, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 124, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(sMOSettingsPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(panelLearnerSettings, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 124, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jButton1)
