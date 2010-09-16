@@ -420,7 +420,11 @@ public class LearningSystem {
     } */
     void addToTraining(double[] features, double[] params) {
         //Add to the training dataset.
-        dataset.addInstance(features, params, paramMask, new Date());
+        try {
+            dataset.addInstance(features, params, paramMask, new Date());
+        } catch (IllegalArgumentException ex) {
+            Logger.getLogger(LearningSystem.class.getName()).log(Level.SEVERE, "Invalid features or parameters");
+        }
     }
 
     double[] classify(double[] features) {
@@ -808,7 +812,7 @@ public class LearningSystem {
         this.numParams = numParams;
         learners = new LearningAlgorithm[numParams];
         //  learnerEnabled = new boolean[numParams];
-        paramUsingDistribution = new boolean[numParams];
+        //paramUsingDistribution = new boolean[numParams]; //Was causing to always be set to false!
         cvResults = new double[numParams];
         trainResults = new double[numParams];
 
