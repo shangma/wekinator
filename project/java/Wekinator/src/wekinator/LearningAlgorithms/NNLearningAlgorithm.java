@@ -36,6 +36,7 @@ public class NNLearningAlgorithm extends ClassifierLearningAlgorithm {
 
     protected void initClassifier() {
         classifier = new MultilayerPerceptron();
+        ((MultilayerPerceptron)classifier).setHiddenLayers("i");
             //TODO: settings
     }
 
