@@ -117,9 +117,11 @@ public class EditPanel extends javax.swing.JPanel {
 
         comboEditSelection = new javax.swing.JComboBox();
         panelDrilldown = new javax.swing.JPanel();
-        panelAllAccuracy = new wekinator.AllAccuracy();
         jPanel1 = new javax.swing.JPanel();
+        panelAllAccuracy = new wekinator.AllAccuracy();
         jLabel1 = new javax.swing.JLabel();
+
+        setMaximumSize(new java.awt.Dimension(446, 422));
 
         comboEditSelection.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "All models", "Model for Parameter 0 - Bow position", "Model for Parameter 1 - Pow tension", "Modle for Parameter 2 - Panning" }));
         comboEditSelection.addActionListener(new java.awt.event.ActionListener() {
@@ -128,16 +130,14 @@ public class EditPanel extends javax.swing.JPanel {
             }
         });
 
+        panelDrilldown.setMaximumSize(new java.awt.Dimension(800, 800));
         panelDrilldown.setLayout(new java.awt.CardLayout());
-
-        panelAllAccuracy.setMinimumSize(new java.awt.Dimension(200, 200));
-        panelDrilldown.add(panelAllAccuracy, "card3");
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 401, Short.MAX_VALUE)
+            .add(0, 440, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -145,6 +145,9 @@ public class EditPanel extends javax.swing.JPanel {
         );
 
         panelDrilldown.add(jPanel1, "card3");
+
+        panelAllAccuracy.setMinimumSize(new java.awt.Dimension(200, 200));
+        panelDrilldown.add(panelAllAccuracy, "card3");
 
         jLabel1.setText("Choose a model to edit/evaluate:");
 
@@ -154,13 +157,13 @@ public class EditPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(panelDrilldown, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(comboEditSelection, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 219, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(131, Short.MAX_VALUE))
+                        .add(comboEditSelection, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 219, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(panelDrilldown, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -169,7 +172,8 @@ public class EditPanel extends javax.swing.JPanel {
                     .add(jLabel1)
                     .add(comboEditSelection, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(panelDrilldown, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(panelDrilldown, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 

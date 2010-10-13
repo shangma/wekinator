@@ -20,6 +20,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import wekinator.FeatureConfiguration.Feature;
+import wekinator.MetaFeature;
 
 /**
  *

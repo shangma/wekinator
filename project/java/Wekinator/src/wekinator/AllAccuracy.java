@@ -294,6 +294,7 @@ public class AllAccuracy extends javax.swing.JPanel {
         buttonComputeCV = new javax.swing.JButton();
 
         setBorder(javax.swing.BorderFactory.createTitledBorder("Evaluate Accuracy"));
+        setMaximumSize(new java.awt.Dimension(1000, 1000));
 
         comboNumFolds.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "2 folds", "5 folds", "10 folds" }));
 
@@ -342,7 +343,7 @@ public class AllAccuracy extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(buttonComputeTrain, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 358, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(scrollOutputPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
+                    .add(scrollOutputPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)
                     .add(labelFoldStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 273, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                         .add(org.jdesktop.layout.GroupLayout.LEADING, progressBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
