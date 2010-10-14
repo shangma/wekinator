@@ -337,16 +337,29 @@ public class ChuckRunner {
 
         String cmd2;
         if (isWindows) {
-            cmd2 = "tskill /A chuck";
+            cmd2 = "taskkill /f /im chuck";
         } else
         {
             cmd2 =  "killall chuck";
         }
-        Process child2 = Runtime.getRuntime().exec(cmd2);
+        try {
+            Process child2 = Runtime.getRuntime().exec(cmd2);
 
-        logger.log(Level.INFO, "Attempted to kill chuck");
-        setRunnerState(ChuckRunnerState.NOT_RUNNING);
-        ChuckSystem.getChuckSystem().waitForNewSettings();
+            logger.log(Level.INFO, "Attempted to kill chuck");
+            setRunnerState(ChuckRunnerState.NOT_RUNNING);
+            ChuckSystem.getChuckSystem().waitForNewSettings();
+        } catch (IOException ex) {
+
+            cmd2 = "tskill /A chuck";
+            //cmd2 = "killall chuck";
+            Process child2 = Runtime.getRuntime().exec(cmd2);
+
+            logger.log(Level.INFO, "Attempted to kill chuck again");
+            setRunnerState(ChuckRunnerState.NOT_RUNNING);
+            ChuckSystem.getChuckSystem().waitForNewSettings();
+
+        }
+
     }
 
     public void restart() throws IOException {
