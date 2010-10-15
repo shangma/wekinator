@@ -42,7 +42,9 @@ public class ChuckRunner {
 
     private static String removeC(String s) {
         //Removes "C:" from beginning of string if on windows
-        if (isWindows && s.startsWith("C:")) {
+       // s.charAt(1) == ":"
+       //if (isWindows && (s.startsWith("C:") || s.startsWith("D:"))) {
+        if (isWindows && s.length() > 0 && s.charAt(1)==':')     {
             return s.substring(2);
         } else {
             return s;
@@ -379,30 +381,30 @@ public class ChuckRunner {
 
         w.write("//Automatically generated machine.add file\n");
         w.write("//Created " + (new Date()).toString() + "\n\n");
-        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "TrackpadFeatureExtractor.ck" + "\");\n");
-        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "MotionFeatureExtractor.ck" + "\");\n");
-        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "AudioFeatureExtractor.ck" + "\");\n");
-        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "HidDiscoverer.ck" + "\");\n");
-        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "CustomOSCFeatureExtractor.ck" + "\");\n");
+        w.write("Machine.add(\"" + winescape(configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "TrackpadFeatureExtractor.ck") + "\");\n");
+        w.write("Machine.add(\"" + winescape(configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "MotionFeatureExtractor.ck") + "\");\n");
+        w.write("Machine.add(\"" + winescape(configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "AudioFeatureExtractor.ck") + "\");\n");
+        w.write("Machine.add(\"" + winescape(configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "HidDiscoverer.ck") + "\");\n");
+        w.write("Machine.add(\"" + winescape(configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "CustomOSCFeatureExtractor.ck") + "\");\n");
 
-        w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "ProcessingFeatureExtractor.ck" + "\");\n");
+        w.write("Machine.add(\"" +winescape( configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "ProcessingFeatureExtractor.ck") + "\");\n");
         if (configuration.isCustomChuckFeatureExtractorEnabled()) {
-            w.write("Machine.add(\"" + configuration.getCustomChuckFeatureExtractorFilename() + "\");\n");
+            w.write("Machine.add(\"" + winescape(configuration.getCustomChuckFeatureExtractorFilename()) + "\");\n");
 
         } else {
-            w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "feature_extractors" + File.separator + "keyboard_rowcol.ck" + "\");\n");
+            w.write("Machine.add(\"" +winescape( configuration.getChuckDir() + File.separator + "feature_extractors" + File.separator + "keyboard_rowcol.ck") + "\");\n");
         }
 
         if (configuration.isUseOscSynth()) {
-            w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "OSC_synth_proxy.ck" + "\");\n");
+            w.write("Machine.add(\"" + winescape(configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "OSC_synth_proxy.ck") + "\");\n");
         } else {
-            w.write("Machine.add(\"" + configuration.getChuckSynthFilename() + "\");\n");
+            w.write("Machine.add(\"" + winescape(configuration.getChuckSynthFilename()) + "\");\n");
         }
 
         if (configuration.isIsPlayalongLearningEnabled()) {
-            w.write("Machine.add(\"" + configuration.getPlayalongLearningFile() + "\");\n");
+            w.write("Machine.add(\"" + winescape(configuration.getPlayalongLearningFile()) + "\");\n");
         } else {
-            w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "score_players" + File.separator + "no_score.ck" + "\");\n");
+            w.write("Machine.add(\"" + winescape(configuration.getChuckDir() + File.separator + "score_players" + File.separator + "no_score.ck") + "\");\n");
         }
 
         if (configuration.isUseOscSynth()) {
@@ -416,12 +418,35 @@ public class ChuckRunner {
             args += ":synthUsingDistribution:" + (configuration.getOscUseDistribution()[0] ? "1" : "0");
             args += ":synthNumClasses:" + configuration.getNumOscSynthMaxParamVals();
             args += ":synthPort:" + configuration.getOscSynthReceivePort(); */
-            w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "main_chuck.ck" + args + "\");\n");
+            w.write("Machine.add(\"" + winescape(configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "main_chuck.ck") + args + "\");\n");
         } else {
-            w.write("Machine.add(\"" + configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "main_chuck.ck" + "\");\n");
+            w.write("Machine.add(\"" + winescape(configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "main_chuck.ck") + "\");\n");
         }
 
         w.close();
+    }
+
+    private static String winescape(String s) {
+        //Escape backslash in windows
+        if (isWindows) {
+            String[] parts = s.split("\\\\");
+            String r;
+            if (parts.length > 0 && parts[0].length() > 1 && parts[0].charAt(1) == ':') {
+              //  r = parts[0].charAt(0) + "\\" + ":";
+                r = "";
+            } else {
+                r = parts[0];
+            }
+            for (int i = 1; i < parts.length; i++) {
+                r += "/" + parts[i];
+            }
+            System.out.println("r is" + r);
+            return r;
+        } else {
+            return s;
+
+        }
+
     }
 }
 
