@@ -365,7 +365,7 @@ class ScoreTableModel extends AbstractTableModel {
             ds = ls.getDataset();
         }
 
-        columnNames = new String[numParams + 1];
+        columnNames = new String[numParams + 2];
 
         for (int i = 0; i < numParams; i++) {
             if (ds != null) {
@@ -375,6 +375,7 @@ class ScoreTableModel extends AbstractTableModel {
             }
         }
         columnNames[numParams] = "Seconds";
+        columnNames[numParams + 1] = "Smooth";
 
 
         isDiscrete = new boolean[numParams];
@@ -420,8 +421,11 @@ class ScoreTableModel extends AbstractTableModel {
         }
         if (col < numParams) {
             return score.getParamsAt(row)[col];
-        } else {
+        } else if (col == numParams) {
             return score.getSecondsAt(row);
+        } else {
+            return score.getSmoothAt(row);
+
         }
     }
 
@@ -459,7 +463,7 @@ class ScoreTableModel extends AbstractTableModel {
                     return;
                 }
             }
-        } else {
+        } else if (col == numParams) {
             if (val < 0) {
                 return;
             }
@@ -468,8 +472,12 @@ class ScoreTableModel extends AbstractTableModel {
 
         if (col < numParams) {
             score.setParamsAt(row, col, val);
-        } else {
+        } else if (col == numParams) {
             score.setSecondsAt(row, val);
+        } else {
+            Boolean v = (Boolean) value;
+            score.setSmoothAt(row, v);
+
         }
         fireTableCellUpdated(row, col);
     }
@@ -511,6 +519,7 @@ class ScoreTableModel extends AbstractTableModel {
     void swap(int row1, int row2) {
         double tmp1[] = score.getParamsAt(row1);
         double s = score.getSecondsAt(row1);
+        boolean sm = score.getSmoothAt(row1);
         //  double d[] = new double[numParams];
         //  for (int i = 0; i < numParams; i++) {
         //      d[i] = tmp1[i];
@@ -518,6 +527,7 @@ class ScoreTableModel extends AbstractTableModel {
 
         double tmp2[] = score.getParamsAt(row2);
         double s2 = score.getSecondsAt(row2);
+        boolean sm2 = score.getSmoothAt(row2);
         //     double d2[] = new double[numParams];
         //     for (int i = 0; i < numParams; i++) {
         //         d2[i] = tmp2[i];
@@ -525,10 +535,12 @@ class ScoreTableModel extends AbstractTableModel {
 
         score.setParamsAt(row1, tmp2);
         score.setSecondsAt(row1, s2);
+        score.setSmoothAt(row1, sm2);
         fireTableRowsUpdated(row1, row1);
 
         score.setParamsAt(row2, tmp1);
         score.setSecondsAt(row2, s);
+        score.setSmoothAt(row2, sm);
 
         fireTableRowsUpdated(row2, row2);
 

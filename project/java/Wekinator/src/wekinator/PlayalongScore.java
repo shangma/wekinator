@@ -7,8 +7,14 @@ package wekinator;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.*;
@@ -20,9 +26,12 @@ import javax.swing.event.*;
 public class PlayalongScore {
     protected List<double[]> paramLists = null;
     protected List<Double> secondLists = null;
+    protected List<Boolean> smoothLists = null;
+    protected int smoothMs = 25; //Smooth rate
     //No masks for now
     protected static boolean isPlaying = false;
     protected transient static Thread myPlayerThread = null;
+    protected ScorePlayer myScorePlayer = new ScorePlayer();
     protected static final Object lock1 = new Object();
     int numParams = 0;
     protected int playingRow = 0;
@@ -105,20 +114,23 @@ public class PlayalongScore {
     PlayalongScore(int numParams) {
         paramLists = new LinkedList<double[]>();
         secondLists = new LinkedList<Double>();
+        smoothLists = new LinkedList<Boolean>();
         this.numParams = numParams;
     }
 
     public synchronized void play() {
         if (! isPlaying) {
-            myPlayerThread = new Thread(new ScorePlayer());
-            myPlayerThread.start();
+           // myPlayerThread = new Thread(new ScorePlayer());
+           // myPlayerThread.start();
+            myScorePlayer.play();
         }
         setIsPlaying(true);
     }
 
     public synchronized void stop() {
         if (isPlaying) {
-            myPlayerThread.interrupt();
+          //  myPlayerThread.interrupt();
+            myScorePlayer.stop();
             setIsPlaying(false);
         }
     }
@@ -136,6 +148,7 @@ public class PlayalongScore {
                 }
                 paramLists.add(newp);
                 secondLists.add(time);
+                smoothLists.add(false); //TODO: turn off by default
                 fireStateChanged();
             }
         }
@@ -143,6 +156,10 @@ public class PlayalongScore {
 
     public double[] getParamsAt(int index) {
         return paramLists.get(index);
+    }
+
+        public boolean getSmoothAt(int index) {
+        return smoothLists.get(index);
     }
 
     public int getNumParams() {
@@ -171,10 +188,18 @@ public class PlayalongScore {
         }
     }
 
+        public void setSmoothAt(int index, boolean smooth) {
+       if (index >= 0 && index < paramLists.size()) {
+            smoothLists.set(index, smooth);
+            fireStateChanged();
+        }
+    }
+
     public void removeAt(int index) {
        synchronized(lock1) {
             paramLists.remove(index);
             secondLists.remove(index);
+            smoothLists.remove(index);
             fireStateChanged();
         }
     }
@@ -188,11 +213,36 @@ public class PlayalongScore {
         //TODO: re-add? probably not
     }
 
-    private class ScorePlayer implements Runnable {
-        public void run() {
+    private class ScorePlayer {
+        protected int nextRow = 0;
+        protected double[] currentParams = new double[0];
+        protected boolean smooth = false;
+        protected double waitSec = 0;
+        protected double[] increments = new double[0];
+        protected double[] currentSmoothingValues = new double[0];
+        protected int numIncrements = 0;
+        protected int thisIncrement = 0;
+        
+        private final ScheduledExecutorService scheduler =
+                Executors.newScheduledThreadPool(2);
+
+        ScheduledFuture<?> advancerHandler = null;
+        ScheduledFuture<?> smootherHandler = null;
+
+        final Runnable parameterAdvancer = new Runnable() {
+                public void run() { advanceParameters(); }
+        };
+
+        final Runnable parameterSmoother = new Runnable() {
+                public void run() { smoothParameters(); }
+        };
+
+
+        /*public void run() {
             OscHandler.getOscHandler().startSound();
             try {
                 int i = 0;
+                boolean smooth = false;
                 while (true) {
                     long mySleep = 1000;
                     synchronized(lock1) { //Need to assume that params size is constant in here
@@ -206,8 +256,10 @@ public class PlayalongScore {
                             for (int j =0 ; j < numParams; j++) {
                                 System.out.print(next[j] + " ");
                             }
-                            System.out.println("");
-                           
+                            System.out.println(""); //newline
+
+                            smooth = smoothLists.get(i);
+                            if (!smooth) {
                                 //float f[] = new float[numParams];
                                 WekinatorLearningManager.getInstance().setParams(next);
                                 //OscHandler.getOscHandler().sendParamsToSynth(next); //TODO: hack: get out of here!
@@ -215,10 +267,13 @@ public class PlayalongScore {
 
                             mySleep = (long) (secondLists.get(i) * 1000);
                             i++;
+                            }
+                           
+                                
                         } else {
                             System.out.println("no sleep");
-                           mySleep  = 0;
-                           i = 0;
+                            mySleep  = 0;
+                            i = 0;
                         }
                     }
                     System.out.println("sleeping " + mySleep);
@@ -229,7 +284,111 @@ public class PlayalongScore {
                 System.out.println("I was interrupted");
             }
             System.out.println("I finished.");
+        } */
+
+        public void play() {
+            advanceParameters();
         }
+
+        public void stop() {
+            if (advancerHandler != null) {
+                advancerHandler.cancel(true);
+                System.out.println("Advancer cancelled");
+            }
+            if (smootherHandler != null) {
+                smootherHandler.cancel(true);
+                System.out.println("Smoother cancelled");
+            }
+        }
+
+        //Bug: can sometimes overshoot before smoothing is cancelled: Could add smooth counter
+        //Also: Wekinator GUI doesn't update with smoothing.
+        protected void advanceParameters() {
+            //TODO: Fix so that discrete parameters aren't smoothed!
+            synchronized(lock1) {
+                if (paramLists.size() == 0) {
+                    return;
+                }
+                if (nextRow >= paramLists.size()) {
+                    nextRow = 0;
+                }
+                System.out.println("Advancing parameters: " + nextRow);
+
+                //currentSmoothingValues = currentParams; //start w/ last scored param values
+                if (currentSmoothingValues.length != currentParams.length) {
+                    currentSmoothingValues = new double[currentParams.length]; //hacky
+                }
+                System.arraycopy(currentParams, 0, currentSmoothingValues, 0, currentParams.length);
+                currentParams = paramLists.get(nextRow);
+                smooth = smoothLists.get(nextRow);
+                waitSec = secondLists.get(nextRow);
+                setPlayingRow(nextRow);
+               
+                nextRow++;
+                advancerHandler =
+                    scheduler.schedule(parameterAdvancer, (long)waitSec, TimeUnit.SECONDS);
+
+                //If lastParams isn't populated with meaningful values, don't smooth to them. Simply set them.
+
+                if (smooth && currentSmoothingValues == null || currentSmoothingValues.length != currentParams.length) {
+                  //  System.out.println("Skipping smoothing this time");
+                    smooth = false;
+                    increments = new double[currentParams.length]; //Probably shouldn't go here
+                    //copy lastparams to array
+                }
+
+
+                if (!smooth) {
+                    sendUpdateMessage(currentParams);
+                    if (smootherHandler != null) {
+                        smootherHandler.cancel(true);
+                    }
+                } else {
+                    if (smootherHandler != null ) {
+                        smootherHandler.cancel(true);
+                    }
+                    /* if (currentSmoothingValues == null || currentSmoothingValues.length != lastParams.length) {
+                        currentSmoothingValues= new double[lastParams.length];
+
+                    }
+                    System.arraycopy(lastParams, nextRow, lock1, nextRow, nextRow) */
+                    for (int i= 0; i < currentSmoothingValues.length; i++) {
+                       // System.out.println("CP: " + currentParams.length);
+                       // System.out.println("CS : " + currentSmoothingValues.length);
+                        numIncrements = (int) waitSec * 1000 / smoothMs; //e.g., 10 increments for a 1 sec period, 100ms rate
+                        thisIncrement = 1;
+
+
+                        increments[i] = (currentParams[i] - currentSmoothingValues[i]) / numIncrements;
+                     //   System.out.println("Increment " + i + " is " + increments[i] + " changing from " + currentSmoothingValues[i] + " to " + currentParams[i]);
+                    }
+
+                    sendUpdateMessage(currentSmoothingValues);
+                    smootherHandler = scheduler.scheduleAtFixedRate(parameterSmoother, smoothMs, smoothMs, TimeUnit.MILLISECONDS);
+                }
+            }
+        }
+
+        protected void sendUpdateMessage(double[] vals) {
+            //total hack
+            double[] tmp = new double[vals.length];
+            System.arraycopy(vals, 0, tmp, 0, vals.length);
+            WekinatorLearningManager.getInstance().setParams(tmp);
+                    OscHandler.getOscHandler().packageDistAndSendParamsToSynth(vals);
+        }
+
+        protected void smoothParameters() {
+          //  System.out.println("Smooth");
+            if (thisIncrement < numIncrements) {
+            for (int i= 0; i < currentSmoothingValues.length; i++) {
+                currentSmoothingValues[i] += increments[i];
+            }
+            sendUpdateMessage(currentSmoothingValues);
+            thisIncrement++;
+            }
+        }
+
+        
     }
 
     public static void main(String[] args) {

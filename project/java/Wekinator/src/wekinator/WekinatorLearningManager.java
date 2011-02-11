@@ -113,7 +113,7 @@ public class WekinatorLearningManager {
      * @param p2 new value of p2
      */
     public void setParams(double[] params) {
-        double[] oldparams = this.params;
+        double[] oldparams = this.params; //Issue: When old & new are same reference, this breaks! Everywhere :(
         this.params = params;
         propertyChangeSupport.firePropertyChange(PROP_PARAMS, oldparams, params);
     }
