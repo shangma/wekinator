@@ -171,6 +171,7 @@ public class BuildPanel extends javax.swing.JPanel {
         buttonSynthPlay = new javax.swing.JButton();
         buttonAddClipboard = new javax.swing.JButton();
         buttonAddClipboard1 = new javax.swing.JButton();
+        buttonRandom = new javax.swing.JButton();
         jPanel6 = new javax.swing.JPanel();
         buttonRecord = new javax.swing.JButton();
         jPanel7 = new javax.swing.JPanel();
@@ -235,11 +236,18 @@ public class BuildPanel extends javax.swing.JPanel {
             }
         });
 
+        buttonRandom.setText("Randomize");
+        buttonRandom.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonRandomActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(scrollTrainPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
+            .add(scrollTrainPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE)
             .add(jPanel2Layout.createSequentialGroup()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -251,7 +259,9 @@ public class BuildPanel extends javax.swing.JPanel {
                 .add(buttonAddClipboard)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(buttonAddClipboard1)
-                .addContainerGap(114, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(buttonRandom)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -260,7 +270,8 @@ public class BuildPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(buttonAddClipboard)
-                    .add(buttonAddClipboard1))
+                    .add(buttonAddClipboard1)
+                    .add(buttonRandom))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
@@ -282,7 +293,7 @@ public class BuildPanel extends javax.swing.JPanel {
         jPanel6.setLayout(jPanel6Layout);
         jPanel6Layout.setHorizontalGroup(
             jPanel6Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonRecord, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonRecord, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE)
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -321,7 +332,7 @@ public class BuildPanel extends javax.swing.JPanel {
                         .add(jButton8)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(buttonForget)))
-                .addContainerGap(174, Short.MAX_VALUE))
+                .addContainerGap(188, Short.MAX_VALUE))
         );
         jPanel7Layout.setVerticalGroup(
             jPanel7Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -360,7 +371,7 @@ public class BuildPanel extends javax.swing.JPanel {
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(buttonPlayScore, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 171, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(comboChooseScore, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(labelPlayalongUpdate, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 457, Short.MAX_VALUE))
+                    .add(labelPlayalongUpdate, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -396,7 +407,7 @@ public class BuildPanel extends javax.swing.JPanel {
                 .add(jPanel7, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(93, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -532,6 +543,13 @@ public class BuildPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_comboChooseScoreActionPerformed
 
+    private void buttonRandomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRandomActionPerformed
+        for (int i = 0; i < paramPanels.length; i++) {
+            paramPanels[i].setRandomValue();
+
+        }
+    }//GEN-LAST:event_buttonRandomActionPerformed
+
     private void startPlayalongJava() {
         if (WekinatorInstance.getWekinatorInstance().getPlayalongScore() != null) {
             WekinatorInstance.getWekinatorInstance().getPlayalongScore().play();
@@ -597,6 +615,7 @@ public class BuildPanel extends javax.swing.JPanel {
     private javax.swing.JButton buttonAddClipboard1;
     private javax.swing.JButton buttonForget;
     private javax.swing.JButton buttonPlayScore;
+    private javax.swing.JButton buttonRandom;
     private javax.swing.JButton buttonRecord;
     private javax.swing.JButton buttonSynthPlay;
     private javax.swing.JComboBox comboChooseScore;

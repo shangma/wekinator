@@ -11,6 +11,7 @@
 package wekinator;
 
 import java.awt.CardLayout;
+import java.util.Random;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFrame;
 import javax.swing.event.*;
@@ -146,6 +147,16 @@ public class ParameterMiniPanel extends javax.swing.JPanel {
     private void comboIntActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboIntActionPerformed
         fireStateChanged();
 }//GEN-LAST:event_comboIntActionPerformed
+
+    protected void setRandomValue() {
+        Random r = new Random();
+
+        if (! isDiscrete) {
+            setValue(r.nextDouble());
+        } else {
+            setValue(r.nextDouble() * (max + 1)); //possibly dangerous
+        }
+    }
 
     private void textValueFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_textValueFocusLost
         try {

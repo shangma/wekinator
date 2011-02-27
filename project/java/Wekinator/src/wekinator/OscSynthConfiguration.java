@@ -1,5 +1,6 @@
 package wekinator;
 
+import java.net.Inet4Address;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
@@ -14,6 +15,41 @@ public class OscSynthConfiguration {
     protected String validationString = "";
     protected EventListenerList listenerList = new EventListenerList();
     private ChangeEvent changeEvent = null;
+    private boolean useRemoteHost = false;
+    private String remoteHostName = "Edgard.local";
+
+    public boolean isUseRemoteHost() {
+        return useRemoteHost;
+    }
+
+    public void setUseRemoteHost(boolean useRemoteHost) {
+        this.useRemoteHost = useRemoteHost;
+        fireStateChanged();
+    }
+
+    public String getRemoteHostName() {
+        return remoteHostName;
+    }
+
+    public void setRemoteHostName(String remoteHostName) {
+        this.remoteHostName = remoteHostName;
+        fireStateChanged();
+    }
+
+   /* protected boolean isSendingSingleParameters = false;
+
+    public boolean getSendingSingleParameters() {
+        return isSendingSingleParameters;
+    }
+
+    public void setSendingSingleParameters(boolean isSendingSingleParameters) {
+        this.isSendingSingleParameters = isSendingSingleParameters;
+        fireStateChanged();
+    }
+    */
+
+
+
 
     public boolean[] getIsDiscrete() {
         return isDiscrete;
@@ -45,6 +81,8 @@ public class OscSynthConfiguration {
         System.arraycopy(c1.paramNames, 0, paramNames, 0, c1.numParams);
         maxValue = new int[c1.numParams];
         System.arraycopy(c1.maxValue, 0, maxValue, 0, c1.numParams);
+        useRemoteHost = c1.useRemoteHost;
+        remoteHostName = c1.remoteHostName;
     }
 
     public OscSynthConfiguration(int numParams, String[] paramNames, boolean[] isDiscrete, boolean[] isDistribution, int[] maxValue) {
@@ -106,6 +144,12 @@ public class OscSynthConfiguration {
                 }
             }
 
+            if (useRemoteHost) {
+                if (remoteHostName.length() < 1) {
+                    return false;
+                }
+            }
+
             return true;
         } else {
             validationString = "OSC synth must have > 0 parameters if enabled\n";
@@ -148,6 +192,14 @@ public class OscSynthConfiguration {
         } else {
             s += "parameters";
         }
+        if (useRemoteHost) {
+            s+= ", sending to host " + remoteHostName;
+
+        }
+/*        if (isSendingSingleParameters) {
+            s += ", sending each parameter in a separate OSC message";
+        } */
+        
         return s;
     }
 

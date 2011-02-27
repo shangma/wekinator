@@ -24,7 +24,17 @@ public class OscSynthProxy {
 
     public static void setup(int sendPort) throws UnknownHostException, SocketException {
         //call /OSCSynth/setup
-        ref.sender = new OSCPortOut(InetAddress.getLocalHost(), sendPort);
+       // InetAddress.
+//        ref.sender = new OSCPortOut(InetAddress.getLocalHost(), sendPort);
+              //  ref.sender = new OSCPortOut(InetAddress.getByName("Edgard.local"), sendPort);
+
+        boolean isRemote = WekinatorInstance.getWekinatorInstance().getConfiguration().getOscSynthConfiguration().isUseRemoteHost();
+        if (!isRemote) {
+           ref.sender = new OSCPortOut(InetAddress.getLocalHost(), sendPort);
+        } else {
+            ref.sender = new OSCPortOut(InetAddress.getByName(WekinatorInstance.getWekinatorInstance().getConfiguration().getOscSynthConfiguration().getRemoteHostName()), sendPort);
+        }
+
         try {
             Object[] o = {new Integer(1)};
             OSCMessage msg = new OSCMessage("/OSCSynth/setup", o);
@@ -36,6 +46,9 @@ public class OscSynthProxy {
     }
 
     public static void setParams(double[] params) {
+        //RF: Changed this 2/26/11
+     //   boolean isSep = WekinatorInstance.getWekinatorInstance().getConfiguration().getOscSynthConfiguration().getSendingSingleParameters();
+     //   if (! isSep) {
         Object[] o = new Object[params.length];
         try {
             for (int i = 0; i < params.length; i++) {
@@ -47,6 +60,22 @@ public class OscSynthProxy {
             Logger.getLogger(OscSynthProxy.class.getName()).log(Level.SEVERE, null, ex);
             errorHappened(ex);
         }
+     /*   } else {
+            try {
+            for (int i =0; i < params.length; i++) {
+
+                    Object[] o = new Object[1];
+                    o[0] = new Float(params[i]);
+                    OSCMessage msg = new OSCMessage("/OSCSynth/param" + i, o);
+                    ref.sender.send(msg);
+
+
+            }
+            } catch (IOException ex) {
+                    Logger.getLogger(OscSynthProxy.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+        } */
     }
 
     public static void silent() {

@@ -34,6 +34,9 @@ public class OscSynthConfigurationFrame2 extends javax.swing.JFrame {
         renderer = new MySynthConfigRenderer();
         configuration = c;
         populateTable(configuration);
+        checkRemote.setSelected(configuration.isUseRemoteHost());
+        textRemoteHost.setText(configuration.getRemoteHostName());
+        //checkSeparateOSC.setSelected(configuration.getSendingSingleParameters());
         try {
             table.setDefaultRenderer(Class.forName("java.lang.Integer"), renderer);
         } catch (ClassNotFoundException ex) {
@@ -74,7 +77,11 @@ public class OscSynthConfigurationFrame2 extends javax.swing.JFrame {
         configuration.setDiscrete(discrete);
         configuration.setDistribution(dist);
         configuration.setMaxVals(max);
-
+       // configuration.setSendingSingleParameters(checkSeparateOSC.isSelected());
+       
+        configuration.setUseRemoteHost(checkRemote.isSelected());
+        configuration.setRemoteHostName(textRemoteHost.getText());
+        
         this.dispose();
    }
 
@@ -95,6 +102,8 @@ public class OscSynthConfigurationFrame2 extends javax.swing.JFrame {
         buttonMoveDown = new javax.swing.JButton();
         buttonOK = new javax.swing.JButton();
         buttonCancel = new javax.swing.JButton();
+        checkRemote = new javax.swing.JCheckBox();
+        textRemoteHost = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -140,6 +149,15 @@ public class OscSynthConfigurationFrame2 extends javax.swing.JFrame {
             }
         });
 
+        checkRemote.setText("Send to remote host");
+        checkRemote.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkRemoteActionPerformed(evt);
+            }
+        });
+
+        textRemoteHost.setText("Edgard.local");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -148,15 +166,20 @@ public class OscSynthConfigurationFrame2 extends javax.swing.JFrame {
                 .add(buttonDelete)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(buttonAdd)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 256, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 313, Short.MAX_VALUE)
                 .add(buttonCancel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(buttonOK)
                 .addContainerGap())
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(buttonMoveUp, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(buttonMoveDown, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                        .add(buttonMoveUp, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(buttonMoveDown, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(checkRemote)
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(textRemoteHost, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 136, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(scrollTable, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 595, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
@@ -168,7 +191,11 @@ public class OscSynthConfigurationFrame2 extends javax.swing.JFrame {
                         .add(156, 156, 156)
                         .add(buttonMoveUp)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(buttonMoveDown))
+                        .add(buttonMoveDown)
+                        .add(39, 39, 39)
+                        .add(checkRemote)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(textRemoteHost, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(scrollTable, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -218,6 +245,10 @@ public class OscSynthConfigurationFrame2 extends javax.swing.JFrame {
         this.dispose();
 }//GEN-LAST:event_buttonCancelActionPerformed
 
+    private void checkRemoteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkRemoteActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_checkRemoteActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -260,7 +291,9 @@ public class OscSynthConfigurationFrame2 extends javax.swing.JFrame {
     private javax.swing.JButton buttonMoveDown;
     private javax.swing.JButton buttonMoveUp;
     private javax.swing.JButton buttonOK;
+    private javax.swing.JCheckBox checkRemote;
     private javax.swing.JScrollPane scrollTable;
+    private javax.swing.JTextField textRemoteHost;
     // End of variables declaration//GEN-END:variables
     private javax.swing.JTable table;
     private OscSynthTableModel model;

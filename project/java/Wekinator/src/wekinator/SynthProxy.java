@@ -10,7 +10,6 @@ package wekinator;
  * @author rebecca
  */
 public class SynthProxy {
-    protected static final OscSynthProxy ref = new OscSynthProxy();
 
     static int getNumParams() {
      if (WekinatorInstance.getWekinatorInstance().getConfiguration().isUseChuckSynthClass()) {
