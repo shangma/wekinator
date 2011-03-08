@@ -700,8 +700,8 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         if (file != null) {
             try {
                 //configuration = ChuckConfiguration.loadFromFile(file); //this is where it goes wrong...  TODO
-                configuration = ChuckConfiguration.readFromFile(file); // This is a problem: New object assigned to reference; main gui maintains old ref value
-                
+                ChuckConfiguration newC = ChuckConfiguration.readFromFile(file); // This is a problem: New object assigned to reference; main gui maintains old ref value
+                configuration.setEqualTo(newC);
                 setSynthConfiguration(synthConfiguration);
 
                 updateAllComponents();

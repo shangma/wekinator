@@ -81,6 +81,8 @@ public class ChuckConfiguration {
         c.getOscSynthConfiguration().setNumParams(in.readInt());
         c.getOscSynthConfiguration().setDiscrete((boolean[]) in.readObject());
         c.getOscSynthConfiguration().setDistribution((boolean[]) in.readObject());
+        
+
 
         boolean usable = in.readBoolean();
         c.setOscSynthReceivePort(in.readInt());
@@ -98,10 +100,16 @@ public class ChuckConfiguration {
             }
             c.getOscSynthConfiguration().setMaxVals(maxvals);
             c.getOscSynthConfiguration().setNames(oscSynthNames);
-        } else { //version 2
+        } else if (version > 1) { //version 2
             c.getOscSynthConfiguration().setMaxVals((int[]) in.readObject());
             c.getOscSynthConfiguration().setNames((String[]) in.readObject());
         }
+
+        if (version > 2) {
+            c.getOscSynthConfiguration().setUseRemoteHost(in.readBoolean());
+            c.getOscSynthConfiguration().setRemoteHostName((String)in.readObject());
+        }
+
         c.setUsable(usable);
         return c;
     }
@@ -129,7 +137,7 @@ public class ChuckConfiguration {
     }
 
     protected void writeToOutputStream(ObjectOutputStream out) throws IOException {
-        out.writeInt(2); //version number
+        out.writeInt(3); //version number
         out.writeObject(wekDir);
         out.writeObject(chuckExecutable);
         out.writeBoolean(customChuckFeatureExtractorEnabled);
@@ -152,6 +160,10 @@ public class ChuckConfiguration {
         out.writeObject(locationToSaveMyself);
         out.writeObject(oscSynthConfiguration.getMaxValue());
         out.writeObject(oscSynthConfiguration.getParamNames());
+        //added 3/2/11:
+        out.writeBoolean(oscSynthConfiguration.isUseRemoteHost());
+        out.writeObject(oscSynthConfiguration.getRemoteHostName());
+
     }
 
     /**

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
   <NonVisualComponents>
@@ -100,7 +100,7 @@
                           <Component id="buttonCancel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="buttonOK" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="88" max="32767" attributes="0"/>
+                      <EmptySpace pref="61" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -189,12 +189,12 @@
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="buttonChooseChuckFeatureExtractor" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace pref="155" max="32767" attributes="0"/>
+                                      <EmptySpace pref="135" max="32767" attributes="0"/>
                                       <Component id="helpFeatures" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
                                       <EmptySpace min="-2" pref="52" max="-2" attributes="0"/>
-                                      <Component id="labelCustomFeatureExtractor" pref="550" max="32767" attributes="0"/>
+                                      <Component id="labelCustomFeatureExtractor" pref="541" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -297,7 +297,7 @@
                                       </Group>
                                       <Component id="checkEnableOSCFeature" alignment="0" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace pref="49" max="32767" attributes="0"/>
+                                  <EmptySpace max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -378,7 +378,7 @@
                                       <Component id="radioUseChuckSynth" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
                                       <Component id="buttonChooseChuckSynth" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace pref="244" max="32767" attributes="0"/>
+                                      <EmptySpace pref="230" max="32767" attributes="0"/>
                                       <Component id="helpSynth" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
@@ -395,7 +395,7 @@
                                   </Group>
                                   <Component id="radioUseOSCSynth" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="73" max="32767" attributes="0"/>
+                              <EmptySpace pref="62" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -422,7 +422,7 @@
                                   <Component id="labelOSCSynthProps" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="buttonEditRealInteger" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="52" max="32767" attributes="0"/>
+                              <EmptySpace pref="85" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -529,7 +529,7 @@
                                       <Component id="labelCoreChuckDirectory" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace pref="188" max="32767" attributes="0"/>
+                              <EmptySpace pref="174" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
@@ -567,7 +567,7 @@
                                   </Group>
                                   <Component id="helpCoreChuck" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="28" max="32767" attributes="0"/>
+                              <EmptySpace pref="48" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -669,7 +669,7 @@
                                   </Group>
                                   <Group type="102" alignment="1" attributes="0">
                                       <EmptySpace min="-2" pref="35" max="-2" attributes="0"/>
-                                      <Component id="labelScorePlayer" pref="568" max="32767" attributes="0"/>
+                                      <Component id="labelScorePlayer" pref="582" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -695,7 +695,7 @@
                               <Component id="jLabel15" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="labelScorePlayer" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="90" max="32767" attributes="0"/>
+                              <EmptySpace pref="102" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
