@@ -12,6 +12,8 @@ Mover[] movers = new Mover[20]; //animation objects
 //Parameters of sketch
 float myX, myY, myHue;
 
+PFont myFont;
+
 void setup() {
   //Initialize OSC communication
   oscP5 = new OscP5(this,12000); //listen for OSC messages on port 12000 (Wekinator default)
@@ -30,6 +32,7 @@ void setup() {
   for (int i = 0; i < movers.length; i++) {
     movers[i] = new Mover(); 
   }
+    myFont = loadFont("SansSerif-14.vlw");
 }
 
 void draw() {
@@ -45,6 +48,8 @@ void draw() {
   }
   myX = random(width);  //Assign a new random position to the objects.
   myY = random(height);
+  
+  drawtext();
 }
 
 //Changes sketch hue according to key pressed
@@ -135,5 +140,19 @@ class Mover {
 
   }
 
+}
+
+//Write instructions to screen.
+void drawtext() {
+    stroke(0);
+    textFont(myFont);
+    textAlign(LEFT, TOP); 
+    fill(255, 255, 255);
+
+    text("CONTINUOUS HUE", 10, 10);
+    fill(255, 0, 255);
+    text("   1 continuous hue parameter", 10, 25);
+    text("   Can also use keypresses to control hue by ASCII value", 10, 45);
+    
 }
 
