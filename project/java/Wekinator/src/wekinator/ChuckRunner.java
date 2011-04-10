@@ -214,7 +214,7 @@ public class ChuckRunner {
         if (configuration.isIsPlayalongLearningEnabled()) {
             s[2] = configuration.getPlayalongLearningFile();
         } else {
-            s[2] = configuration.getChuckDir() + File.separator + "score_players" + File.separator + "no_score.ck";
+            s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "no_score.ck";
         }
         s[2] = removeC(s[2]);
         cmds.add(s);
@@ -405,7 +405,7 @@ public class ChuckRunner {
         if (configuration.isIsPlayalongLearningEnabled()) {
             w.write("Machine.add(\"" + winescape(configuration.getPlayalongLearningFile()) + "\");\n");
         } else {
-            w.write("Machine.add(\"" + winescape(configuration.getChuckDir() + File.separator + "score_players" + File.separator + "no_score.ck") + "\");\n");
+            w.write("Machine.add(\"" + winescape(configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "no_score.ck") + "\");\n");
         }
 
         if (configuration.isUseOscSynth()) {
