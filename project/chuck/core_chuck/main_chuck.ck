@@ -20,15 +20,15 @@ CustomOSCFeatureExtractor oscCustomFE;
 new SynthClass @=> SynthClass mc;
 mc.setup();
 mc.getNumParams() => int numParams;
-mc.useDistribution() => int wantDist;
+//mc.useDistribution() => int wantDist;
 mc.useDistributionArray() @=> int wantDistArray[];
-mc.isDiscrete() => int isDiscrete;
+//mc.isDiscrete() => int isDiscrete;
 mc.isDiscreteArray() @=> int isDiscreteArray[];
-mc.getNumClasses() => int numClasses;
+//mc.getNumClasses() => int numClasses;
 mc.getNumClassesArray() @=> int numClassesArray[];
 mc.getParamNamesArray() @=> string paramNamesArray[];
 customFE.getFeatureNamesArray() @=> string customNamesArray[];
-
+<<< "Chuck done setting up mc">>>;
 //Keep track of feature sources
 0 => int useAudio;
 0 => int useTrackpadXY;
@@ -152,14 +152,14 @@ fun void oscControlWait() {
 	string s;
 	int i;
 	while (true) {
-	//<<< "Waiting for control messages" >>>;
+	<<< "Chuck: Waiting for control messages" >>>;
 
 		oscControl => now;
-	//	<<< "Control message received">>>;
+		<<< "Chuck: Control message received">>>;
 		while (oscControl.nextMsg() != 0) {
 			oscControl.getString() => s;
 			oscControl.getInt() => i;
-		//	<<< "S i ", s, i>>>;
+			<<< "S i ", s, i>>>;
 			if (s == "hello") {
 				receivedHello();
 			} else if (s == "requestNumParams") {
@@ -170,8 +170,8 @@ fun void oscControlWait() {
 				receivedStop();
 			} else if (s == "realValueRequest") {
 				receivedRealValueRequest();
-			} else if (s == "requestChuckSettings") {
-				receivedRequestSettings();
+			//} else if (s == "requestChuckSettings") {
+			//	receivedRequestSettings();
 			} else if (s == "requestChuckSettingsArrays") {
 				receivedRequestSettingsArrays();
 			} else if (s == "stopSound") {
@@ -230,13 +230,13 @@ fun void receivedRequestNumParams() {
 	numParams => xmit.addInt;	
 }
 
-fun void receivedRequestSettings() {
+/*fun void receivedRequestSettings() {
 	xmit.startMsg("/chuckSettings", "i i i i");
 	numParams => xmit.addInt;
 	wantDist => xmit.addInt;
 	isDiscrete => xmit.addInt;
 	numClasses => xmit.addInt;	
-}
+} */
 
 fun void receivedRequestSettingsArrays() {
 	<<< "ChucK: received request settings arrays">>>;
@@ -255,7 +255,7 @@ fun void receivedRequestSettingsArrays() {
 			s + " s" => s;
 		}
 	}	
-
+	<<< "Sending s: " , s>>>;
 	xmit.startMsg("/chuckSettingsArrays", s);
 	numParams => xmit.addInt;
 	//useOscCustom => xmit.addInt;
