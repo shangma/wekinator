@@ -772,7 +772,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
     }//GEN-LAST:event_buttonCancelActionPerformed
 
     private void buttonChooseChuckFeatureExtractorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonChooseChuckFeatureExtractorActionPerformed
-        File f = findChuckFile();
+        File f = findChuckFeatureFile();
         if (f != null) {
             try {
                 labelCustomFeatureExtractor.setText(f.getCanonicalPath());
@@ -784,7 +784,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
     }//GEN-LAST:event_buttonChooseChuckFeatureExtractorActionPerformed
 
     private void buttonChooseChuckSynthActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonChooseChuckSynthActionPerformed
-        File f = findChuckFile();
+        File f = findChuckSynthFile();
         if (f != null) {
             try {
                 labelChuckSynthClass.setText(f.getCanonicalPath());
@@ -796,7 +796,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
     }//GEN-LAST:event_buttonChooseChuckSynthActionPerformed
 
     private void buttonChangeChuckExecutableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonChangeChuckExecutableActionPerformed
-        File f = findChuckFile(); //TODO: have to change this to not be find chuck file, but find executable
+        File f = findChuckExecutableFile(); //TODO: have to change this to not be find chuck file, but find executable
         if (f != null) {
             try {
                 labelChuckExecutable.setText(f.getCanonicalPath());
@@ -850,7 +850,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
 }//GEN-LAST:event_textNumOscFeaturesPropertyChange
 
     private void buttonChoosePlayalongFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonChoosePlayalongFileActionPerformed
-        File f = findChuckFile();
+        File f = findChuckScoreFile();
         if (f != null) {
             try {
                 labelScorePlayer.setText(f.getCanonicalPath());
@@ -909,12 +909,13 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
     }
     return file;
     } */
-    private File findChuckFile() {
+
+    private File findChuckFeatureFile() {
         //Start looking in chuck dir if possible
-        File core_chuck = new File(configuration.getWekDir());
+        File defaultdir = new File(configuration.getWekDir() + File.separator + "chuck" + File.separator + "feature_extractors");
         String preferredPath = homePath;
-        if (core_chuck.exists()) {
-            preferredPath = core_chuck.getParent();
+        if (defaultdir.exists()) {
+            preferredPath = defaultdir.getAbsolutePath();
         }
 
         JFileChooser fc = new JFileChooser(preferredPath);
@@ -926,6 +927,71 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
             file = fc.getSelectedFile();
         }
         return file;
+    }
+
+    private File findChuckSynthFile() {
+        //Start looking in chuck dir if possible
+        File defaultdir = new File(configuration.getWekDir() + File.separator + "chuck" + File.separator + "synths");
+        String preferredPath = homePath;
+        if (defaultdir.exists()) {
+            preferredPath = defaultdir.getAbsolutePath();
+        }
+
+        JFileChooser fc = new JFileChooser(preferredPath);
+        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        boolean success = true;
+        File file = null;
+        int returnVal = fc.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            file = fc.getSelectedFile();
+        }
+        return file;
+    }
+
+    private File findChuckScoreFile() {
+        //Start looking in chuck dir if possible
+        File defaultdir = new File(configuration.getWekDir() + File.separator + "chuck" + File.separator + "score_players");
+        String preferredPath = homePath;
+        if (defaultdir.exists()) {
+            preferredPath = defaultdir.getAbsolutePath();
+        }
+
+        JFileChooser fc = new JFileChooser(preferredPath);
+        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        boolean success = true;
+        File file = null;
+        int returnVal = fc.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            file = fc.getSelectedFile();
+        }
+        return file;
+    }
+
+   private File findChuckExecutableFile() {
+        //Start looking in chuck dir if possible
+        String s = configuration.getWekDir() + File.separator + "chuck" + File.separator + "executable" + File.separator;
+        if (File.separator.equals("/")) {
+            s += "osx";
+        } else {
+            s += "win";
+        }
+        File defaultDir = new File(s);
+
+        String preferredPath = homePath;
+        if (defaultDir.exists()) {
+            preferredPath = defaultDir.getAbsolutePath();
+        }
+
+        JFileChooser fc = new JFileChooser(preferredPath);
+        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        boolean success = true;
+        File file = null;
+        int returnVal = fc.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            file = fc.getSelectedFile();
+        }
+        return file;
+
     }
 
     private File findCoreChuckDirectory() {
