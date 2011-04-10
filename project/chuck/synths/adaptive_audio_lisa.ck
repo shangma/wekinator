@@ -1,8 +1,8 @@
 /* This changes LiSa params of live audio input
+	(i.e., makes munchkin/monster choruses)
 
-//*** Doesn't work with current plork chuck - workaround = ?
+ LiSa code is from Dan Trueman
 
- Wekinator version 0.2
  Copyright 2009 Rebecca Fiebrink
  http://wekinator.cs.princeton.edu
 */

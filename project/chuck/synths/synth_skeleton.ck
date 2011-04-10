@@ -1,9 +1,8 @@
-/* Simple synth skeleton
- To make your own synth, edit everywhere marked TODO below!
- 
- Wekinator version 0.2
- Copyright 2009 Rebecca Fiebrink
- http://wekinator.cs.princeton.edu
+/*  Simple synth skeleton with 1 continuous & 1 discrete parameter
+ 	To make your own synth, edit everywhere marked TODO below
+
+ 	Copyright 2011 Rebecca Fiebrink
+	http://wekinator.cs.princeton.edu
 */
 
 //The synth always lives in a SynthClass definition
@@ -21,7 +20,7 @@ public class SynthClass {
 	//TODO: set your # of parameters
 	//For example, if you want to control pitch and volume, you might have 
 	//2 parameters.
-	1 => int numParams;
+	2 => int numParams;
 	float myParams[numParams];
 
 	//TODO: Add your own objects for making sound
@@ -31,33 +30,55 @@ public class SynthClass {
 	0.0 => myParams[0]; //we've got 1 param, let it be 0 for starters
     SinOsc s => e; //patch into the envelope
 	440 => s.freq;	
+	Envelope volumeSmoother => blackhole;
+	1.0 => volumeSmoother.value;
+	1.0 => volumeSmoother.target;
+	200::ms => volumeSmoother.duration;
 
 	//TODO: Are your parameters discrete (integers) or continuous (real numbers)?
 	//This determines the learning algorithms available in the GUI
-	fun int isDiscrete() {
-		return 1; //Return 1 for discrete, 0 for continuous
+	fun int[] isDiscreteArray() {
+		new int[2] @=> int a[]; //a is a temporary array whose length is the number of parameters (2 here)
+		1 => a[0]; //1 means this parameter is discrete
+		0 => a[1]; //0 means this parameter is continuous (not discrete)
+		return a;
 	}
 
 	//TODO: If you are using a discrete model, you must specify
 	//the number of classes of output (maximum) that you want to learn
 	//For example, to learn a "vowel vs. consonant" classifier, you would have 2 classes
 	//Or to output a class for each pitch chroma, you would have 12 classes
-	//For now, you have to have the same number of classes for each parameter (sorry, this should be fixed)
-	fun int getNumClasses() {
-		return 12;
+	//It doesn't matter what number you use for a continuous parameter, since it'll be ignored
+	fun int[] getNumClassesArray() {
+		new int[2] @=> int a[];
+		12 => a[0]; //12 pitches for parameter 1
+		32435 => a[1]; //don't care (parameter 2 is continuous)
+		return a;
 	}
 
-	//TODO: If you are using a discrete model, you must specify
+	//TODO: For each discrete parameter, you must specify
     //whether you just want the integer class label output for each parameter, or whether
     //you want the output to consist of a probability distribution over all classes
-	fun int useDistribution() {
-		return 0; //Return 1 for distribution, 0 for simple integer label
+	fun int[] useDistributionArray() {
+		new int[2] @=> int a[]; 
+		0 => a[0]; //Let's not use a distribution (would be 1 otherwise)
+		0 => a[1]; //don't care (parameter 2 is continuous)
+		return a;
+	}
+
+	//TODO: Give your parameters some names, which will be shown in the GUI
+	fun string[] getParamNamesArray() {
+		new string[2] @=> string s[];
+		"note" => s[0];
+	    "volume" => s[1];
+		return s;
 	}
 
 	//TODO: Any other setup code that should be called
 	//This is called by the main code, only once after initialization, like a constructor
 	fun void setup() {
 		//Spork things here if necessary, then return.
+		spork ~smooth();
 	}
 
 	//TODO: This gets called when the model provides us with new parameter values
@@ -66,26 +87,43 @@ public class SynthClass {
     // and that we have the expected number of parameters)
 	// Make sure you both use the new params to make sound AND store the values in myParams[].
 	fun void setParams(float params[]) {
-		if (params.size() >= 1) {		
+		if (params.size() >= 2) {	//always check you have at least as many params as you're expecting	
 			//Adjust the synthesis accordingly
 			params[0] => myParams[0];
+			//Always check the range of the parameter you receive, if it matters
+			//For 1st param, we want an octave range of pitch
 			if (myParams[0] < 0)
 				0 => myParams[0];
 			if (myParams[0] > 12)
 				11 => myParams[0];
 			calcFreqFromParam(myParams[0]) => s.freq;
+
+			params[1] => myParams[1];
+			//For 2nd param, we want volume between 0 and 1
+			if (myParams[1] < 0) 
+				0 => myParams[1];
+			if (myParams[1] > 1) 
+				1 => myParams[1];
+			myParams[1] => volumeSmoother.target;
 		}
 	}
 
 	//TODO (optional)
 	//Add your own methods to be called from your synthesis, for example:
 	fun float calcFreqFromParam(float p) {
-		return Std.mtof(72 + p);
+		return Std.mtof(60 + p);
+	}
+
+	fun void smooth() {
+		//Could pull this into separate methods if want to smooth 
+		//different model parameters at different rates.
+		while (true) {
+			volumeSmoother.value() => s.gain;
+			10::ms => now;
+		}
 	}
 
 /* PROBABLY don't need to change anything below this line ----------------------------*/
-/* See modification in icmc_twinkle_form_control.ck for implementing custom sound on/off 
-behavior, beyond master envelope control.*/
 	fun int getNumParams() {
 		return numParams;
 	}
@@ -142,39 +180,6 @@ behavior, beyond master envelope control.*/
 	//If OSC synth, we need to instruct the synth how to get back to ChucK
 	fun void setOscHostAndPort(string h, int p) {
 		//no need to do anything, unless you're using an OSC synth like Processing or Max.
-	}
-
-/*** Copy & Paste below at end of your code to add new functions as of 12/6/09 ***/
-	fun int[] useDistributionArray() {
-		new int[numParams] @=> int a[];
-		for (0 => int i; i < numParams; i++) {
-			useDistribution() => a[i];
-		}
-		return a;
-	}
-
-	fun int[] isDiscreteArray() {
-		new int[numParams] @=> int a[];
-		for (0 => int i; i < numParams; i++) {
-			isDiscrete() => a[i];
-		}
-		return a;
-	}
-
-	fun int[] getNumClassesArray() {
-		new int[numParams] @=> int a[];
-		for (0 => int i; i < numParams; i++) {
-			getNumClasses() => a[i];
-		}
-		return a;
-	}
-	
-	fun string[] getParamNamesArray() {
-		new string[numParams] @=> string s[];
-		for (0 => int i; i < numParams; i++) {
-			"Param_" + i => s[i];
-		}
-		return s;
 	}
 
 }

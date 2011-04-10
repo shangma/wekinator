@@ -1,13 +1,14 @@
-/* This synth plays twinkle, twinkle no matter what
-   Its single parameter indicates the section to play
-   Part of ICMC 2009 demo
+/*  Simple 1-voice melodic synth
+	Discrete parameter controls pitch
+	Range is 0 to 23, mapped to 2 octaves above middle C
+    This was part of ICMC 2009 demo
  
- Wekinator version 0.2
- Copyright 2009 Rebecca Fiebrink
- http://wekinator.cs.princeton.edu
+ 	Copyright 2009 Rebecca Fiebrink
+ 	http://wekinator.cs.princeton.edu
 */
 
 public class SynthClass {
+
 	//Necessary state objects and overall envelope
 	OscSend xmit;
 	0 => int isPlayingScore;
@@ -15,7 +16,7 @@ public class SynthClass {
 	1 => int hasFinished;
 	50::ms => dur rate;
 	Envelope e => dac;
-	.1::second => e.duration;
+	.01::second => e.duration;
 	0 => e.target => e.value;
 	e.keyOn();
 
@@ -23,33 +24,10 @@ public class SynthClass {
 	1 => int numParams;
 	float myParams[numParams];
 
-	//Twinkle-specific stuff:
-	//Encode sections of piece
-	//Relative pitches for each section:
-	[0,0,7,7,9,9,7] @=> int notes1[];
-	[5,5,4,4,2,2,0] @=> int notes2[];
-	[7,7,5,5,4,4,2] @=> int notes3[];
-	[5,5,4,4,2,7,12] @=> int notes4[];
-	[0] @=> int notes5[];
-	[0,1,2,2,0,3,4] @=> int sectionOrders[];
-	//Relative beat durations for each section:
-	[1,1,1,1,1,1,2] @=> int beats1[];
-	beats1 @=> int beats2[];
-	beats1 @=> int beats3[];
-	beats1 @=> int beats4[];
-	[4] @=> int beats5[];
-	.25::second => dur qtr;
-	//Keep track of where we are:
-	1 => int currentSection;
-	0 => int isSilent;
-	Event startPlaySection;
-
-	//Finally, the synthesis patch:
-    ModalBar s => Envelope ee => e;
+	//Create our objects for making sound, patch to envelope
+    Moog s => e;
+	.5 => s.gain;
 	440 => s.freq;	
-	.01::second => ee.duration;
-	1 => ee.target => ee.value;
-	ee.keyOn();
 	1 => s.noteOn;
 
 	//Do we want discrete or continuous parameters?
@@ -61,7 +39,7 @@ public class SynthClass {
 	//The number of classes-- max-- that we want to use
 	//Necessary for structuring OSC messages
 	fun int getNumClasses() {
-		return 5;
+		return 24;
 	}
 
 	//Do we want the labels for each parameter,
@@ -72,7 +50,7 @@ public class SynthClass {
 
 	//This is called by the main code, only once after initialization, like a constructor
 	fun void setup() {
-		spork ~playSection();
+		//Nothing to do
 	}
 
 	//This is also sporked in the other code
@@ -85,57 +63,19 @@ public class SynthClass {
 			params[0] => myParams[0];
 			if (myParams[0] < 0)
 				0 => myParams[0];
-			if (myParams[0] > 4)
-				4 => myParams[0];
+			if (myParams[0] > 23)
+				23 => myParams[0];
+			calcFreqFromParam(myParams[0]) => s.freq;
 		}
 	}
 
+	//Helper method
 	fun float calcFreqFromParam(float p) {
 		return Std.mtof(60 + p);
 	}
-	
-	fun void playSection() {
-  	  	while (true) {
-			if (isSilent) {
-				startPlaySection => now;
-			}
-			myParams[0]$int => currentSection;
-			int thesenotes[];
-			int thesebeats[];
-			0 => int thisnote => int thisbeat;
 
-			if (currentSection == 4) {
-				0 => ee.target; //rest!
-				1 => s.noteOff;
-				beats5[0] * qtr => now;
-			} else {
-				1 => ee.target;
-				if (currentSection == 0) {
-					notes1 @=> thesenotes;
-					beats1 @=> thesebeats;
-				} else if (currentSection == 1) {
-					notes2 @=> thesenotes;
-					beats2 @=> thesebeats;
-				} else if (currentSection == 2) {
-					notes3 @=> thesenotes;
-					beats3 @=> thesebeats;
-				} else if (currentSection == 3) {
-					notes4 @=> thesenotes;
-					beats4 @=> thesebeats;
-				} 	
-
-				for (0 => int noteIndex; noteIndex < thesenotes.size(); noteIndex++) {
-					thesebeats[noteIndex] => thisbeat;
-					thesenotes[noteIndex] => thisnote;
-					Std.mtof(thisnote + 72) => s.freq;			
-					1 => s.noteOn;
-					thisbeat*qtr => now;
-				}
-			} //end check for note or rest
-	  	} //end while true
-	}
-
-	fun int getNumParams() {
+/* Don't need to change anything below this line ----------------------------*/
+fun int getNumParams() {
 		return numParams;
 	}
 
@@ -143,20 +83,15 @@ public class SynthClass {
 		return myParams;
 	}
 
-	//Be quiet!
-	//Note the use of "isSilent" here, in order to stop other code during silence
+	//Be quiet! If you want to improve efficiency here, you could also stop
+	//other processing
 	fun void silent() {
 		0 => e.target;
-		1 => isSilent;
 	}
 
 	//Make sound!
-	//NOTE: This uses an event broadcast when we've stopped being silent,
-	//so that the appropriate next section can start playing from the beginning.
 	fun void sound() {
 		1 => e.target;
-		0 => isSilent;
-		startPlaySection.broadcast();
 	}
 
 	//Received when wekinator wants our params for playalong learning
@@ -197,7 +132,6 @@ public class SynthClass {
 	fun void setOscHostAndPort(string h, int p) {
 		//no need to do anything, unless you're using an OSC synth like Processing or Max.
 	}
-/*** Copy & Paste below at end of your code to add new functions as of 12/6/09 ***/
 	fun int[] useDistributionArray() {
 		new int[numParams] @=> int a[];
 		for (0 => int i; i < numParams; i++) {
@@ -224,9 +158,8 @@ public class SynthClass {
 	
 	fun string[] getParamNamesArray() {
 		new string[1] @=> string s[];
-		"Section#" => s[0];
+		"Note#" => s[0];
 		return s;
 	}
 
 }
-

@@ -1,17 +1,18 @@
-/* FM synth by Jeff Snyder, wekinator mod by Rebecca Fiebrink
-	//this is an FM synthesis class.
-    //it is a sawtooth wave, which is frequency modulated by a sine wave
-    //which then gets put through a low-pass filter
-    //and has an amplitude envelope
+/*  FM synth by Jeff Snyder, wekinator mod by Rebecca Fiebrink
+	
+	This is an FM synthesis class.
+    it is a sawtooth wave, which is frequency modulated by a sine wave
+    which then gets put through a low-pass filter
+    and has an amplitude envelope
 
-	//This one is "always on" -- no note triggering with keyboard
+	This one is "always on" -- no note triggering with keyboard
     
-    //parameters for this class are:
-    //0 = midinote pitch of Sawtooth oscillator (carrier freq)
-    //1 = lowpass filter cutoff frequency
-    //2 = Master gain (carrier gain)
-    //3 = fm oscillator midinote pitch (modulator freq)
-    //4 = fm oscillator index (modulator index)
+    parameters for this class are:
+    0 = midinote pitch of Sawtooth oscillator (carrier freq)
+    1 = lowpass filter cutoff frequency
+    2 = Master gain (carrier gain)
+    3 = fm oscillator midinote pitch (modulator freq)
+    4 = fm oscillator index (modulator index)
 */
 
 //The synth always lives in a SynthClass definition
@@ -20,7 +21,7 @@ public class SynthClass {
 	0 => int isSendingParams;	
 	50::ms => dur rate;
 
- 50 => float attack;
+ 	50 => float attack;
     500 => float decay;
     1. => float sustainlevel;
     50 => float release;
@@ -86,7 +87,7 @@ public class SynthClass {
 		while (true) {
             (envs[0].value() * 100 + 20) => Std.mtof => s.freq;
             (envs[1].value() * 10000) + 1 => lpf.freq;
-            envs[2].value() => s.gain;
+            envs[2].value() * .5 => s.gain;
             (envs[3].value() * 100 + 20.)=> Std.mtof => fmosc.freq;
             (envs[4].value() * 400) => fmosc.gain;
            /* (envs[5].value() * 1000) => attack;

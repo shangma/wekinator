@@ -1,9 +1,8 @@
-/* This controls a bowed string instrument physical model
-	Use the keyboard to control pitch (learning only affects timbral parameters, not pitch)
+/*  This controls a bowed string instrument physical model
+	Use the keyboard to control pitch 
+	(learning only affects timbral parameters, not pitch)
 
- Wekinator version 0.2
- Copyright 2009 Rebecca Fiebrink
- http://wekinator.cs.princeton.edu
+ 	http://wekinator.cs.princeton.edu
 */
 
 //The synth always lives in a SynthClass definition
@@ -19,8 +18,8 @@ public class SynthClass {
 	0 => e.target => e.value;
 	e.keyOn();
 
-	//3 parameters here, though could change this easily
-	3 => int numParams;
+	//4 parameters here, though could change this easily
+	4 => int numParams;
 	float myParams[numParams];
 
 	//base and register
@@ -131,9 +130,9 @@ public class SynthClass {
 		//different model parameters at different rates.
 		while (true) {
 			envs[0].value() => b.bowPosition;
-			envs[0].value() => b.vibratoGain;
-			envs[1].value() * 10 => b.vibratoFreq;
-			envs[2].value() => b.bowPressure;		
+			envs[1].value() => b.bowPressure;
+			envs[2].value() * .2 => b.vibratoGain;
+			envs[3].value() * 10 => b.vibratoFreq;
 			10::ms => now;
 		}
 	}
@@ -265,10 +264,11 @@ behavior, beyond master envelope control.*/
 	}
 	
 	fun string[] getParamNamesArray() {
-		new string[3] @=> string s[];
-		"BowPosition_&_VibratoGain" => s[0];
-		"VibratoFreq" => s[1];
-		"BowPressure" => s[2];
+		new string[4] @=> string s[];
+		"BowPosition" => s[0];
+		"BowPressure" => s[1];
+		"VibratoGain" => s[2];
+		"VibratoFrequency" => s[3];
 		return s;
 	}
 

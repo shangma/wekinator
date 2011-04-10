@@ -1,79 +1,70 @@
-/* This adaptively pans the audio based on the input class
-
- Copyright 2009 Rebecca Fiebrink
- http://wekinator.cs.princeton.edu
+/*  Uses distribution over parameters to mix sounds
+	Simplest possible version
+	Would be much better to smooth gains!
 */
 
-//The synth always lives in a SynthClass definition
 public class SynthClass {
-	//Necessary state objects and overall envelope
+
+	//Don't change this part: necessary state objects and overall envelope
 	OscSend xmit;
-	0 => int isPlayingScore;
 	0 => int isSendingParams;
-	1 => int hasFinished;
 	50::ms => dur rate;
 	Envelope e => dac;
+	SinOsc s1 => e;
+	440 => s1.freq;
+	SinOsc s2 => e;
+	500 => s2.freq;
+
+	
 	.1::second => e.duration;
 	0 => e.target => e.value;
 	e.keyOn();
 
-	//1 parameter, specifying pan location
+	//Num params = 1; store entire distribution
 	1 => int numParams;
-	float myParams[numParams];
+	float myParams[numParams*2];
 
-	//The synthesis patch
-	adc => Envelope e1 => dac.left;
-	adc => Envelope e2 => dac.right;
-	0 => e1.value => e2.value;
-	0 => e1.target => e2.target;
-	100::ms => e1.duration => e2.duration;
-	e1.keyOn();
-	e2.keyOn();
+	float freq;
+	1.0 => myParams[0]; //we've got 1 param, let it be 0 for starters	
+	0.0 => myParams[1];
 
-	//Do we want discrete or continuous parameters?
-	//i.e., NN or classifier?
+	//This determines the learning algorithms available in the GUI
 	fun int isDiscrete() {
-		return 1;
+		return 1; //Return 1 for discrete, 0 for continuous
 	}
 	
-	//The number of classes-- max-- that we want to use
-	//Necessary for structuring OSC messages
 	fun int getNumClasses() {
-		return 4;
+		return 2;
 	}
 
-	//Do we want the labels for each parameter,
-	//or a distribution over all possible labels? (classifier only)
 	fun int useDistribution() {
-		return 0;
+		return 1; //Return 1 for distribution, 0 for simple integer label
 	}
 
-	//This is called by the main code, only once after initialization, like a constructor
 	fun void setup() {
 	}
-
-	//This is also sporked in the other code
-	//to define what happens when we get learned
-	//parameters back-- i.e., what do we do with them?
+	
 	fun void setParams(float params[]) {
-		if (params.size() >= numParams) {		
-			//Adjust the synthesis accordingly
-			params[0] => float p1;
-			if (p1 == 0) { //pan left
-				1 => e1.target;
-				0 => e2.target;
-			} else if (p1 == 1) { //pan right
-				0 => e1.target; 
-				1 => e2.target;
-			} else if (p1 == 2) { //no audio
-				0 => e1.target;
-				0 => e2.target;
-			} else if (p1 == 3) { //no panning
-				1 => e1.target;
-				1 => e2.target;
-			}
+		if (params.size() >= 2) {
+			params[0] => myParams[0];
+			if (myParams[0] < 0)
+				0 => myParams[0];
+			if (myParams[0] > 1)
+				1 => myParams[0];
+			params[1] => myParams[1];
+			if (myParams[1] < 0)
+				0 => myParams[1];
+			if (myParams[1] > 1)
+				1 => myParams[1]; 
+			
+			myParams[0] * .5 => s1.gain;
+			myParams[1] * .5 => s2.gain;
+
+		} else {
+			<<< "Error: params are wrong size ">>>;
 		}
 	}
+
 
 /* PROBABLY don't need to change anything below this line ----------------------------*/
 /* See modification in icmc_twinkle_form_control.ck for implementing custom sound on/off 
@@ -98,7 +89,7 @@ behavior, beyond master envelope control.*/
 	}
 
 	//Received when wekinator wants our params for playalong learning
-	fun void startGettingParams(OscSend x, dur r) { //Q: Where does this go?? Here or in recording? Or neither-- put in main?
+	fun void startGettingParams(OscSend x, dur r) { 
 		x @=> xmit;
 		r => rate;
 		1 => isSendingParams;
@@ -162,8 +153,10 @@ behavior, beyond master envelope control.*/
 	}
 	
 	fun string[] getParamNamesArray() {
-		new string[1] @=> string s[];
-		"PanClass" => s[0];
+		new string[numParams] @=> string s[];
+		for (0 => int i; i < numParams; i++) {
+			"Param_" + i => s[i];
+		}
 		return s;
 	}
 

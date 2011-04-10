@@ -1,75 +1,82 @@
-/*  Uses distribution over parameters to mix sounds
-	Simplest possible version
-	Would be much better to smooth gains!
+/*  Simple 1-voice melodic synth
+	Continuous parameter controls pitch
+	Range is 0 to 23, mapped to 2 octaves above middle C
+    This was part of ICMC 2009 demo
+ 
+ 	Copyright 2009 Rebecca Fiebrink
+ 	http://wekinator.cs.princeton.edu
 */
 
 public class SynthClass {
 
-	//Don't change this part: necessary state objects and overall envelope
+	//Necessary state objects and overall envelope
 	OscSend xmit;
+	0 => int isPlayingScore;
 	0 => int isSendingParams;
+	1 => int hasFinished;
 	50::ms => dur rate;
 	Envelope e => dac;
-	SinOsc s1 => e;
-	440 => s1.freq;
-	SinOsc s2 => e;
-	500 => s2.freq;
-
-	
-	.1::second => e.duration;
+	.01::second => e.duration;
 	0 => e.target => e.value;
 	e.keyOn();
 
-	//Num params = 1; store entire distribution
+	//Only 1 parameter here
 	1 => int numParams;
-	float myParams[numParams*2];
+	float myParams[numParams];
 
-	float freq;
-	1.0 => myParams[0]; //we've got 1 param, let it be 0 for starters	
-	0.0 => myParams[1];
+	//Create our objects for making sound, patch to envelope
+    Moog s => e;
+	.5 => s.gain;
+	440 => s.freq;	
+	1 => s.noteOn;
 
-	//This determines the learning algorithms available in the GUI
+	//Do we want discrete or continuous parameters?
+	//i.e., NN or classifier?
 	fun int isDiscrete() {
-		return 1; //Return 1 for discrete, 0 for continuous
+		return 0;
 	}
 	
+	//The number of classes-- max-- that we want to use
+	//Necessary for structuring OSC messages
 	fun int getNumClasses() {
-		return 2;
+		return 24;
 	}
 
+	//Do we want the labels for each parameter,
+	//or a distribution over all possible labels? (classifier only)
 	fun int useDistribution() {
-		return 1; //Return 1 for distribution, 0 for simple integer label
+		return 0;
 	}
 
+	//This is called by the main code, only once after initialization, like a constructor
 	fun void setup() {
+		//Nothing to do
 	}
-	
+
+	//This is also sporked in the other code
+	//to define what happens when we get learned
+	//parameters back-- i.e., what do we do with them?
+	//Change both code if you want something different.
 	fun void setParams(float params[]) {
-		if (params.size() >= 2) {
+		//<<< "Chuck got new params", now>>>;
+		if (params.size() >= 1) {		
+			//Adjust the synthesis accordingly
 			params[0] => myParams[0];
 			if (myParams[0] < 0)
 				0 => myParams[0];
-			if (myParams[0] > 1)
-				1 => myParams[0];
-			params[1] => myParams[1];
-			if (myParams[1] < 0)
-				0 => myParams[1];
-			if (myParams[1] > 1)
-				1 => myParams[1]; 
-			
-			myParams[0] => s1.gain;
-			myParams[1] => s2.gain;
-
-		} else {
-			<<< "Error: params are wrong size ">>>;
+			if (myParams[0] > 23)
+				23 => myParams[0];
+			calcFreqFromParam(myParams[0]) => s.freq;
 		}
 	}
 
+	//Helper method
+	fun float calcFreqFromParam(float p) {
+		return Std.mtof(60 + p);
+	}
 
-/* PROBABLY don't need to change anything below this line ----------------------------*/
-/* See modification in icmc_twinkle_form_control.ck for implementing custom sound on/off 
-behavior, beyond master envelope control.*/
-	fun int getNumParams() {
+/* Don't need to change anything below this line ----------------------------*/
+fun int getNumParams() {
 		return numParams;
 	}
 
@@ -89,7 +96,7 @@ behavior, beyond master envelope control.*/
 	}
 
 	//Received when wekinator wants our params for playalong learning
-	fun void startGettingParams(OscSend x, dur r) { 
+	fun void startGettingParams(OscSend x, dur r) { //Q: Where does this go?? Here or in recording? Or neither-- put in main?
 		x @=> xmit;
 		r => rate;
 		1 => isSendingParams;
@@ -126,8 +133,6 @@ behavior, beyond master envelope control.*/
 	fun void setOscHostAndPort(string h, int p) {
 		//no need to do anything, unless you're using an OSC synth like Processing or Max.
 	}
-
-/*** Copy & Paste below at end of your code to add new functions as of 12/6/09 ***/
 	fun int[] useDistributionArray() {
 		new int[numParams] @=> int a[];
 		for (0 => int i; i < numParams; i++) {
@@ -152,11 +157,9 @@ behavior, beyond master envelope control.*/
 		return a;
 	}
 	
-	fun string[] getParamNamesArray() {
-		new string[numParams] @=> string s[];
-		for (0 => int i; i < numParams; i++) {
-			"Param_" + i => s[i];
-		}
+fun string[] getParamNamesArray() {
+		new string[1] @=> string s[];
+		"Note#" => s[0];
 		return s;
 	}
 

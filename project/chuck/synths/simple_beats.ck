@@ -1,10 +1,9 @@
 /* This is a simple additive layered drum machine
    Sounds adapted from standard ChucK demos by Ge Wang, Perry Cook
-   Part of ICMC 2009 demo
+   This was part of ICMC 2009 demo
  
- Wekinator version 0.2
- Copyright 2009 Rebecca Fiebrink
- http://wekinator.cs.princeton.edu
+ 	Copyright 2009 Rebecca Fiebrink
+ 	http://wekinator.cs.princeton.edu
 */
 
 public class SynthClass {
