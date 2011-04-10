@@ -1,8 +1,7 @@
-/* Stereo audio features, for Cameron's drum hit stuff
+/*  Stereo audio features, if you have multiple audio input channels
 
- Wekinator version 0.2
- Copyright 2009 Rebecca Fiebrink
- http://wekinator.cs.princeton.edu
+	Copyright 2009 Rebecca Fiebrink
+	http://wekinator.cs.princeton.edu
 */
 
 public class CustomFeatureExtractor {

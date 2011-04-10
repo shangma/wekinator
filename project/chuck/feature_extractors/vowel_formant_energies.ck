@@ -1,8 +1,7 @@
-/* Vowel feature extractor for Wekinator
+/*  Vowel feature extractor for Wekinator
 
- Wekinator version 0.2
- Copyright 2009 Rebecca Fiebrink
- http://wekinator.cs.princeton.edu
+ 	Copyright 2009 Rebecca Fiebrink
+ 	http://wekinator.cs.princeton.edu
 */
 
 public class CustomFeatureExtractor {

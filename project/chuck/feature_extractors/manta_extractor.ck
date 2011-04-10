@@ -1,9 +1,8 @@
-/* Feature extractor for keyboard input
-   Feature 1 is row, feature 2 is col
+/* Feature extractor for Jeff Snyder's Manta controller
+	Use with MantaCocoa program for transmitting features here via OSC
 
- Wekinator version 0.2
- Copyright 2009 Rebecca Fiebrink
- http://wekinator.cs.princeton.edu
+ 	Copyright 2010 Rebecca Fiebrink
+ 	http://wekinator.cs.princeton.edu
 */
 
 public class CustomFeatureExtractor {
@@ -29,7 +28,6 @@ public class CustomFeatureExtractor {
 			noteOff => now;
 			<<< "received note off">>>;
 			while( noteOff.nextMsg() ) {
-			
 				noteOff.getInt() => which;
 				noteOff.getInt() => tmp;
 				noteOff.getInt() => tmp;
@@ -61,6 +59,7 @@ public class CustomFeatureExtractor {
 	}
 
 	fun void setup() {
+		<<< "Manta setup listening">>>;
 		0 => isExtracting;
 		1 => isOK;
 		new float[numFeats] @=> float features[];

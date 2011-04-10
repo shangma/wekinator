@@ -1,13 +1,10 @@
-/* This is an example of how you might edit
-   CustomFeatureExtractor.ck to make your own
-   feature extractor in ChucK.
+/* 	This is skeleton code for creating your own feature 
+	extractor in ChucK.
 
-  For demo purposes only. (This isn't really useful, 
-  since we have a centroid feature extractor built-in already.)
+	Edit everywhere you see "TODO" below.
 
- Wekinator version 0.2
- Copyright 2009 Rebecca Fiebrink
- http://wekinator.cs.princeton.edu
+ 	Copyright 2009 Rebecca Fiebrink
+	http://wekinator.cs.princeton.edu
 */
 
 public class CustomFeatureExtractor {
@@ -15,11 +12,11 @@ public class CustomFeatureExtractor {
 	//stores features in a nicely named features[] array
 	0 => int isExtracting;
 	1 => int isOK;
-	1 => int numFeats; //change this to your # of features
+	1 => int numFeats; //TODO: change this to your # of features
 	new float[numFeats] @=> float features[]; //store computed features in this array
 	
-	//TODO: Optionally change the rate at which features are extracted
-	//This may not correspond to rate at which they are polled.
+	//TODO: Optionally change the rate at which features are extracted/computed
+	//This might not correspond to rate at which they are polled by the Wekinator.
 	100::ms => dur defaultRate => dur rate;
 
 	//TODO: create any custom objects here:
@@ -33,13 +30,20 @@ public class CustomFeatureExtractor {
 		b.fval(0) => features[0];
 	}
 
-	//TODO: Any necessary setup work here
-	//would set 0 => isOK if any problems happen.
+	//TODO: Do any necessary setup work here
+	//and set 0 => isOK if any problems happen.
 	fun void setup() {
 		0 => isExtracting;
 		1 => isOK;
 		new float[numFeats] @=> float features[];
 		defaultRate => rate;
+	}
+
+	//TODO: Tell Wekinator what your features are called.
+	fun string[] getFeatureNamesArray() {
+		string s[1];
+		"Centroid" => s[0];
+		return s;
 	}
 	
 /*** Shouldn't have to edit anything beyond this point **/
@@ -77,12 +81,5 @@ public class CustomFeatureExtractor {
 	//Stop extracting
 	fun void stop() {
 		0 => isExtracting;
-	}
-
-/** added 12/6/09 **/
-	fun string[] getFeatureNamesArray() {
-		string s[1];
-		"Centroid" => s[0];
-		return s;
 	}
 }

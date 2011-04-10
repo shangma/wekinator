@@ -1,8 +1,9 @@
-/* last 10 characters typed
+/* Features are (row, col) of last 10 characters typed
+	MUST HIT ENTER after each command
+	Can be used as a somewhat error-resistant text command interface
 
- Wekinator version 0.2
- Copyright 2009 Rebecca Fiebrink
- http://wekinator.cs.princeton.edu
+ 	Copyright 2009 Rebecca Fiebrink
+	http://wekinator.cs.princeton.edu
 */
 
 public class CustomFeatureExtractor {
