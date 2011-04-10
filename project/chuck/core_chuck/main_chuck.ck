@@ -6,7 +6,7 @@ MotionFeatureExtractor motionFE;
 AudioFeatureExtractor audioFE;
 ProcessingFeatureExtractor processingFE;
 CustomFeatureExtractor customFE;
-CustomOSCFeatureExtractor oscCustomFE;
+//CustomOSCFeatureExtractor oscCustomFE;
 
 //The rate at which features will be extracted: edit this!
 //(note this is also like the "hop size")
@@ -37,7 +37,7 @@ customFE.getFeatureNamesArray() @=> string customNamesArray[];
 0 => int otherDevice; //device ID: should be 0 or maybe 1
 0 => int useProcessing; //get features from processing (webcam) too?
 0 => int useCustom;
-0 => int useOscCustom;
+//0 => int useOscCustom;
 
 //OSC setup
 6448 => int sendport;
@@ -54,7 +54,7 @@ recv.listen();
 //Some standard events
 recv.event("/control", "s i") @=> OscEvent oscControl;
 recv.event("/useAudioFeature", "i i i i i i i i i i") @=> OscEvent oscUseAudio;
-recv.event("/useFeatureMessage", "s i") @=> OscEvent oscUseFeatureMessage;
+//recv.event("/useFeatureMessage", "s i") @=> OscEvent oscUseFeatureMessage;
 recv.event("/useFeatureList", "i i i i i i i i i i i i i i i i") @=> OscEvent oscUseFeatureList;
 
 OscEvent oscParams;
@@ -136,7 +136,7 @@ sp.setup(mc, xmit);
 
 //Spork OSC shreds
 spork ~oscUseAudioWait();
-spork ~oscUseFeatureMessageWait();
+//spork ~oscUseFeatureMessageWait();
 spork ~oscControlWait();
 spork ~oscUseFeatureListWait();
 
@@ -467,9 +467,9 @@ fun void receivedExtract() {
 		if (useCustom) {
 			spork ~customFE.extract();
 		}
-		if (useOscCustom) {
+		/*if (useOscCustom) {
 			spork ~oscCustomFE.extract();
-		}
+		} */
 		sendFeatureData();
 		spork ~extractFeatures();
 }
@@ -493,9 +493,9 @@ fun void receivedStop() {
 		if (useCustom) {
 			customFE.stop();
 		}
-		if (useOscCustom) {
-			oscCustomFE.stop();
-		}
+		//if (useOscCustom) {
+		//	oscCustomFE.stop();
+		//}
 }
 
 //Extract them features!
@@ -559,8 +559,8 @@ fun void computeNumFeats() {
 		numFeats + processingFE.numFeatures() => numFeats;
 	if (useCustom) 
 		customFE.numFeatures() +=> numFeats;
-	if (useOscCustom) 
-		oscCustomFE.numFeatures() +=> numFeats;
+	//if (useOscCustom) 
+	//	oscCustomFE.numFeatures() +=> numFeats;
 
 	"" => featureMessageString;
 	if (numFeats > 0) {
@@ -612,11 +612,11 @@ fun void sendFeatures() {
 			customFE.getFeatures()[i] => xmit.addFloat;
 		}
 	}
-	if (useOscCustom) {
+	/*if (useOscCustom) {
 		for (0 => int i; i < oscCustomFE.numFeatures(); i++) {
 			oscCustomFE.getFeatures()[i] => xmit.addFloat;
 		}
-	}
+	} */
 }
 
 fun void oscParamsWait() {
@@ -714,10 +714,10 @@ fun void oscUseFeatureListWait() {
 
 			//custom osc
 			oscUseFeatureList.getInt() => use;
-			if (oscCustomFE != null) {
+			/*if (oscCustomFE != null) {
 				oscCustomFE.stop();
-			}
-			if (use > 0) {
+			} */
+			//if (use > 0) { 
 			/*	1 => useOscCustom;
 				new CustomOSCFeatureExtractor @=> oscCustomFE;
 				oscCustomFE.setup(use, recv);
@@ -725,10 +725,10 @@ fun void oscUseFeatureListWait() {
 					0 => useOscCustom;
 				} */
 			//NEW:
-				0 => useOscCustom;
-			} else {
-				0 => useOscCustom;
-			}
+			//	0 => useOscCustom;
+			//} else {
+			//	0 => useOscCustom;
+			//}
 	
 			//custom chuck
 			oscUseFeatureList.getInt() => use;	
@@ -753,7 +753,7 @@ fun void oscUseFeatureListWait() {
 	} //end while true
 }
 
-fun void oscUseFeatureMessageWait() {
+/*fun void oscUseFeatureMessageWait() {
 	while (true) {
 		oscUseFeatureMessage => now;
 		<<< "BAD BAD BAD Chuck: received feature MESSAGE: BAD ">>>;
@@ -778,7 +778,7 @@ fun void oscUseFeatureMessageWait() {
 			}
 		}
 	}
-}
+} */
 
 fun void receivedTrackpadMessage(int i) {
 		//<<< "Saw trackpad", i>>>;
@@ -890,7 +890,7 @@ fun void receivedCustomMessage(int i) {
 	computeNumFeats();
 }
 
-fun void receivedOscCustomMessage(int i) {
+/*fun void receivedOscCustomMessage(int i) {
 	i => int use;
 	if (oscCustomFE != null) {
 		oscCustomFE.stop();
@@ -906,7 +906,7 @@ fun void receivedOscCustomMessage(int i) {
 		0 => useOscCustom;
 	}
 	computeNumFeats();
-}
+} */
 
 
 
