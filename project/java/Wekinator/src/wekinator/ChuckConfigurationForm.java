@@ -51,7 +51,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
 
 
         //Hid OSC Features for plork
-        panelOscFeatureExtractor.setVisible(!WekinatorRunner.isPlork());
+       // panelOscFeatureExtractor.setVisible(!WekinatorRunner.isPlork());
         repaint();
         updateAllComponents();
     }
@@ -105,11 +105,6 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         buttonChooseChuckFeatureExtractor = new javax.swing.JButton();
         checkEnableCustomChuckFeature = new javax.swing.JCheckBox();
         helpFeatures = new javax.swing.JButton();
-        panelOscFeatureExtractor = new javax.swing.JPanel();
-        checkEnableOSCFeature = new javax.swing.JCheckBox();
-        jLabel7 = new javax.swing.JLabel();
-        jLabel8 = new javax.swing.JLabel();
-        textNumOscFeatures = new javax.swing.JFormattedTextField();
         panelSynth = new javax.swing.JPanel();
         radioUseChuckSynth = new javax.swing.JRadioButton();
         labelChuckSynthClass = new javax.swing.JLabel();
@@ -200,67 +195,12 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
 
         helpFeatures.setIcon(new javax.swing.ImageIcon(getClass().getResource("/wekinator/info.png"))); // NOI18N
 
-        checkEnableOSCFeature.setText("Enable an OSC feature extractor (e.g., Max/MSP) (launch manually)");
-        checkEnableOSCFeature.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                checkEnableOSCFeatureActionPerformed(evt);
-            }
-        });
-
-        jLabel7.setText("features extracted");
-
-        jLabel8.setFont(new java.awt.Font("Lucida Grande", 2, 13));
-        jLabel8.setText("Ensure your extractor is sending these to port 6448");
-
-        textNumOscFeatures.setText("0");
-        textNumOscFeatures.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                textNumOscFeaturesActionPerformed(evt);
-            }
-        });
-        textNumOscFeatures.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                textNumOscFeaturesPropertyChange(evt);
-            }
-        });
-
-        org.jdesktop.layout.GroupLayout panelOscFeatureExtractorLayout = new org.jdesktop.layout.GroupLayout(panelOscFeatureExtractor);
-        panelOscFeatureExtractor.setLayout(panelOscFeatureExtractorLayout);
-        panelOscFeatureExtractorLayout.setHorizontalGroup(
-            panelOscFeatureExtractorLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(panelOscFeatureExtractorLayout.createSequentialGroup()
-                .add(panelOscFeatureExtractorLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(panelOscFeatureExtractorLayout.createSequentialGroup()
-                        .add(33, 33, 33)
-                        .add(textNumOscFeatures, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 63, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabel7)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabel8))
-                    .add(checkEnableOSCFeature))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        panelOscFeatureExtractorLayout.setVerticalGroup(
-            panelOscFeatureExtractorLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(panelOscFeatureExtractorLayout.createSequentialGroup()
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(checkEnableOSCFeature)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(panelOscFeatureExtractorLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(textNumOscFeatures, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel7)
-                    .add(jLabel8)))
-        );
-
         org.jdesktop.layout.GroupLayout panelFeaturesLayout = new org.jdesktop.layout.GroupLayout(panelFeatures);
         panelFeatures.setLayout(panelFeaturesLayout);
         panelFeaturesLayout.setHorizontalGroup(
             panelFeaturesLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(panelFeaturesLayout.createSequentialGroup()
                 .add(panelFeaturesLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(panelFeaturesLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(panelOscFeatureExtractor, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, panelFeaturesLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(panelFeaturesLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -270,11 +210,11 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                                 .add(jLabel1)))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(buttonChooseChuckFeatureExtractor)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 135, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 130, Short.MAX_VALUE)
                         .add(helpFeatures))
                     .add(panelFeaturesLayout.createSequentialGroup()
                         .add(52, 52, 52)
-                        .add(labelCustomFeatureExtractor, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)))
+                        .add(labelCustomFeatureExtractor, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         panelFeaturesLayout.setVerticalGroup(
@@ -290,9 +230,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                     .add(helpFeatures))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(labelCustomFeatureExtractor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(34, 34, 34)
-                .add(panelOscFeatureExtractor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(32, Short.MAX_VALUE))
+                .addContainerGap(139, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("Features (input)", panelFeatures);
@@ -617,15 +555,15 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
             configuration.setNumOSCFeaturesExtracted(0);
             configuration.setOscFeatureExtractorEnabled(false);
         } else {
-            configuration.setOscFeatureExtractorEnabled(checkEnableOSCFeature.getModel().isSelected());
-            System.out.println("Is osc feat enabled? " + configuration.isOscFeatureExtractorEnabled());
-            try {
+          //  configuration.setOscFeatureExtractorEnabled(checkEnableOSCFeature.getModel().isSelected());
+         //   System.out.println("Is osc feat enabled? " + configuration.isOscFeatureExtractorEnabled());
+         /*   try {
                 int i = Integer.parseInt(textNumOscFeatures.getText());
                 configuration.setNumOSCFeaturesExtracted(i);
             } catch (Exception ex) {
                 configuration.setNumOSCFeaturesExtracted(0);
                 textNumOscFeatures.setText("0");
-            }
+            } */
         }
 
         //try {
@@ -804,17 +742,6 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
     private void radioUseOSCSynthActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioUseOSCSynthActionPerformed
         updateChuckSynthLabelsEnabled();
     }//GEN-LAST:event_radioUseOSCSynthActionPerformed
-
-    private void checkEnableOSCFeatureActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkEnableOSCFeatureActionPerformed
-}//GEN-LAST:event_checkEnableOSCFeatureActionPerformed
-
-    private void textNumOscFeaturesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textNumOscFeaturesActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_textNumOscFeaturesActionPerformed
-
-    private void textNumOscFeaturesPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_textNumOscFeaturesPropertyChange
-        // TODO add your handling code here:
-}//GEN-LAST:event_textNumOscFeaturesPropertyChange
 
     private void buttonChoosePlayalongFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonChoosePlayalongFileActionPerformed
         File f = findChuckScoreFile();
@@ -1035,7 +962,6 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
     private javax.swing.JButton buttonSaveConfiguration;
     private javax.swing.JButton buttonSaveConfiguration1;
     private javax.swing.JCheckBox checkEnableCustomChuckFeature;
-    private javax.swing.JCheckBox checkEnableOSCFeature;
     private javax.swing.JCheckBox checkEnablePlayalong;
     private javax.swing.JButton helpCoreChuck;
     private javax.swing.JButton helpFeatures;
@@ -1048,8 +974,6 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTabbedPane jTabbedPane2;
@@ -1061,13 +985,11 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
     private javax.swing.JLabel labelOSCSynthProps;
     private javax.swing.JLabel labelScorePlayer;
     private javax.swing.JPanel panelFeatures;
-    private javax.swing.JPanel panelOscFeatureExtractor;
     private javax.swing.JPanel panelPlayalong;
     private javax.swing.JPanel panelSetup;
     private javax.swing.JPanel panelSynth;
     private javax.swing.JRadioButton radioUseChuckSynth;
     private javax.swing.JRadioButton radioUseOSCSynth;
-    private javax.swing.JFormattedTextField textNumOscFeatures;
     // End of variables declaration//GEN-END:variables
 
     private void updateAllComponents() {
@@ -1079,8 +1001,8 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         //   textExtractorSendPort.setText(Integer.toString(configuration.getOscFeatureExtractorSendPort()));
 
         //OSC feature: not for plork build
-        checkEnableOSCFeature.getModel().setSelected(configuration.isOscFeatureExtractorEnabled());
-        textNumOscFeatures.setText(Integer.toString(configuration.getNumOSCFeaturesExtracted()));
+       // checkEnableOSCFeature.getModel().setSelected(configuration.isOscFeatureExtractorEnabled());
+       // textNumOscFeatures.setText(Integer.toString(configuration.getNumOSCFeaturesExtracted()));
 
         if (configuration.isUseChuckSynthClass()) {
             buttonGroup1.setSelected(radioUseChuckSynth.getModel(), true);

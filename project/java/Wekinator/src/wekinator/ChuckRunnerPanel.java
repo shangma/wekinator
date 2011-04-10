@@ -287,13 +287,13 @@ public class ChuckRunnerPanel extends javax.swing.JPanel {
         ChuckConfiguration c = ChuckRunner.getConfiguration();
         if (c.isCustomChuckFeatureExtractorEnabled()) {
             String fname = getLastPart(c.getCustomChuckFeatureExtractorFilename());
-            s += "Custom ChucK features from " + fname + ". ";
-        }
-        if (c.isOscFeatureExtractorEnabled()) {
+            s = "Custom ChucK features from " + fname + ". ";
+        
+       /* if (c.isOscFeatureExtractorEnabled()) {
             s += c.getNumOSCFeaturesExtracted() + " features from OSC.";
-        }
-        if (!c.isCustomChuckFeatureExtractorEnabled() && !c.isOscFeatureExtractorEnabled()) {
-            s = "No custom feature extractors.";
+        } */
+        } else {
+            s = "No custom ChucK feature extractor.";
         }
         labelFeatures.setText(s);
 
