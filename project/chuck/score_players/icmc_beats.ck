@@ -43,7 +43,7 @@ public class ScorePlayer {
     //playScore() code (it's never called automatically) 
 	fun void sendMessage() {
 		xmit.startMsg("/playAlongMessage s");
-		"Playing twinkle twinkle by section, current section is " + p[0] => string s;
+		"Playing beats 0-3 in sequence; current beat is " + p[0] => string s;
 		xmit.addString(s);
 	}
 

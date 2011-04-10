@@ -185,8 +185,8 @@ fun void receivedStartSound() {
 }
 
 fun void receivedHello() {
-		xmit.startMsg( "/hiback i");
-		0 => xmit.addInt;
+	xmit.startMsg( "/hiback i");
+	customFE.numFeatures() => xmit.addInt;
 }
 
 //Wait for the signal to enter into hid setup mode
