@@ -45,7 +45,7 @@ public class Util {
        /* File defaultFile = null;
         if (defFile != null)
             defaultFile = new File(defFile); */
-        String lastLoc = WekinatorInstance.getWekinatorInstance().getSettings().getLastLocation(ext);
+        String lastLoc = WekinatorInstance.getWekinatorInstance().getSettings().getLastKeyValue(ext);
         File defaultFile = null;
         if (lastLoc != null) {
             defaultFile = new File(lastLoc);
@@ -72,7 +72,7 @@ public class Util {
     }
 
      public static File findSaveFile(String ext, String description, String defDir, Component c) {
-        String lastLoc = WekinatorInstance.getWekinatorInstance().getSettings().getLastLocation(ext);
+        String lastLoc = WekinatorInstance.getWekinatorInstance().getSettings().getLastKeyValue(ext);
         File defaultFile = null;
         if (lastLoc != null) {
             defaultFile = new File(lastLoc);
@@ -99,7 +99,7 @@ public class Util {
      }
 
     public static void setLastFile(String fileExtension, File file) {
-        WekinatorInstance.getWekinatorInstance().getSettings().setLastLocation(fileExtension, getCanonicalPath(file));
+        WekinatorInstance.getWekinatorInstance().getSettings().setLastKeyValue(fileExtension, getCanonicalPath(file));
     }
 
 

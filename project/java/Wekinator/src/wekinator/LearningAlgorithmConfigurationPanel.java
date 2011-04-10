@@ -326,7 +326,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
         WekinatorInstance wek = WekinatorInstance.getWekinatorInstance();
         JFileChooser fc = new JFileChooser();
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastLocation(LearningAlgorithm.getFileExtension());
+        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastKeyValue(LearningAlgorithm.getFileExtension());
         if (location == null || location.equals("")) {
             location = HidSetup.getDefaultLocation();
         }
@@ -339,7 +339,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
             file = fc.getSelectedFile();
         }
         if (file != null) {
-            WekinatorInstance.getWekinatorInstance().getSettings().setLastLocation(LearningAlgorithm.getFileExtension(), Util.getCanonicalPath(file));
+            WekinatorInstance.getWekinatorInstance().getSettings().setLastKeyValue(LearningAlgorithm.getFileExtension(), Util.getCanonicalPath(file));
         }
         return file;
     }

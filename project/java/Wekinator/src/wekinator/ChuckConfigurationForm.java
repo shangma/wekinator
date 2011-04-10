@@ -104,8 +104,6 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         labelCustomFeatureExtractor = new javax.swing.JLabel();
         buttonChooseChuckFeatureExtractor = new javax.swing.JButton();
         checkEnableCustomChuckFeature = new javax.swing.JCheckBox();
-        textNumCustomFeatures = new javax.swing.JFormattedTextField();
-        jLabel5 = new javax.swing.JLabel();
         helpFeatures = new javax.swing.JButton();
         panelOscFeatureExtractor = new javax.swing.JPanel();
         checkEnableOSCFeature = new javax.swing.JCheckBox();
@@ -200,21 +198,6 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
             }
         });
 
-        textNumCustomFeatures.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0"))));
-        textNumCustomFeatures.setText("0");
-        textNumCustomFeatures.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                textNumCustomFeaturesActionPerformed(evt);
-            }
-        });
-        textNumCustomFeatures.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                textNumCustomFeaturesPropertyChange(evt);
-            }
-        });
-
-        jLabel5.setText("features extracted");
-
         helpFeatures.setIcon(new javax.swing.ImageIcon(getClass().getResource("/wekinator/info.png"))); // NOI18N
 
         checkEnableOSCFeature.setText("Enable an OSC feature extractor (e.g., Max/MSP) (launch manually)");
@@ -255,7 +238,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jLabel8))
                     .add(checkEnableOSCFeature))
-                .addContainerGap(49, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         panelOscFeatureExtractorLayout.setVerticalGroup(
             panelOscFeatureExtractorLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -284,19 +267,14 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                             .add(checkEnableCustomChuckFeature)
                             .add(panelFeaturesLayout.createSequentialGroup()
                                 .add(29, 29, 29)
-                                .add(panelFeaturesLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(panelFeaturesLayout.createSequentialGroup()
-                                        .add(textNumCustomFeatures, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 63, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(jLabel5))
-                                    .add(jLabel1))))
+                                .add(jLabel1)))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(buttonChooseChuckFeatureExtractor)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 155, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 135, Short.MAX_VALUE)
                         .add(helpFeatures))
                     .add(panelFeaturesLayout.createSequentialGroup()
                         .add(52, 52, 52)
-                        .add(labelCustomFeatureExtractor, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 550, Short.MAX_VALUE)))
+                        .add(labelCustomFeatureExtractor, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         panelFeaturesLayout.setVerticalGroup(
@@ -312,13 +290,9 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                     .add(helpFeatures))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(labelCustomFeatureExtractor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(panelFeaturesLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(textNumCustomFeatures, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel5))
-                .add(4, 4, 4)
+                .add(34, 34, 34)
                 .add(panelOscFeatureExtractor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(32, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("Features (input)", panelFeatures);
@@ -379,7 +353,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                         .add(radioUseChuckSynth)
                         .add(8, 8, 8)
                         .add(buttonChooseChuckSynth)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 244, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 230, Short.MAX_VALUE)
                         .add(helpSynth)))
                 .addContainerGap())
             .add(panelSynthLayout.createSequentialGroup()
@@ -391,7 +365,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .add(buttonEditRealInteger))
                     .add(radioUseOSCSynth))
-                .addContainerGap(73, Short.MAX_VALUE))
+                .addContainerGap(62, Short.MAX_VALUE))
         );
         panelSynthLayout.setVerticalGroup(
             panelSynthLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -412,7 +386,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                 .add(panelSynthLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(labelOSCSynthProps)
                     .add(buttonEditRealInteger))
-                .addContainerGap(52, Short.MAX_VALUE))
+                .addContainerGap(85, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("Synthesis (output)", panelSynth);
@@ -471,7 +445,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                     .add(panelSetupLayout.createSequentialGroup()
                         .add(24, 24, 24)
                         .add(labelCoreChuckDirectory)))
-                .addContainerGap(188, Short.MAX_VALUE))
+                .addContainerGap(174, Short.MAX_VALUE))
             .add(panelSetupLayout.createSequentialGroup()
                 .add(20, 20, 20)
                 .add(jLabel6)
@@ -501,7 +475,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(labelCoreChuckDirectory))
                     .add(helpCoreChuck))
-                .addContainerGap(28, Short.MAX_VALUE))
+                .addContainerGap(48, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("System", panelSetup);
@@ -551,7 +525,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                         .add(jLabel15))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, panelPlayalongLayout.createSequentialGroup()
                         .add(35, 35, 35)
-                        .add(labelScorePlayer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 568, Short.MAX_VALUE)))
+                        .add(labelScorePlayer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 582, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         panelPlayalongLayout.setVerticalGroup(
@@ -570,7 +544,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                 .add(jLabel15)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(labelScorePlayer)
-                .addContainerGap(90, Short.MAX_VALUE))
+                .addContainerGap(102, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("Playalong", panelPlayalong);
@@ -609,7 +583,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(buttonCancel)
                     .add(buttonOK))
-                .addContainerGap(82, Short.MAX_VALUE))
+                .addContainerGap(61, Short.MAX_VALUE))
         );
 
         jScrollPane1.setViewportView(jPanel3);
@@ -654,14 +628,14 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
             }
         }
 
-        try {
+        //try {
 
-            configuration.setNumCustomChuckFeaturesExtracted(Integer.parseInt(textNumCustomFeatures.getText()));
+         //   configuration.setNumCustomChuckFeaturesExtracted(Integer.parseInt(textNumCustomFeatures.getText()));
         //    configuration.setOscFeatureExtractorSendPort(Integer.parseInt(textExtractorSendPort.getText()));
-        } catch (Exception ex) {
-            configuration.setNumCustomChuckFeaturesExtracted(0);
-            textNumCustomFeatures.setText("0");
-        }
+        //} catch (Exception ex) {
+         //   configuration.setNumCustomChuckFeaturesExtracted(0);
+         //   textNumCustomFeatures.setText("0");
+        //}
 
         if (radioUseChuckSynth.getModel().isSelected()) {
             configuration.setUseChuckSynthClass(true);
@@ -682,13 +656,6 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         configuration.setPlayalongLearningFile(labelScorePlayer.getText());
     //   }
     }
-
-    private void textNumCustomFeaturesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textNumCustomFeaturesActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_textNumCustomFeaturesActionPerformed
-
-    private void textNumCustomFeaturesPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_textNumCustomFeaturesPropertyChange
-}//GEN-LAST:event_textNumCustomFeaturesPropertyChange
 
     private void buttonLoadConfigurationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonLoadConfigurationActionPerformed
         //Pop up findConfigurationFile dialog box
@@ -1080,7 +1047,6 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
@@ -1101,7 +1067,6 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
     private javax.swing.JPanel panelSynth;
     private javax.swing.JRadioButton radioUseChuckSynth;
     private javax.swing.JRadioButton radioUseOSCSynth;
-    private javax.swing.JFormattedTextField textNumCustomFeatures;
     private javax.swing.JFormattedTextField textNumOscFeatures;
     // End of variables declaration//GEN-END:variables
 
@@ -1110,7 +1075,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         labelChuckExecutable.setText(configuration.getChuckExecutable());
         checkEnableCustomChuckFeature.getModel().setSelected(configuration.isCustomChuckFeatureExtractorEnabled());
         labelCustomFeatureExtractor.setText(configuration.getCustomChuckFeatureExtractorFilename());
-        textNumCustomFeatures.setText(Integer.toString(configuration.getNumCustomChuckFeaturesExtracted()));
+      //  textNumCustomFeatures.setText(Integer.toString(configuration.getNumCustomChuckFeaturesExtracted()));
         //   textExtractorSendPort.setText(Integer.toString(configuration.getOscFeatureExtractorSendPort()));
 
         //OSC feature: not for plork build

@@ -112,6 +112,8 @@ public class ChuckRunner {
         return configuration;
     }
 
+    //Will have problems if this gets called ever, outside
+    //WekinatorInstance: Some things have listeners on this configuration!
     public static void setConfiguration(ChuckConfiguration c) {
         ChuckConfiguration oldConfiguration = configuration;
         if (ref.runnerState != ChuckRunnerState.NOT_RUNNING) {
@@ -169,12 +171,12 @@ public class ChuckRunner {
        s[2] = removeC(s[2]);
        cmds.add(s);
 
-        s = new String[3];
+      /*  s = new String[3];
         s[0] = configuration.getChuckExecutable();
         s[1] = "+";
         s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "CustomOSCFeatureExtractor.ck";
         s[2] = removeC(s[2]);
-        cmds.add(s);
+        cmds.add(s); */
 
         s = new String[3];
         s[0] = configuration.getChuckExecutable();
@@ -190,7 +192,7 @@ public class ChuckRunner {
             s[2] = configuration.getCustomChuckFeatureExtractorFilename();
 
         } else {
-            s[2] = configuration.getChuckDir() + File.separator + "feature_extractors" + File.separator + "keyboard_rowcol.ck";
+            s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "DummyFeatureExtractor.ck";
         }
         s[2] = removeC(s[2]);
         cmds.add(s);
@@ -385,14 +387,13 @@ public class ChuckRunner {
         w.write("Machine.add(\"" + winescape(configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "MotionFeatureExtractor.ck") + "\");\n");
         w.write("Machine.add(\"" + winescape(configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "AudioFeatureExtractor.ck") + "\");\n");
         w.write("Machine.add(\"" + winescape(configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "HidDiscoverer.ck") + "\");\n");
-        w.write("Machine.add(\"" + winescape(configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "CustomOSCFeatureExtractor.ck") + "\");\n");
+       // w.write("Machine.add(\"" + winescape(configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "CustomOSCFeatureExtractor.ck") + "\");\n");
 
         w.write("Machine.add(\"" +winescape( configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "ProcessingFeatureExtractor.ck") + "\");\n");
         if (configuration.isCustomChuckFeatureExtractorEnabled()) {
             w.write("Machine.add(\"" + winescape(configuration.getCustomChuckFeatureExtractorFilename()) + "\");\n");
-
         } else {
-            w.write("Machine.add(\"" +winescape( configuration.getChuckDir() + File.separator + "feature_extractors" + File.separator + "keyboard_rowcol.ck") + "\");\n");
+            w.write("Machine.add(\"" +winescape( configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "DummyFeatureExtractor.ck") + "\");\n");
         }
 
         if (configuration.isUseOscSynth()) {

@@ -44,6 +44,39 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
         //    setFormFromConfiguration(new FeatureConfiguration
         setHidSetup(hidSetup);
         clearForm();
+        updateCustomChuck();
+        WekinatorInstance.getWekinatorInstance().getConfiguration().addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent pce) {
+                chuckConfigurationPropertyChanged(pce);
+            }
+        });
+    }
+
+    private void chuckConfigurationPropertyChanged(PropertyChangeEvent pce) {
+        if (pce.getPropertyName().equals(ChuckConfiguration.PROP_NUMCUSTOMCHUCKFEATURES)) {
+            updateCustomChuck();
+        }
+    }
+
+    private void updateCustomChuck() {
+        ChuckConfiguration c = WekinatorInstance.getWekinatorInstance().getConfiguration();
+        if (c != null) {
+            if (c.isCustomChuckFeatureExtractorEnabled()) {
+                labelNumCustomChuckFeatures.setText("" + c.getNumCustomChuckFeaturesExtracted());
+                checkCustomChuck.setEnabled(true);
+                checkCustomChuck.setSelected(true);
+                labelNumCustomChuckFeatures.setEnabled(true);
+                labelCustomChuck2.setEnabled(true);
+            } else {
+                labelNumCustomChuckFeatures.setText("0");
+                checkCustomChuck.setEnabled(false);
+                checkCustomChuck.setSelected(false);
+                labelNumCustomChuckFeatures.setEnabled(false);
+                labelCustomChuck2.setEnabled(false);
+
+            }
+        }
 
     }
 
@@ -77,8 +110,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
         jButton1 = new javax.swing.JButton();
         labelHidDescription = new javax.swing.JLabel();
         checkCustomChuck = new javax.swing.JCheckBox();
-        textNumCustomChuckFeatures = new javax.swing.JFormattedTextField();
-        jLabel2 = new javax.swing.JLabel();
+        labelCustomChuck2 = new javax.swing.JLabel();
         checkCustomOSC = new javax.swing.JCheckBox();
         textNumCustomOSCFeatures = new javax.swing.JFormattedTextField();
         jLabel7 = new javax.swing.JLabel();
@@ -93,22 +125,23 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         labelFeatureStatus = new javax.swing.JLabel();
         buttonAddMeta = new javax.swing.JButton();
+        labelNumCustomChuckFeatures = new javax.swing.JLabel();
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Chuck audio input features"));
 
-        checkFFT.setFont(new java.awt.Font("Lucida Grande", 0, 12)); // NOI18N
+        checkFFT.setFont(new java.awt.Font("Lucida Grande", 0, 12));
         checkFFT.setText("FFT");
 
-        checkRMS.setFont(new java.awt.Font("Lucida Grande", 0, 12)); // NOI18N
+        checkRMS.setFont(new java.awt.Font("Lucida Grande", 0, 12));
         checkRMS.setText("RMS");
 
-        checkCentroid.setFont(new java.awt.Font("Lucida Grande", 0, 12)); // NOI18N
+        checkCentroid.setFont(new java.awt.Font("Lucida Grande", 0, 12));
         checkCentroid.setText("Centroid");
 
-        checkFlux.setFont(new java.awt.Font("Lucida Grande", 0, 12)); // NOI18N
+        checkFlux.setFont(new java.awt.Font("Lucida Grande", 0, 12));
         checkFlux.setText("Flux");
 
-        checkRolloff.setFont(new java.awt.Font("Lucida Grande", 0, 12)); // NOI18N
+        checkRolloff.setFont(new java.awt.Font("Lucida Grande", 0, 12));
         checkRolloff.setText("Rolloff");
 
         jLabel6.setFont(new java.awt.Font("Lucida Grande", 0, 12));
@@ -200,7 +233,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
                         .add(checkFlux)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(checkRolloff)))
-                .add(0, 0, Short.MAX_VALUE))
+                .add(0, 39, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -247,20 +280,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
             }
         });
 
-        textNumCustomChuckFeatures.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0"))));
-        textNumCustomChuckFeatures.setText("35");
-        textNumCustomChuckFeatures.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                textNumCustomChuckFeaturesActionPerformed(evt);
-            }
-        });
-        textNumCustomChuckFeatures.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                textNumCustomChuckFeaturesPropertyChange(evt);
-            }
-        });
-
-        jLabel2.setText("features");
+        labelCustomChuck2.setText("features");
 
         checkCustomOSC.setText("Custom OSC feature extractor with");
 
@@ -327,13 +347,15 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
             }
         });
 
+        labelNumCustomChuckFeatures.setText("100");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(47, 47, 47)
-                .add(labelHidDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE))
+                .add(labelHidDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -350,10 +372,10 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
                         .add(jButton1))
                     .add(layout.createSequentialGroup()
                         .add(checkCustomChuck)
+                        .add(9, 9, 9)
+                        .add(labelNumCustomChuckFeatures)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(textNumCustomChuckFeatures, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabel2))
+                        .add(labelCustomChuck2))
                     .add(layout.createSequentialGroup()
                         .add(checkCustomOSC)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -374,7 +396,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
                 .add(buttonGo)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(labelFeatureStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 379, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(77, Short.MAX_VALUE))
+                .addContainerGap(116, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(buttonLoad)
@@ -382,16 +404,16 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
                 .add(buttonSave)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(buttonUndo)
-                .addContainerGap(22, Short.MAX_VALUE))
+                .addContainerGap(61, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(buttonAddMeta)
-                .addContainerGap(238, Short.MAX_VALUE))
+                .addContainerGap(277, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(20, 20, 20)
+                .add(32, 32, 32)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createSequentialGroup()
                         .add(checkTrackpad)
@@ -409,8 +431,8 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(checkCustomChuck)
-                    .add(textNumCustomChuckFeatures, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel2))
+                    .add(labelCustomChuck2)
+                    .add(labelNumCustomChuckFeatures))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(checkCustomOSC)
@@ -461,12 +483,6 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
 
     private void checkCustomChuckActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkCustomChuckActionPerformed
 }//GEN-LAST:event_checkCustomChuckActionPerformed
-
-    private void textNumCustomChuckFeaturesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textNumCustomChuckFeaturesActionPerformed
-}//GEN-LAST:event_textNumCustomChuckFeaturesActionPerformed
-
-    private void textNumCustomChuckFeaturesPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_textNumCustomChuckFeaturesPropertyChange
-}//GEN-LAST:event_textNumCustomChuckFeaturesPropertyChange
 
     private void textMotionExtractionRateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textMotionExtractionRateActionPerformed
 }//GEN-LAST:event_textMotionExtractionRateActionPerformed
@@ -577,19 +593,19 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
                     return;
                 } else {
 
-                WekinatorInstance.getWekinatorInstance().setFeatureConfiguration(featureConfiguration);
-                labelFeatureStatus.setText("Feature configuration set; using " + featureConfiguration.getNumFeaturesEnabled() + " features.");
-                return;
+                    WekinatorInstance.getWekinatorInstance().setFeatureConfiguration(featureConfiguration);
+                    labelFeatureStatus.setText("Feature configuration set; using " + featureConfiguration.getNumFeaturesEnabled() + " features.");
+                    return;
                 }
             }
-       // }
+            // }
             //Possible problem here: what if not "equal" per se but still need to refresh chuck? Does equality work with hid change, fft size change, motion rate change, etc.?
         } else if (ChuckSystem.getChuckSystem().state != ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID) {
-        //else {
-                //Then, set backup to the current configuration, and set the WekInst current to it as well
-                WekinatorInstance.getWekinatorInstance().setFeatureConfiguration(featureConfiguration);
-                labelFeatureStatus.setText("Feature configuration set; using " + featureConfiguration.getNumFeaturesEnabled() + " features.");
-            
+            //else {
+            //Then, set backup to the current configuration, and set the WekInst current to it as well
+            WekinatorInstance.getWekinatorInstance().setFeatureConfiguration(featureConfiguration);
+            labelFeatureStatus.setText("Feature configuration set; using " + featureConfiguration.getNumFeaturesEnabled() + " features.");
+
         }
     }//GEN-LAST:event_buttonGoActionPerformed
 
@@ -632,21 +648,21 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox comboWindowType;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel labelCustomChuck2;
     private javax.swing.JLabel labelFeatureStatus;
     private javax.swing.JLabel labelHidDescription;
+    private javax.swing.JLabel labelNumCustomChuckFeatures;
     private javax.swing.JRadioButton radioWebcamColor;
     private javax.swing.JRadioButton radioWebcamEdge;
     private javax.swing.JFormattedTextField textAudioRate;
     private javax.swing.JFormattedTextField textFftSize;
     private javax.swing.JFormattedTextField textMotionExtractionRate;
-    private javax.swing.JFormattedTextField textNumCustomChuckFeatures;
     private javax.swing.JFormattedTextField textNumCustomOSCFeatures;
     private javax.swing.JFormattedTextField textWindowSize;
     // End of variables declaration//GEN-END:variables
@@ -660,7 +676,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
         }
     }
 
-    public void setHidSetup(HidSetup h) {
+    protected final void setHidSetup(HidSetup h) {
         HidSetup oldSetup = hidSetup;
         hidSetup = h;
         if (hidSetup != null) {
@@ -691,7 +707,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
         textFftSize.setValue(new Integer(featureConfiguration.getFftSize()));
         textWindowSize.setValue(new Integer(featureConfiguration.getFftWindowSize()));
         textMotionExtractionRate.setValue(new Integer(featureConfiguration.getMotionSensorExtractionRate()));
-        textNumCustomChuckFeatures.setValue(new Integer(featureConfiguration.getNumCustomChuckFeatures()));
+        //textNumCustomChuckFeatures.setValue(new Integer(featureConfiguration.getNumCustomChuckFeatures()));
         textNumCustomOSCFeatures.setValue(new Integer(featureConfiguration.getNumCustomOscFeatures()));
         if (featureConfiguration.processingExtractorType == FeatureConfiguration.ProcessingExractorType.DOWNSAMPLED_100) {
             radioWebcamEdge.setSelected(true);
@@ -742,7 +758,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
             try {
                 featureConfiguration.setFftSize(Integer.parseInt(textFftSize.getText()));
             } catch (Exception ex) {
-                 featureConfiguration.setFftSize(1024);
+                featureConfiguration.setFftSize(1024);
             }
 
             try {
@@ -758,9 +774,10 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
             }
 
             try {
-                featureConfiguration.setNumCustomChuckFeatures(Integer.parseInt(textNumCustomChuckFeatures.getText()));
+                featureConfiguration.setNumCustomChuckFeatures(WekinatorInstance.getWekinatorInstance().getConfiguration().getNumCustomChuckFeaturesExtracted());
+                //featureConfiguration.setNumCustomChuckFeatures(Integer.parseInt(textNumCustomChuckFeatures.getText()));
             } catch (Exception ex) {
-               featureConfiguration.setNumCustomChuckFeatures(0);
+                featureConfiguration.setNumCustomChuckFeatures(0);
             }
 
             try {
@@ -799,7 +816,7 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
                 featureConfiguration.setWindowType(WindowType.RECTANGULAR);
             } else {
                 System.out.println("Problem");
-            //TODO: log severe
+                //TODO: log severe
             }
 
             if (metaFeatureMatrix != null) {

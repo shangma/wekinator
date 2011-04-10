@@ -179,15 +179,8 @@ public class OscHandler {
         sender = new OSCPortOut(InetAddress.getLocalHost(), sendPort);
         // System.out.println("Java sending on " + sendPort);
 
-        OSCListener listener = new OSCListener() {
 
-            public void acceptMessage(java.util.Date time, OSCMessage message) {
-                setConnectionState(ConnectionState.CONNECTED);
-                myStatusMessage = "Connected";
-            }
-        };
-
-        receiver.addListener(returnHandshakeString, listener);
+        addHandshakeListener();
         addFeatureInfoListener();
         addFeatureListener();
         addOscFeatureListener();
@@ -454,7 +447,7 @@ public class OscHandler {
         }
     }
 
-    public void requestChuckSettings() {
+   /* public void requestChuckSettings() {
         Object[] o = new Object[2];
         o[0] = requestChuckSettingsMessageString;
         o[1] = new Integer(0);
@@ -467,7 +460,7 @@ public class OscHandler {
             Logger.getLogger(OscHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-    }
+    } */
 
     void requestChuckSettingsArray() {
         logger.log(Level.INFO, "Requesting chuck settings array");
@@ -536,6 +529,25 @@ public class OscHandler {
         }
         }
 
+    }
+
+    private void addHandshakeListener() {
+        //Accepts connection and gets any info needed from ChucK system
+        System.out.println("AAAAA\n\n\nAAAAA\n\nAAAA RECEIVED HANDSHAKE");
+        OSCListener listener = new OSCListener() {
+            public void acceptMessage(java.util.Date time, OSCMessage message) {
+                Object[] o = message.getArguments();
+                if (o.length > 0 && (o[0] instanceof java.lang.Integer)) {
+                    System.out.println("ChucK uses " + o[0] + " features");
+                    ChuckConfiguration c = WekinatorInstance.getWekinatorInstance().getConfiguration();
+                    c.setNumCustomChuckFeaturesExtracted((Integer)o[0]);
+                  //  setNumCustomChuckFeatures((Integer) o[0]);
+                }
+                setConnectionState(ConnectionState.CONNECTED);
+                myStatusMessage = "Connected";
+            }
+        };
+        receiver.addListener(returnHandshakeString, listener);
     }
 
     private void addFeatureInfoListener() {

@@ -582,6 +582,7 @@ public class FeatureConfiguration {
         });
     }
 
+
     /**
      * Get the value of useFFT
      *

@@ -105,7 +105,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
 
     private File findLearningSystemFile() {
         JFileChooser fc = new JFileChooser();
-        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastLocation(LearningSystem.getFileExtension());
+        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastKeyValue(LearningSystem.getFileExtension());
         if (location == null || location.equals("")) {
             location = LearningSystem.getDefaultLocation();
         }
@@ -119,7 +119,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
         }
 
         if (file != null) {
-            WekinatorInstance.getWekinatorInstance().getSettings().setLastLocation(LearningSystem.getFileExtension(), Util.getCanonicalPath(file));
+            WekinatorInstance.getWekinatorInstance().getSettings().setLastKeyValue(LearningSystem.getFileExtension(), Util.getCanonicalPath(file));
         }
         return file;
     }

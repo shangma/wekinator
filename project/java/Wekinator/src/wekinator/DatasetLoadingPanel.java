@@ -249,7 +249,7 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
 
         //     public static File findLoadFile(String ext, String description, String defDir, Component c) {
 
-        String lastLoc = WekinatorInstance.getWekinatorInstance().getSettings().getLastLocation(SimpleDataset.getFileExtension());
+        String lastLoc = WekinatorInstance.getWekinatorInstance().getSettings().getLastKeyValue(SimpleDataset.getFileExtension());
         File defaultFile = null;
         if (lastLoc != null) {
             defaultFile = new File(lastLoc);
@@ -407,7 +407,7 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
         WekinatorInstance wek = WekinatorInstance.getWekinatorInstance();
         JFileChooser fc = new JFileChooser();
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        String location = wek.getSettings().getLastLocation(SimpleDataset.getFileExtension());
+        String location = wek.getSettings().getLastKeyValue(SimpleDataset.getFileExtension());
 
         if (location == null || location.equals("")) {
             location = SimpleDataset.getDefaultLocation();
@@ -422,7 +422,7 @@ public class DatasetLoadingPanel extends javax.swing.JPanel {
             file = fc.getSelectedFile();
         }
         if (file != null) {
-            wek.getSettings().setLastLocation(SimpleDataset.getFileExtension(), Util.getCanonicalPath(file));
+            wek.getSettings().setLastKeyValue(SimpleDataset.getFileExtension(), Util.getCanonicalPath(file));
         }
         return file;
     }

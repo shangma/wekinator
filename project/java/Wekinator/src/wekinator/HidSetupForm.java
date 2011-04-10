@@ -342,7 +342,7 @@ public class HidSetupForm extends javax.swing.JFrame {
         WekinatorInstance wek = WekinatorInstance.getWekinatorInstance();
         JFileChooser fc = new JFileChooser();
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastLocation(HidSetup.getFileExtension());
+        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastKeyValue(HidSetup.getFileExtension());
         if (location == null || location.equals("")) {
             location = HidSetup.getDefaultLocation();
         }
@@ -355,7 +355,7 @@ public class HidSetupForm extends javax.swing.JFrame {
             file = fc.getSelectedFile();
         }
         if (file != null) {
-            wek.getSettings().setLastLocation(HidSetup.getFileExtension(), Util.getCanonicalPath(file));
+            wek.getSettings().setLastKeyValue(HidSetup.getFileExtension(), Util.getCanonicalPath(file));
         }
         return file;
     }
@@ -390,7 +390,7 @@ public class HidSetupForm extends javax.swing.JFrame {
         fc.setDialogType(JFileChooser.SAVE_DIALOG);
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastLocation(HidSetup.getFileExtension());
+        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastKeyValue(HidSetup.getFileExtension());
         if (location == null || location.equals("")) {
             location = HidSetup.getDefaultLocation();
         }
@@ -404,7 +404,7 @@ public class HidSetupForm extends javax.swing.JFrame {
             file = fc.getSelectedFile();
         }
         if (file != null) {
-            WekinatorInstance.getWekinatorInstance().getSettings().setLastLocation(HidSetup.getFileExtension(), Util.getCanonicalPath(file));
+            WekinatorInstance.getWekinatorInstance().getSettings().setLastKeyValue(HidSetup.getFileExtension(), Util.getCanonicalPath(file));
         }
         return file;
     }

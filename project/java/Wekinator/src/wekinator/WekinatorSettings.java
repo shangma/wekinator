@@ -1,6 +1,9 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * WekinatorSettings: Stores user settings across sessions,
+ * in particular the file locations used for chuck, Wekinator project directory,
+ * etc.
+ *
+ * Revised 4/9/2011
  */
 package wekinator;
 
@@ -14,30 +17,24 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.logging.Level;
 import wekinator.util.Util;
 
 /**
- * TODOTODOTODO: change custom file stuff to hash table; everyone responsible for their own thing.
  *
- * @author rebecca
+ * @author Rebecca Fiebrink
  */
 public class WekinatorSettings {
+    protected HashMap<String, String> storedKeyValuePairs = null; //
 
-
-    //This should persist between sessions
-
-    protected HashMap<String, String> lastLocations = null;
-    protected String defaultDir;   
+    protected String defaultSettingsDirectory; //should be project/mySavedSettings
     protected String logFile = "wekinator.log";
     protected Level logLevel = Level.WARNING;
     public static final String PROP_LOGLEVEL = "logLevel";
-    
+    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     public WekinatorSettings() {
-        lastLocations = new HashMap<String, String>();
+        storedKeyValuePairs = new HashMap<String, String>();
         String currentDir = Util.getCanonicalPath(new File(""));
         //projectDir will be "" if invalid:
         File t = new File(currentDir);
@@ -53,26 +50,26 @@ public class WekinatorSettings {
             //    projectDirString.length > 0 && projectDirString[projectDirString.length - 1].equals("java")) {
             projectDir = projectDir.getParentFile();
         }
-        defaultDir = Util.getCanonicalPath(projectDir) + File.separator + "mySavedSettings";
-        System.out.println("default dir is " + defaultDir);
+        defaultSettingsDirectory = Util.getCanonicalPath(projectDir) + File.separator + "mySavedSettings";
+        System.out.println("default dir is " + defaultSettingsDirectory);
 
         
         } else {
-            defaultDir = Util.getCanonicalPath(new File(""));
+            defaultSettingsDirectory = Util.getCanonicalPath(new File(""));
         }
         
   }
 
     public String getDefaultSettingsDirectory() {
-        return defaultDir;
+        return defaultSettingsDirectory;
     }
 
-    public String getLastLocation(String key) {
-            return lastLocations.get(key);
+    public String getLastKeyValue(String key) {
+        return storedKeyValuePairs.get(key);
     }
 
-    public void setLastLocation(String key, String value) {
-        lastLocations.put(key, value);
+    public void setLastKeyValue(String key, String value) {
+        storedKeyValuePairs.put(key, value);
     }
 
     /**
@@ -85,7 +82,7 @@ public class WekinatorSettings {
     }
 
     /**
-     * Set the value of logLevel
+     * Set the value of logLevel. A change will fire a property change event.
      *
      * @param logLevel new value of logLevel
      */
@@ -94,7 +91,7 @@ public class WekinatorSettings {
         this.logLevel = logLevel;
         propertyChangeSupport.firePropertyChange(PROP_LOGLEVEL, oldLogLevel, logLevel);
     }
-    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
 
     /**
      * Add PropertyChangeListener.
@@ -141,8 +138,8 @@ public class WekinatorSettings {
     }
 
     protected void writeToOutputStream(ObjectOutputStream out) throws IOException {
-        out.writeObject(lastLocations);
-        out.writeObject(defaultDir);
+        out.writeObject(storedKeyValuePairs);
+        out.writeObject(defaultSettingsDirectory);
         out.writeObject(logFile);
     }
 
@@ -150,8 +147,6 @@ public class WekinatorSettings {
         FileInputStream fin = new FileInputStream(f);
         ObjectInputStream in = new ObjectInputStream(fin);
         WekinatorSettings ws = WekinatorSettings.readFromIntputStream(in);
-
-
         in.close();
         fin.close();
         return ws;
@@ -159,8 +154,8 @@ public class WekinatorSettings {
 
     private static WekinatorSettings readFromIntputStream(ObjectInputStream in) throws IOException, ClassNotFoundException {
         WekinatorSettings ws = new WekinatorSettings();
-        ws.lastLocations = (HashMap<String, String>)in.readObject();
-        ws.defaultDir = (String)in.readObject();
+        ws.storedKeyValuePairs = (HashMap<String, String>)in.readObject();
+        ws.defaultSettingsDirectory = (String)in.readObject();
         ws.setLogFile((String)in.readObject());
         return ws;
     }

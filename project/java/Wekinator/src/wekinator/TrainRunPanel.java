@@ -278,7 +278,7 @@ public class TrainRunPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         buttonShh = new javax.swing.JButton();
 
-        jLabel3.setText("jLabel3");
+        jLabel3.setText("jLabel3"); // NOI18N
 
         setMinimumSize(new java.awt.Dimension(750, 650));
         setPreferredSize(new java.awt.Dimension(750, 650));
@@ -293,35 +293,35 @@ public class TrainRunPanel extends javax.swing.JPanel {
         layoutPanel.add(buildPanel, "cardBuild");
         layoutPanel.add(editPanel, "cardEdit");
 
-        toggleCollect.setText("Collect data...");
+        toggleCollect.setText("1. Collect data..."); // NOI18N
         toggleCollect.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 toggleCollectActionPerformed(evt);
             }
         });
 
-        toggleTrain.setText("Train...");
+        toggleTrain.setText("2. Train..."); // NOI18N
         toggleTrain.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 toggleTrainActionPerformed(evt);
             }
         });
 
-        toggleRun.setText("Run...");
+        toggleRun.setText("3. Run..."); // NOI18N
         toggleRun.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 toggleRunActionPerformed(evt);
             }
         });
 
-        toggleConfigure.setText("Configure & evaluate...");
+        toggleConfigure.setText("Configure & evaluate..."); // NOI18N
         toggleConfigure.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 toggleConfigureActionPerformed(evt);
             }
         });
 
-        jLabel1.setText("Choose a view:");
+        jLabel1.setText("Choose a view:"); // NOI18N
 
         org.jdesktop.layout.GroupLayout menuPanelLayout = new org.jdesktop.layout.GroupLayout(menuPanel);
         menuPanel.setLayout(menuPanelLayout);
@@ -353,7 +353,7 @@ public class TrainRunPanel extends javax.swing.JPanel {
                 .addContainerGap(150, Short.MAX_VALUE))
         );
 
-        buttonShh.setText("audio off");
+        buttonShh.setText("audio off"); // NOI18N
         buttonShh.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonShhActionPerformed(evt);
@@ -370,16 +370,14 @@ public class TrainRunPanel extends javax.swing.JPanel {
                     .add(buttonShh)
                     .add(menuPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layoutPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE))
+                .add(layoutPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layoutPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 638, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+                    .add(layoutPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 624, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(menuPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -436,7 +434,7 @@ public class TrainRunPanel extends javax.swing.JPanel {
         JFileChooser fc = new OverwritePromptingFileChooser();
         fc.setDialogType(JFileChooser.SAVE_DIALOG);
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastLocation(LearningSystem.getFileExtension());
+        String location = WekinatorInstance.getWekinatorInstance().getSettings().getLastKeyValue(LearningSystem.getFileExtension());
         if (location == null || location.equals("")) {
             //location = HidSetup.getDefaultLocation();
             location = WekinatorInstance.getWekinatorInstance().getSettings().getDefaultSettingsDirectory() + File.separator + HidSetup.getDefaultLocation();
@@ -451,7 +449,7 @@ public class TrainRunPanel extends javax.swing.JPanel {
 
             file = fc.getSelectedFile();
             if (file != null) {
-                WekinatorInstance.getWekinatorInstance().getSettings().setLastLocation(LearningSystem.getFileExtension(), Util.getCanonicalPath(file));
+                WekinatorInstance.getWekinatorInstance().getSettings().setLastKeyValue(LearningSystem.getFileExtension(), Util.getCanonicalPath(file));
             }
         }
         return file;

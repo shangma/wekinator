@@ -37,6 +37,7 @@ public class ChuckConfiguration {
     // private boolean oscUseDistribution[] = new boolean[0];
     protected boolean usable = false;
     public static final String PROP_USABLE = "usable";
+    public static final String PROP_NUMCUSTOMCHUCKFEATURES = "numCustomChuckFeatures";
     private int oscSynthReceivePort = 12000; //Matches defaults in chuck code
     private int oscSynthSendPort = 6448; //Matches defaults in chuck code
     private boolean isPlayalongLearningEnabled = false;
@@ -281,9 +282,9 @@ public class ChuckConfiguration {
             if (!isChuckFile(customChuckFeatureExtractorFilename)) {
                 errorString += "Invalid chuck feature extractor class file: Must be .ck file.\n";
             }
-            if (numCustomChuckFeaturesExtracted <= 0) {
+           /* if (numCustomChuckFeaturesExtracted <= 0) {
                 errorString += "Number of chuck features must be > 0.\n";
-            }
+            } */
         }
 
         //Check OSC feature extractor
@@ -440,9 +441,13 @@ public class ChuckConfiguration {
     }
 
     public void setNumCustomChuckFeaturesExtracted(int numCustomChuckFeaturesExtracted) {
+        int oldNum = this.numCustomChuckFeaturesExtracted;
         this.numCustomChuckFeaturesExtracted = numCustomChuckFeaturesExtracted;
-        setUsable(false);
+       // setUsable(false); //As long as we're getting this info from ChucK, we can assume it's valid
+       //AAA: Fire property change event here!
 
+      propertyChangeSupport.firePropertyChange(PROP_NUMCUSTOMCHUCKFEATURES,
+              oldNum, this.numCustomChuckFeaturesExtracted);
     }
 
     public int getNumOSCFeaturesExtracted() {

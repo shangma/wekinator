@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * WekinatorRunner: Runs the Wekinator, optionally with command-line arguments
+ *
  */
 package wekinator;
 
@@ -16,10 +16,11 @@ import wekinator.util.Util;
 
 /**
  *
- * @author rebecca
+ * @author Rebecca Fiebrink
  */
 public class WekinatorRunner {
 
+    //Optionally specified by arguments:
     protected static File featureFile = null;
     protected static File lsFile = null;
     protected static File chuckFile = null;
@@ -27,6 +28,12 @@ public class WekinatorRunner {
     protected static boolean runAutomatically = false;
     protected static boolean connectAutomatically = false;
     protected static boolean minimizeOnRun = false;
+    
+    protected static boolean isLogging = false; //Can change default here and recompile
+    protected static boolean isPlork = false;
+    protected static boolean isKbow = false;
+
+    //The argument strings:
     protected static OptionSpec<String> feat;
     protected static OptionSpec<String> ls;
     protected static OptionSpec<String> ck;
@@ -34,9 +41,12 @@ public class WekinatorRunner {
     protected static OptionSpec<Void> connect;
     protected static OptionSpec<Void> min;
     protected static OptionSpec<Void> isp;
-    protected static boolean isLogging = false; //Can change default here
-    protected static boolean isPlork = false;
-    protected static boolean isKbow = false;
+
+    //Other relevant stuff to know at run time
+    //True only if launched from OSX installed app:
+    protected static boolean isLaunchedOsxApp = false;
+
+    //Singleton:
     private static final WekinatorRunner ref = new WekinatorRunner();
 
     public static boolean isLogging() {
@@ -73,8 +83,8 @@ public class WekinatorRunner {
         return runAutomatically;
     }
 
-    private WekinatorRunner() {
-        setupParser();
+    public static boolean isLaunchedOsxApp() {
+        return isLaunchedOsxApp;
     }
 
     /**
@@ -103,8 +113,12 @@ public class WekinatorRunner {
     public static File getChuckConfigFile() {
         return chuckFile;
     }
+    
+    private WekinatorRunner() {
+        setupParser();
+    }
 
-    protected void setupParser() {
+    private void setupParser() {
         parser = new OptionParser();
         parser.accepts("help", "prints this help message");
         feat = parser.accepts("feat", "followed by feature configuration file").withRequiredArg().ofType(String.class);
@@ -158,17 +172,23 @@ public class WekinatorRunner {
         return null;
     }
 
-
-
     private static String hackyPath() {
         return ".." + File.separator + ".." + File.separator + "mySavedSettings";
     }
 
     public static void main(String[] args) {
-              System.setProperty("apple.laf.useScreenMenuBar", "true");
+        System.setProperty("apple.laf.useScreenMenuBar", "true");
 
         if (args == null) {
             return;
+        }
+
+        //Check if 1st argument is "osxapp"
+        if (args.length > 0 && args[0].equals("osxapp")) {
+            System.out.println("Launched as OSX app!");
+            Logger.getLogger(WekinatorRunner.class.getName()).log(Level.SEVERE, "Launched as OSX ");
+            isLaunchedOsxApp = true;
+            //AAA: Must modify args at this point.
         }
 
         OptionSet options;
@@ -244,7 +264,6 @@ public class WekinatorRunner {
             } 
 
             //Now run!
-
             java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 MainGUI b = new MainGUI();
