@@ -20,15 +20,12 @@ CustomFeatureExtractor customFE;
 new SynthClass @=> SynthClass mc;
 mc.setup();
 mc.getNumParams() => int numParams;
-//mc.useDistribution() => int wantDist;
 mc.useDistributionArray() @=> int wantDistArray[];
-//mc.isDiscrete() => int isDiscrete;
 mc.isDiscreteArray() @=> int isDiscreteArray[];
-//mc.getNumClasses() => int numClasses;
 mc.getNumClassesArray() @=> int numClassesArray[];
 mc.getParamNamesArray() @=> string paramNamesArray[];
 customFE.getFeatureNamesArray() @=> string customNamesArray[];
-<<< "Chuck done setting up mc">>>;
+<<< "Chuck done setting up synth class">>>;
 //Keep track of feature sources
 0 => int useAudio;
 0 => int useTrackpadXY;
@@ -37,7 +34,6 @@ customFE.getFeatureNamesArray() @=> string customNamesArray[];
 0 => int otherDevice; //device ID: should be 0 or maybe 1
 0 => int useProcessing; //get features from processing (webcam) too?
 0 => int useCustom;
-//0 => int useOscCustom;
 
 //OSC setup
 6448 => int sendport;
@@ -54,7 +50,6 @@ recv.listen();
 //Some standard events
 recv.event("/control", "s i") @=> OscEvent oscControl;
 recv.event("/useAudioFeature", "i i i i i i i i i i") @=> OscEvent oscUseAudio;
-//recv.event("/useFeatureMessage", "s i") @=> OscEvent oscUseFeatureMessage;
 recv.event("/useFeatureList", "i i i i i i i i i i i i i i i i") @=> OscEvent oscUseFeatureList;
 
 OscEvent oscParams;
@@ -79,8 +74,6 @@ for (0 => int i; i < numParams; i++) {
 		s2 + " " => s2;
 	}
 }
-<<< "My param wait array is: ", s2>>>;
-<<< "And wanting ", paramArraySize, " size array">>>;
 recv.event("/params", s2) @=> oscParams;
 spork ~oscParamsWait();
 
@@ -89,7 +82,6 @@ int numFeats;
 
 HidDiscoverer hd; //make sure we can open it first before
 
-	<<< "Main chuck new">>>;
 	new HidDiscoverer @=> hd;
 	if (hd.init(otherDevice)) {
 		<<< "Found HID device at ", otherDevice >>>;
@@ -112,18 +104,12 @@ OscEvent oscHidRun;
 OscEvent oscHidSettingsRequest;
 OscEvent oscHidInitAll;
 
-//if (useOtherHid) {
-	recv.event("/hidSetup", "i") @=> oscHidSetup;
-	recv.event("/hidSetupStop", "i") @=> oscHidSetupStop;
-	recv.event("/hidSettingsRequest", "i") @=> oscHidSettingsRequest;
-	//give # of axes, buttons, hats
-	recv.event("/hidInit", "i i i") @=> oscHidInit;
-	recv.event("/hidRun", "i") @=> oscHidRun;
-//}
-
-
-
-
+recv.event("/hidSetup", "i") @=> oscHidSetup;
+recv.event("/hidSetupStop", "i") @=> oscHidSetupStop;
+recv.event("/hidSettingsRequest", "i") @=> oscHidSettingsRequest;
+//give # of axes, buttons, hats
+recv.event("/hidInit", "i i i") @=> oscHidInit;
+recv.event("/hidRun", "i") @=> oscHidRun;
 
 // aim the transmitter
 xmit.setHost( hostname, sendport );
@@ -136,7 +122,6 @@ sp.setup(mc, xmit);
 
 //Spork OSC shreds
 spork ~oscUseAudioWait();
-//spork ~oscUseFeatureMessageWait();
 spork ~oscControlWait();
 spork ~oscUseFeatureListWait();
 
@@ -170,8 +155,6 @@ fun void oscControlWait() {
 				receivedStop();
 			} else if (s == "realValueRequest") {
 				receivedRealValueRequest();
-			//} else if (s == "requestChuckSettings") {
-			//	receivedRequestSettings();
 			} else if (s == "requestChuckSettingsArrays") {
 				receivedRequestSettingsArrays();
 			} else if (s == "stopSound") {
@@ -202,10 +185,8 @@ fun void receivedStartSound() {
 }
 
 fun void receivedHello() {
-		<<< "Saw hello">>>;
 		xmit.startMsg( "/hiback i");
 		0 => xmit.addInt;
-		<<< "sent via osc">>>;
 }
 
 //Wait for the signal to enter into hid setup mode
@@ -230,14 +211,6 @@ fun void receivedRequestNumParams() {
 	numParams => xmit.addInt;	
 }
 
-/*fun void receivedRequestSettings() {
-	xmit.startMsg("/chuckSettings", "i i i i");
-	numParams => xmit.addInt;
-	wantDist => xmit.addInt;
-	isDiscrete => xmit.addInt;
-	numClasses => xmit.addInt;	
-} */
-
 fun void receivedRequestSettingsArrays() {
 	<<< "ChucK: received request settings arrays">>>;
 	"i i i" => string s; //# params, whether using chuck feat ext, # chuck feats
@@ -255,7 +228,6 @@ fun void receivedRequestSettingsArrays() {
 			s + " s" => s;
 		}
 	}	
-	<<< "Sending s: " , s>>>;
 	xmit.startMsg("/chuckSettingsArrays", s);
 	numParams => xmit.addInt;
 	//useOscCustom => xmit.addInt;
@@ -294,7 +266,6 @@ fun void oscHidSetupStopWait() {
 	<<< "Exiting hid setup mode">>>;
 		computeNumFeats();
 	spork ~hd.stopSetupAndStartRun(); //chg 11/25
-
 	<<< "Use hid? ", useOtherHid >>>;
 	<<< "Using " + numFeats + " features total (make sure java knows)" >>>;
 	}
@@ -559,8 +530,6 @@ fun void computeNumFeats() {
 		numFeats + processingFE.numFeatures() => numFeats;
 	if (useCustom) 
 		customFE.numFeatures() +=> numFeats;
-	//if (useOscCustom) 
-	//	oscCustomFE.numFeatures() +=> numFeats;
 
 	"" => featureMessageString;
 	if (numFeats > 0) {
@@ -612,11 +581,6 @@ fun void sendFeatures() {
 			customFE.getFeatures()[i] => xmit.addFloat;
 		}
 	}
-	/*if (useOscCustom) {
-		for (0 => int i; i < oscCustomFE.numFeatures(); i++) {
-			oscCustomFE.getFeatures()[i] => xmit.addFloat;
-		}
-	} */
 }
 
 fun void oscParamsWait() {
@@ -696,7 +660,7 @@ fun void oscUseFeatureListWait() {
 			//other hid
 			oscUseFeatureList.getInt() => useOtherHid;
 
-			//use procesing
+			//use procesing (TODO: Get rid of this here)
 			oscUseFeatureList.getInt() => use;
 			if (processingFE != null) {
 				processingFE.stop();
@@ -713,23 +677,8 @@ fun void oscUseFeatureListWait() {
 			}
 
 			//custom osc
-			oscUseFeatureList.getInt() => use;
-			/*if (oscCustomFE != null) {
-				oscCustomFE.stop();
-			} */
-			//if (use > 0) { 
-			/*	1 => useOscCustom;
-				new CustomOSCFeatureExtractor @=> oscCustomFE;
-				oscCustomFE.setup(use, recv);
-				if (!oscCustomFE.isOK) {
-					0 => useOscCustom;
-				} */
-			//NEW:
-			//	0 => useOscCustom;
-			//} else {
-			//	0 => useOscCustom;
-			//}
-	
+			oscUseFeatureList.getInt() => use; //Ignore this (TODO: change message in java)
+			
 			//custom chuck
 			oscUseFeatureList.getInt() => use;	
 			<<< "Chuck received ", use, " for use custom CHUCK">>>;
@@ -739,11 +688,7 @@ fun void oscUseFeatureListWait() {
 			if (use > 0) {
 				1 => useCustom;
 				new CustomFeatureExtractor @=> customFE;
-			//	customFE.setup(use);
-			//	if (!customFE.isOK) {
-			//		0 => useCustom;
 				customFE.setup();
-				//}
 			} else {
 				0 => useCustom;
 			}
@@ -752,33 +697,6 @@ fun void oscUseFeatureListWait() {
 		}//end while msg
 	} //end while true
 }
-
-/*fun void oscUseFeatureMessageWait() {
-	while (true) {
-		oscUseFeatureMessage => now;
-		<<< "BAD BAD BAD Chuck: received feature MESSAGE: BAD ">>>;
-		string s;
-		int i;
-		<<< "Received feature message" >>>;
-		while (oscUseFeatureMessage.nextMsg() != 0) {
-			oscUseFeatureMessage.getString() => s;
-			oscUseFeatureMessage.getInt() => i;
-			if (s == "trackpad") {
-				receivedTrackpadMessage(i);
-			} else if (s == "motion") {
-				receivedMotionMessage(i);
-			} else if (s == "processing") {
-				receivedProcessingMessage(i);
-			} else if (s == "custom") {
-				receivedCustomMessage(i);
-			} else if (s == "oscCustom") {
-				receivedOscCustomMessage(i);
-			} else if (s == "otherHid") {
-				receivedOtherHidMessage(i);
-			}
-		}
-	}
-} */
 
 fun void receivedTrackpadMessage(int i) {
 		//<<< "Saw trackpad", i>>>;
@@ -795,7 +713,6 @@ fun void receivedTrackpadMessage(int i) {
 			}
 		}	
 	computeNumFeats();		
-	
 }
 
 fun void oscUseAudioWait() {
@@ -821,7 +738,7 @@ fun void oscUseAudioWait() {
 				audioFE.setup(useFFT, useRMS, useCentroid, useRolloff, useFlux, fftSize, windowSize, windowType, rate::ms);
 			}
 		}	
-computeNumFeats();		
+	computeNumFeats();		
 	}
 	
 }
@@ -889,26 +806,6 @@ fun void receivedCustomMessage(int i) {
 	}
 	computeNumFeats();
 }
-
-/*fun void receivedOscCustomMessage(int i) {
-	i => int use;
-	if (oscCustomFE != null) {
-		oscCustomFE.stop();
-	}
-	if (use > 0) {
-		1 => useOscCustom;
-		new CustomOSCFeatureExtractor @=> oscCustomFE;
-		oscCustomFE.setup(use, recv);
-		if (!oscCustomFE.isOK) {
-			0 => useOscCustom;
-		}
-	} else {
-		0 => useOscCustom;
-	}
-	computeNumFeats();
-} */
-
-
 
 computeNumFeats();
 
