@@ -87,6 +87,36 @@ public class WekinatorRunner {
         return isLaunchedOsxApp;
     }
 
+    public static String getWekinatorDirectory() {
+        String projectDirectory = "";
+         File f = new File(Util.getCanonicalPath(new File(""))); //launch location
+         if (isLaunchedOsxApp) {
+            //Working dir will be /Applications/Wekinator/Wekinator.app/Contents/Resources/Java
+            //
+            String wekPath = f.getParentFile().getParentFile().getParentFile().getParentFile().getAbsolutePath();
+            projectDirectory = Util.getCanonicalPath(new File(wekPath));
+             System.out.println("Set project directory to " + projectDirectory);
+         } else {
+            //Assume working directory is project/java/Wekinator/dist/.
+            String projectPath = f.getParentFile().getParentFile().getParentFile().getAbsolutePath();
+            //Gives us [projects/wekinator]/project/ or 1 level above in non-OSX install
+
+            projectDirectory = "";
+
+            File f2 = new File(projectPath);
+            if (f2.exists() && f2.getName().equals("project")) {
+               projectDirectory = Util.getCanonicalPath(f2);
+            } else if (f2.exists()) {
+               File f3 = new File(Util.getCanonicalPath(f2) + File.separator + "project");
+               if (f3.exists()) {
+                   projectDirectory = Util.getCanonicalPath(f3);
+               }
+            }
+            //A chance that wekinatorProjectDirectory still == ""; user will have to address later.
+         }
+         return projectDirectory;
+    }
+
     /**
      * Get the value of featureLoadFilename
      *
@@ -182,13 +212,14 @@ public class WekinatorRunner {
         if (args == null) {
             return;
         }
+        
 
         //Check if 1st argument is "osxapp"
         if (args.length > 0 && args[0].equals("osxapp")) {
             System.out.println("Launched as OSX app!");
             Logger.getLogger(WekinatorRunner.class.getName()).log(Level.SEVERE, "Launched as OSX ");
             isLaunchedOsxApp = true;
-            //AAA: Must modify args at this point.
+            //No need to do anything else to args at this point
         }
 
         OptionSet options;

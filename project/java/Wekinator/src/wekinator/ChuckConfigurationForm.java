@@ -48,7 +48,15 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         initComponents();
         synthConfiguration = new OscSynthConfiguration(c.getOscSynthConfiguration()); //Copy from my config
         synthConfiguration.addChangeListener(synthChangeListener);
+        String s = Util.getCanonicalPath(new File(""));
 
+        if (WekinatorRunner.isLaunchedOsxApp()) {
+            labelWekDirPrompt.setVisible(false);
+            labelWekDirHint.setVisible(false);
+            labelWekDirCurrent.setVisible(false);
+            buttonChangeWekDir.setVisible(false);
+
+        }
 
         //Hid OSC Features for plork
        // panelOscFeatureExtractor.setVisible(!WekinatorRunner.isPlork());
@@ -118,12 +126,11 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         buttonChangeChuckExecutable = new javax.swing.JButton();
         labelChuckExecutable = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        buttonChangeCoreChuckLocation = new javax.swing.JButton();
-        labelCoreChuckDirectory = new javax.swing.JLabel();
+        labelWekDirPrompt = new javax.swing.JLabel();
+        buttonChangeWekDir = new javax.swing.JButton();
+        labelWekDirCurrent = new javax.swing.JLabel();
         helpCoreChuck = new javax.swing.JButton();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
+        labelWekDirHint = new javax.swing.JLabel();
         panelPlayalong = new javax.swing.JPanel();
         helpPlayalong = new javax.swing.JButton();
         checkEnablePlayalong = new javax.swing.JCheckBox();
@@ -230,7 +237,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                     .add(helpFeatures))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(labelCustomFeatureExtractor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(139, Short.MAX_VALUE))
+                .addContainerGap(174, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("Features (input)", panelFeatures);
@@ -324,7 +331,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                 .add(panelSynthLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(labelOSCSynthProps)
                     .add(buttonEditRealInteger))
-                .addContainerGap(85, Short.MAX_VALUE))
+                .addContainerGap(120, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("Synthesis (output)", panelSynth);
@@ -340,57 +347,55 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
 
         labelChuckExecutable.setText("/Users/rebecca/PLOrk/bin/chuck");
 
-        jLabel2.setText("Location of wekinator project directory:");
+        labelWekDirPrompt.setText("Location of wekinator project directory:");
 
-        buttonChangeCoreChuckLocation.setText("Choose directory");
-        buttonChangeCoreChuckLocation.addActionListener(new java.awt.event.ActionListener() {
+        buttonChangeWekDir.setText("Choose directory");
+        buttonChangeWekDir.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonChangeCoreChuckLocationActionPerformed(evt);
+                buttonChangeWekDirActionPerformed(evt);
             }
         });
 
-        labelCoreChuckDirectory.setText("/Users/rebecca/PLOrk/wekinator/project/");
+        labelWekDirCurrent.setText("/Users/rebecca/PLOrk/wekinator/project/");
 
         helpCoreChuck.setIcon(new javax.swing.ImageIcon(getClass().getResource("/wekinator/info.png"))); // NOI18N
 
-        jLabel4.setFont(new java.awt.Font("Lucida Grande", 2, 13));
-        jLabel4.setText("This should be [something]/PLOrk/bin/chuck or /usr/bin/chuck");
-
-        jLabel6.setFont(new java.awt.Font("Lucida Grande", 2, 13));
-        jLabel6.setText("This should be [something]/wekinator/project or [something]/PLOrk/wekinator/project");
+        labelWekDirHint.setFont(new java.awt.Font("Lucida Grande", 2, 13)); // NOI18N
+        labelWekDirHint.setText("This should be [directory where you saved wekinator]/wekinator/project");
 
         org.jdesktop.layout.GroupLayout panelSetupLayout = new org.jdesktop.layout.GroupLayout(panelSetup);
         panelSetup.setLayout(panelSetupLayout);
         panelSetupLayout.setHorizontalGroup(
             panelSetupLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, panelSetupLayout.createSequentialGroup()
+                .addContainerGap(576, Short.MAX_VALUE)
+                .add(helpCoreChuck))
             .add(panelSetupLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(panelSetupLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(panelSetupLayout.createSequentialGroup()
-                        .add(jLabel3)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(buttonChangeChuckExecutable))
-                    .add(panelSetupLayout.createSequentialGroup()
-                        .add(6, 6, 6)
-                        .add(jLabel4))
-                    .add(panelSetupLayout.createSequentialGroup()
                         .add(24, 24, 24)
                         .add(labelChuckExecutable))
                     .add(panelSetupLayout.createSequentialGroup()
-                        .add(jLabel2)
+                        .add(jLabel3)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(buttonChangeCoreChuckLocation))
-                    .add(panelSetupLayout.createSequentialGroup()
-                        .add(24, 24, 24)
-                        .add(labelCoreChuckDirectory)))
-                .addContainerGap(174, Short.MAX_VALUE))
+                        .add(buttonChangeChuckExecutable)))
+                .addContainerGap(279, Short.MAX_VALUE))
             .add(panelSetupLayout.createSequentialGroup()
-                .add(20, 20, 20)
-                .add(jLabel6)
-                .addContainerGap(36, Short.MAX_VALUE))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, panelSetupLayout.createSequentialGroup()
-                .addContainerGap(576, Short.MAX_VALUE)
-                .add(helpCoreChuck))
+                .addContainerGap()
+                .add(panelSetupLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(labelWekDirHint)
+                    .add(panelSetupLayout.createSequentialGroup()
+                        .add(panelSetupLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(panelSetupLayout.createSequentialGroup()
+                                .add(labelWekDirPrompt)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(buttonChangeWekDir))
+                            .add(panelSetupLayout.createSequentialGroup()
+                                .add(24, 24, 24)
+                                .add(labelWekDirCurrent)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 46, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(133, Short.MAX_VALUE))
         );
         panelSetupLayout.setVerticalGroup(
             panelSetupLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -401,19 +406,17 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                             .add(jLabel3)
                             .add(buttonChangeChuckExecutable))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabel4)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(labelChuckExecutable)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(panelSetupLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jLabel2)
-                            .add(buttonChangeCoreChuckLocation))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabel6)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(labelCoreChuckDirectory))
+                        .add(labelChuckExecutable))
                     .add(helpCoreChuck))
-                .addContainerGap(48, Short.MAX_VALUE))
+                .add(18, 18, 18)
+                .add(panelSetupLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(labelWekDirPrompt)
+                    .add(buttonChangeWekDir))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(labelWekDirHint)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(labelWekDirCurrent)
+                .addContainerGap(102, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("System", panelSetup);
@@ -482,7 +485,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                 .add(jLabel15)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(labelScorePlayer)
-                .addContainerGap(102, Short.MAX_VALUE))
+                .addContainerGap(137, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("Playalong", panelPlayalong);
@@ -521,7 +524,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(buttonCancel)
                     .add(buttonOK))
-                .addContainerGap(61, Short.MAX_VALUE))
+                .addContainerGap(26, Short.MAX_VALUE))
         );
 
         jScrollPane1.setViewportView(jPanel3);
@@ -712,11 +715,11 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
         }
 }//GEN-LAST:event_buttonChangeChuckExecutableActionPerformed
 
-    private void buttonChangeCoreChuckLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonChangeCoreChuckLocationActionPerformed
+    private void buttonChangeWekDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonChangeWekDirActionPerformed
         File f = findCoreChuckDirectory(); //TODO: have to change this to not be find chuck file, but find executable
         if (f != null) {
             try {
-                labelCoreChuckDirectory.setText(f.getCanonicalPath());
+                labelWekDirCurrent.setText(f.getCanonicalPath());
                 // configuration.setChuckDir(f.getCanonicalPath());
                 configuration.setWekDir(f.getCanonicalPath());
 
@@ -724,7 +727,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
                 Logger.getLogger(ChuckConfigurationForm.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-}//GEN-LAST:event_buttonChangeCoreChuckLocationActionPerformed
+}//GEN-LAST:event_buttonChangeWekDirActionPerformed
 
     private void buttonSaveConfiguration1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSaveConfiguration1ActionPerformed
         setConfigurationFromForm();
@@ -951,7 +954,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonCancel;
     private javax.swing.JButton buttonChangeChuckExecutable;
-    private javax.swing.JButton buttonChangeCoreChuckLocation;
+    private javax.swing.JButton buttonChangeWekDir;
     private javax.swing.JButton buttonChooseChuckFeatureExtractor;
     private javax.swing.JButton buttonChooseChuckSynth;
     private javax.swing.JButton buttonChoosePlayalongFile;
@@ -970,20 +973,19 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTabbedPane jTabbedPane2;
     private javax.swing.JLabel labelChuckExecutable;
     private javax.swing.JLabel labelChuckSynthClass;
     private javax.swing.JLabel labelChuckSynthLocation;
-    private javax.swing.JLabel labelCoreChuckDirectory;
     private javax.swing.JLabel labelCustomFeatureExtractor;
     private javax.swing.JLabel labelOSCSynthProps;
     private javax.swing.JLabel labelScorePlayer;
+    private javax.swing.JLabel labelWekDirCurrent;
+    private javax.swing.JLabel labelWekDirHint;
+    private javax.swing.JLabel labelWekDirPrompt;
     private javax.swing.JPanel panelFeatures;
     private javax.swing.JPanel panelPlayalong;
     private javax.swing.JPanel panelSetup;
@@ -993,7 +995,7 @@ public class ChuckConfigurationForm extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     private void updateAllComponents() {
-        labelCoreChuckDirectory.setText(configuration.getWekDir());
+        labelWekDirCurrent.setText(configuration.getWekDir());
         labelChuckExecutable.setText(configuration.getChuckExecutable());
         checkEnableCustomChuckFeature.getModel().setSelected(configuration.isCustomChuckFeatureExtractorEnabled());
         labelCustomFeatureExtractor.setText(configuration.getCustomChuckFeatureExtractorFilename());

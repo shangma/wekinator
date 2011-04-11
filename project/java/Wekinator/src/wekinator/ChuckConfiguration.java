@@ -223,16 +223,31 @@ public class ChuckConfiguration {
     public ChuckConfiguration() {
         // isOscSynthParamDiscrete = new boolean[0];
         try {
-            File f = new File(Util.getCanonicalPath(new File("")));
-            String preferredPath = f.getParentFile().getParentFile().getParentFile().getAbsolutePath();
-            File f2 = new File(preferredPath);
-            if (f2.exists() && !f2.getName().equals("project")) {
-                wekDir = Util.getCanonicalPath(f2) + File.separator + "project";
-            }
+
+            //File f = new File(Util.getCanonicalPath(new File("")));
+
+            //Assume working directory is project/java/Wekinator/dist/.
+            //String preferredPath = f.getParentFile().getParentFile().getParentFile().getAbsolutePath();
+                //Gives us projects/wekinator/project/ in non-OSX install
+
+            //System.out.println("Preferred path is " + preferredPath);
+
+            //File f2 = new File(preferredPath);
+            //if (f2.exists() && !f2.getName().equals("project")) {
+            //    wekDir = Util.getCanonicalPath(f2) + File.separator + "project";
+            //}
+
+            //Set Wekinator directory based on Wekinator Instance
+            wekDir = WekinatorRunner.getWekinatorDirectory();
+
+            //XXX
             if (File.separator.equals("/")) {
-                chuckExecutable = "/usr/bin/chuck";
+              //  chuckExecutable = "/usr/bin/chuck";
+                chuckExecutable = wekDir + File.separator + "chuck" + File.separator + "executable" + File.separator + "osx" + File.separator + "chuck";
+
             } else {
-                chuckExecutable = "C:\\windows\\system32\\chuck.exe";
+              //  chuckExecutable = "C:\\windows\\system32\\chuck.exe";
+                chuckExecutable = wekDir + File.separator + "chuck" + File.separator + "executable" + File.separator + "win" + File.separator + "chuck.exe";
             }
 
         } catch (Exception ex) {
@@ -262,9 +277,9 @@ public class ChuckConfiguration {
         //File wekDirFile = new File(wekDir);
         if (!f.exists() || !f.isDirectory()) {
             errorString += "Wekinator project directory does not exist or is not a directory\n";
-        } else if (!f.exists() || !f.getName().equals("project")) {
+        } else if (! WekinatorRunner.isLaunchedOsxApp() && (!f.exists() || !f.getName().equals("project"))) {
             errorString += "Wekinator project directory must refer to a directory called \"project/\"\n";
-        } else if (!f2.exists() || !f2.isDirectory()) {
+        } else if (! WekinatorRunner.isLaunchedOsxApp() && (!f2.exists() || !f2.isDirectory())) {
             errorString += "Wekinator project directory must be inside the wekinator directory that you downloaded, containing subdirectories chuck, java, etc.\n";
         }
 
