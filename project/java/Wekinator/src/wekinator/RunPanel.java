@@ -53,6 +53,11 @@ public class RunPanel extends javax.swing.JPanel {
             }
 
         });
+
+        if (!WekinatorRunner.isKbow()) {
+            comboRating.setVisible(false);
+            buttonRate.setVisible(false);
+        }
     }
 
     void setLearningSystem(LearningSystem ls) {
