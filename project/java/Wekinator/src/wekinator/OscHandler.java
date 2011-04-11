@@ -533,7 +533,6 @@ public class OscHandler {
 
     private void addHandshakeListener() {
         //Accepts connection and gets any info needed from ChucK system
-        System.out.println("AAAAA\n\n\nAAAAA\n\nAAAA RECEIVED HANDSHAKE");
         OSCListener listener = new OSCListener() {
             public void acceptMessage(java.util.Date time, OSCMessage message) {
                 Object[] o = message.getArguments();
