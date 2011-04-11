@@ -11,6 +11,7 @@
 package wekinator;
 
 import java.awt.CardLayout;
+import java.text.DecimalFormat;
 import java.util.Random;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFrame;
@@ -28,6 +29,7 @@ public class ParameterMiniPanel extends javax.swing.JPanel {
     protected boolean isDiscrete = true;
     protected double value = 0.0;
     private ChangeEvent changeEvent = null;
+    DecimalFormat dd = new DecimalFormat("#.##########");
 
     /** Creates new form ParameterMiniPanel */
     public ParameterMiniPanel() {
@@ -202,7 +204,7 @@ public class ParameterMiniPanel extends javax.swing.JPanel {
                 comboInt.setSelectedIndex((int)value); //Test!
             }
         } else {
-            textValue.setText(value + "");
+            textValue.setText(dd.format(value) + "");
         }
     }
 
