@@ -1,10 +1,17 @@
 /* This is a simple additive layered drum machine
+   
+	NOT MAKING SOUND? 
+		Change the .wav file locations in the code to
+		absolute paths (e.g., "/Users/rebecca/Wekinator/project/chuck/synths/data/kick.wav"
+
    Sounds adapted from standard ChucK demos by Ge Wang, Perry Cook
    This was part of ICMC 2009 demo
  
  	Copyright 2009 Rebecca Fiebrink
  	http://wekinator.cs.princeton.edu
 */
+
+<<< "SIMPLE BEATS: If this synth does not make sound, try changing simple_beats.ck to use absolute instead of relative file paths" >>>;
 
 public class SynthClass {
 	//Necessary state objects and overall envelope
