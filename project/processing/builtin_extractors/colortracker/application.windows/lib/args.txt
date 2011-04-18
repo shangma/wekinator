@@ -1,0 +1,3 @@
+
+colortracker
+colortracker.jar,core.jar,video.jar,oscP5.jar,oscP5.jar
