@@ -1,4 +1,0 @@
-#!/bin/sh
-
-APPDIR=$(dirname "$0")
-java  -Djava.library.path="$APPDIR" -cp "$APPDIR/lib/colortracker.jar:$APPDIR/lib/core.jar:$APPDIR/lib/video.jar:$APPDIR/lib/oscP5.jar:$APPDIR/lib/oscP5.jar" colortracker
