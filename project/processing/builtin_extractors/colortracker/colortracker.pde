@@ -75,6 +75,9 @@ void draw() {
     }
 
     drawtext();
+    
+    if(frameCount % 5 == 0)
+      sendOsc(e1, e2);
    
   }
 }
