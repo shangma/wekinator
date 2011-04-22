@@ -31,7 +31,7 @@ customFE.getFeatureNamesArray() @=> string customNamesArray[];
 0 => int useTrackpadXY;
 0 => int useMotionXYZ;
 0 => int useOtherHid; //TODO: set to # of other hids
-0 => int otherDevice; //device ID: should be 0 or maybe 1
+2 => int otherDevice; //device ID: should be 0 or maybe 1
 0 => int useProcessing; //get features from processing (webcam) too?
 0 => int useCustom;
 
@@ -86,12 +86,15 @@ HidDiscoverer hd; //make sure we can open it first before
 	if (hd.init(otherDevice)) {
 		<<< "Found HID device at ", otherDevice >>>;
 	} 
-	else if (hd.init(0)) {
-		<<< "Found HID device at 0">>>;
-		0 => otherDevice;
+	else if (hd.init(2)) {
+		<<< "Found HID device at 2">>>;
+		2 => otherDevice;
 	} else if (hd.init(1)) {
 		<<< "Found HID device at 1">>>;
 		1 => otherDevice;
+	}  else if (hd.init(0)) {
+		<<< "Found HID device at 0">>>;
+		0 => otherDevice;
 	} else {
 		<<< "Couldn't find other HID" >>>;
 		0 => useOtherHid;
