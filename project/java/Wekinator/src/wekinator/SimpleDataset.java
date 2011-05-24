@@ -1042,7 +1042,11 @@ public class SimpleDataset {
 
     void writeInstancesToArff(File file) throws IOException {
         ArffSaver saver = new ArffSaver();
-        saver.setInstances(allInstances);
+        Instances temp = new Instances(allInstances);
+        /*for (int i = 0; i < numFeatures; i++) {
+            temp.renameAttribute(i, featureNames[i]);
+        }*/
+        saver.setInstances(temp);
         saver.setFile(file);
         saver.writeBatch();
     }

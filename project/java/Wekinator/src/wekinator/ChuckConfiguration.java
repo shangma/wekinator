@@ -111,6 +111,10 @@ public class ChuckConfiguration {
             c.getOscSynthConfiguration().setRemoteHostName((String)in.readObject());
         }
 
+        if (version > 3) {
+            c.getOscSynthConfiguration().setRemotePort(in.readInt());
+        }
+
         c.setUsable(usable);
         return c;
     }
@@ -138,7 +142,7 @@ public class ChuckConfiguration {
     }
 
     protected void writeToOutputStream(ObjectOutputStream out) throws IOException {
-        out.writeInt(3); //version number
+        out.writeInt(4); //version number
         out.writeObject(wekDir);
         out.writeObject(chuckExecutable);
         out.writeBoolean(customChuckFeatureExtractorEnabled);
@@ -164,6 +168,7 @@ public class ChuckConfiguration {
         //added 3/2/11:
         out.writeBoolean(oscSynthConfiguration.isUseRemoteHost());
         out.writeObject(oscSynthConfiguration.getRemoteHostName());
+        out.writeInt(oscSynthConfiguration.getRemotePort());
 
     }
 

@@ -314,7 +314,7 @@ public class ChuckRunner {
             }
             //TODO: Move elsewhere: If using OSC synth, call its setup now too
             if (configuration.isUseOscSynth()) {
-                OscSynthProxy.setup(configuration.getOscSynthReceivePort());
+                OscSynthProxy.setup();
             }
         }
     }

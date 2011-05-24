@@ -17,6 +17,7 @@ public class OscSynthConfiguration {
     private ChangeEvent changeEvent = null;
     private boolean useRemoteHost = false;
     private String remoteHostName = "Edgard.local";
+    private int synthPort = 12000;
 
     public boolean isUseRemoteHost() {
         return useRemoteHost;
@@ -27,6 +28,11 @@ public class OscSynthConfiguration {
         fireStateChanged();
     }
 
+    public int getRemotePort() {
+
+        return synthPort;
+    }
+
     public String getRemoteHostName() {
         return remoteHostName;
     }
@@ -35,6 +41,12 @@ public class OscSynthConfiguration {
         this.remoteHostName = remoteHostName;
         fireStateChanged();
     }
+
+    public void setRemotePort(int remotePort) {
+        this.synthPort = remotePort;
+        fireStateChanged();
+    }
+
 
    /* protected boolean isSendingSingleParameters = false;
 
@@ -83,6 +95,7 @@ public class OscSynthConfiguration {
         System.arraycopy(c1.maxValue, 0, maxValue, 0, c1.numParams);
         useRemoteHost = c1.useRemoteHost;
         remoteHostName = c1.remoteHostName;
+        synthPort = c1.synthPort;
     }
 
     public OscSynthConfiguration(int numParams, String[] paramNames, boolean[] isDiscrete, boolean[] isDistribution, int[] maxValue) {
@@ -146,8 +159,15 @@ public class OscSynthConfiguration {
 
             if (useRemoteHost) {
                 if (remoteHostName.length() < 1) {
+                    validationString = "Remote host name must be a valid string";
                     return false;
                 }
+            }
+
+            if (synthPort <= 0) {
+                validationString = synthPort + " is an invalid remote OSC port";
+                return false;
+            
             }
 
             return true;
@@ -194,8 +214,9 @@ public class OscSynthConfiguration {
         }
         if (useRemoteHost) {
             s+= ", sending to host " + remoteHostName;
-
         }
+
+        s += ", port " + synthPort;
 /*        if (isSendingSingleParameters) {
             s += ", sending each parameter in a separate OSC message";
         } */

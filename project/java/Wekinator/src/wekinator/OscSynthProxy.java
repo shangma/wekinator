@@ -22,7 +22,7 @@ public class OscSynthProxy {
     protected static final OscSynthProxy ref = new OscSynthProxy();
     OSCPortOut sender;
 
-    public static void setup(int sendPort) throws UnknownHostException, SocketException {
+    public static void setup() throws UnknownHostException, SocketException {
         //call /OSCSynth/setup
        // InetAddress.
 //        ref.sender = new OSCPortOut(InetAddress.getLocalHost(), sendPort);
@@ -30,9 +30,11 @@ public class OscSynthProxy {
 
         boolean isRemote = WekinatorInstance.getWekinatorInstance().getConfiguration().getOscSynthConfiguration().isUseRemoteHost();
         if (!isRemote) {
-           ref.sender = new OSCPortOut(InetAddress.getLocalHost(), sendPort);
+           ref.sender = new OSCPortOut(InetAddress.getLocalHost(),
+                  WekinatorInstance.getWekinatorInstance().getConfiguration().getOscSynthConfiguration().getRemotePort());
         } else {
-            ref.sender = new OSCPortOut(InetAddress.getByName(WekinatorInstance.getWekinatorInstance().getConfiguration().getOscSynthConfiguration().getRemoteHostName()), sendPort);
+            ref.sender = new OSCPortOut(InetAddress.getByName(WekinatorInstance.getWekinatorInstance().getConfiguration().getOscSynthConfiguration().getRemoteHostName()),
+                    WekinatorInstance.getWekinatorInstance().getConfiguration().getOscSynthConfiguration().getRemotePort());
         }
 
         try {

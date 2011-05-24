@@ -36,6 +36,7 @@ public class OscSynthConfigurationFrame2 extends javax.swing.JFrame {
         populateTable(configuration);
         checkRemote.setSelected(configuration.isUseRemoteHost());
         textRemoteHost.setText(configuration.getRemoteHostName());
+        textOscPort.setText(Integer.toString(configuration.getRemotePort()));
         //checkSeparateOSC.setSelected(configuration.getSendingSingleParameters());
         try {
             table.setDefaultRenderer(Class.forName("java.lang.Integer"), renderer);
@@ -81,6 +82,14 @@ public class OscSynthConfigurationFrame2 extends javax.swing.JFrame {
        
         configuration.setUseRemoteHost(checkRemote.isSelected());
         configuration.setRemoteHostName(textRemoteHost.getText());
+        int port = 0;
+        try {
+            port = Integer.parseInt(textOscPort.getText());
+            configuration.setRemotePort(port);
+        } catch (NumberFormatException ex) {
+            Logger.getLogger(OscSynthConfigurationFrame2.class.getName()).log(Level.WARNING, "Invalid osc synth port of " + textOscPort.getText());
+            textOscPort.setText(Integer.toString(configuration.getRemotePort()));
+       }
         
         this.dispose();
    }
@@ -104,6 +113,8 @@ public class OscSynthConfigurationFrame2 extends javax.swing.JFrame {
         buttonCancel = new javax.swing.JButton();
         checkRemote = new javax.swing.JCheckBox();
         textRemoteHost = new javax.swing.JTextField();
+        textOscPort = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -158,6 +169,10 @@ public class OscSynthConfigurationFrame2 extends javax.swing.JFrame {
 
         textRemoteHost.setText("Edgard.local");
 
+        textOscPort.setText("12000");
+
+        jLabel1.setText("Send OSC to port:");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -173,13 +188,19 @@ public class OscSynthConfigurationFrame2 extends javax.swing.JFrame {
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                        .add(buttonMoveUp, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(buttonMoveDown, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .add(checkRemote)
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(textRemoteHost, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 136, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(textRemoteHost, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 136, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(textOscPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 136, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                        .add(buttonMoveUp, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(buttonMoveDown))
+                    .add(layout.createSequentialGroup()
+                        .add(11, 11, 11)
+                        .add(jLabel1)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(scrollTable, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 595, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
@@ -188,11 +209,15 @@ public class OscSynthConfigurationFrame2 extends javax.swing.JFrame {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(156, 156, 156)
+                        .add(138, 138, 138)
                         .add(buttonMoveUp)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(buttonMoveDown)
-                        .add(39, 39, 39)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(jLabel1)
+                        .add(2, 2, 2)
+                        .add(textOscPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 28, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(checkRemote)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(textRemoteHost, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -292,7 +317,9 @@ public class OscSynthConfigurationFrame2 extends javax.swing.JFrame {
     private javax.swing.JButton buttonMoveUp;
     private javax.swing.JButton buttonOK;
     private javax.swing.JCheckBox checkRemote;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane scrollTable;
+    private javax.swing.JTextField textOscPort;
     private javax.swing.JTextField textRemoteHost;
     // End of variables declaration//GEN-END:variables
     private javax.swing.JTable table;
