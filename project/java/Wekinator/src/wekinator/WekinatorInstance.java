@@ -107,7 +107,9 @@ public class WekinatorInstance {
                     } else {
                         if (learningSystem.getDataset() != null) {
                             for (int i = 0; i < learningSystem.getNumParams(); i++) {
-                                  if (learningSystem.getDataset().isParameterDiscrete(i) != SynthProxy.isParamDiscrete(i)) {
+                                  if (learningSystem.getDataset().isParameterDiscrete(i) != SynthProxy.isParamDiscrete(i) ||
+                                   (SynthProxy.isParamDiscrete(i) && SynthProxy.paramMaxValue(i) != learningSystem.getDataset().maxLegalDiscreteParamValue(i) ))
+                                  {
                                       setLearningSystem(null);
                                       break;
                                   }
