@@ -207,6 +207,10 @@ public class WekinatorRunner {
     }
 
     public static void main(String[] args) {
+        run(args);
+    }
+
+    public static void run(String[] args) {
         System.setProperty("apple.laf.useScreenMenuBar", "true");
 
         if (args == null) {
