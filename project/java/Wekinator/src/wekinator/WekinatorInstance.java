@@ -347,7 +347,7 @@ public class WekinatorInstance {
         this.configuration = configuration;
     }
 
-    public void setupPlog() {
+    public static void setupPlog() {
         String currentDir = Util.getCanonicalPath(new File(""));
         if (currentDir != null) {
             try {
@@ -371,18 +371,16 @@ public class WekinatorInstance {
                     System.exit(0);
                 }
             }
-
-
-
         }
     }
 
     //TODO: Modify so that can be created from Java, not command line.
     private WekinatorInstance() {
         FileInputStream fin = null;
+
+
         boolean useChuckFromCL = (WekinatorRunner.chuckFile != null);
         String currentDir = Util.getCanonicalPath(new File(""));
-
 
         try {
             // fin = new FileInputStream(settingsSaveFile);
@@ -493,9 +491,17 @@ public class WekinatorInstance {
     }
 
     //
-    public void start() throws IOException {
+    public static void start() throws IOException {
+        if (WekinatorRunner.isLogging()) {
+            setupPlog();
+        }
+        setupOsc();
         runOscIfNeeded();
         runChuckIfNeeded();
+    }
+
+    private static void setupOsc() throws IOException {
+        OscHandler.getOscHandler().setupOsc();
     }
 
     private static void runOscIfNeeded() throws IOException {
@@ -508,7 +514,7 @@ public class WekinatorInstance {
         }
     }
 
-    private void runChuckIfNeeded() {
+    private static void runChuckIfNeeded() {
         if (WekinatorRunner.chuckFile != null
                 && ChuckRunner.getConfiguration() != null
                 && ChuckRunner.getConfiguration().isUsable()
@@ -579,11 +585,11 @@ public class WekinatorInstance {
         } */
     }
 
-    public void saveCurrentSettings() {
+    public static void saveCurrentSettings() {
         FileOutputStream fout = null;
         boolean fail = false;
         try {
-            settings.writeToFile(new File(settingsSaveFile));
+            getWekinatorInstance().settings.writeToFile(new File(settingsSaveFile));
 
             System.out.println("Wrote to settings file");
         } catch (IOException ex1) {
@@ -666,6 +672,45 @@ public class WekinatorInstance {
                 }
                 ((ChangeListener) listeners[i + 1]).stateChanged(oscFeatureNameChangeEvent);
             }
+        }
+    }
+
+    public static void resetOscConnection() throws IOException {
+        if (FeatureExtractionController.isExtracting()) {
+            FeatureExtractionController.stopExtracting();
+        }
+        OscHandler.getOscHandler().end();
+        OscHandler.getOscHandler().setupOsc();
+    }
+
+    public static void startOscConnection() throws IOException {
+        OscHandler.getOscHandler().connectOSC();
+    }
+
+    public static void shutdown() {
+        if (FeatureExtractionController.isExtracting()) {
+            FeatureExtractionController.stopExtracting();
+        }
+
+        OscHandler.getOscHandler().end();
+
+        if (ChuckRunner.getRunnerState() == ChuckRunner.ChuckRunnerState.RUNNING) {
+            try {
+                ChuckRunner.stop();
+            } catch (IOException ex) {
+                Logger.getLogger(WekinatorInstance.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        //Want to save settings here!
+        saveCurrentSettings();
+        
+        try {
+            if (WekinatorRunner.isLogging()) {
+                Plog.log(Msg.CLOSE);
+                Plog.close();
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(WekinatorInstance.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }

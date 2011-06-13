@@ -228,6 +228,7 @@ public class Plog {
         }
     }
 
+    //Issue: Requires WekinatorInstance to be created already.
     public static void setup(String parentDir) throws IOException {
         if (!isSetup) {
             WekinatorInstance.getWekinatorInstance().addPropertyChangeListener(new PropertyChangeListener() {

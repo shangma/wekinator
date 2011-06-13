@@ -63,9 +63,11 @@ public final class MainGUI extends javax.swing.JFrame {
         prefs.setResizable(false);
 
         registerForMacOSXEvents();
-        if (WekinatorRunner.isLogging()) {
-            WekinatorInstance.getWekinatorInstance().setupPlog();
-        } else {
+
+        // Moved to WekinatorInstance.start(): 
+        // if (WekinatorRunner.isLogging()) {
+        // WekinatorInstance.getWekinatorInstance().setupPlog();
+        if (!WekinatorRunner.isLogging()) {
             menuResetLog.setEnabled(false);
             menuFlushLog.setEnabled(false);
             menuPerformanceMode.setEnabled(false);
@@ -116,12 +118,13 @@ public final class MainGUI extends javax.swing.JFrame {
             }
         });
 
-        try {
-            OscHandler.getOscHandler().setupOsc();
-        } catch (IOException ex) {
-            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-        }
-       
+        //Moved to WekinatorInstance.start();
+       // try {
+       //     OscHandler.getOscHandler().setupOsc();
+       // } catch (IOException ex) {
+       //     Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+       // }
+
         //Moved following to WekinatorInstance.start():
        // runOscIfNeeded();
        // runChuckIfNeeded();
@@ -607,27 +610,18 @@ public final class MainGUI extends javax.swing.JFrame {
 
 private void buttonOscConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonOscConnectActionPerformed
         try {
-            //try {
-            //    OscHandler.getOscHandler().setupOsc();
-            //} catch (IOException ex) {
-            //    Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-            // }
-            OscHandler.getOscHandler().connectOSC();
+            WekinatorInstance.startOscConnection();
         } catch (IOException ex) {
             Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
 }//GEN-LAST:event_buttonOscConnectActionPerformed
 
 private void buttonOscDisconnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonOscDisconnectActionPerformed
-    try {
-        if (FeatureExtractionController.isExtracting()) {
-            FeatureExtractionController.stopExtracting();
+        try {
+            WekinatorInstance.resetOscConnection();
+        } catch (IOException ex) {
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
-        OscHandler.getOscHandler().end();
-        OscHandler.getOscHandler().setupOsc();
-    } catch (IOException ex) {
-        Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-    }
 }//GEN-LAST:event_buttonOscDisconnectActionPerformed
 
 private void panelMainTabsComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_panelMainTabsComponentShown
@@ -650,32 +644,8 @@ private void panelMainTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN
 }//GEN-LAST:event_panelMainTabsStateChanged
 
 private void exit() {
-     if (FeatureExtractionController.isExtracting()) {
-        FeatureExtractionController.stopExtracting();
-    }
-
-
-    OscHandler.getOscHandler().end();
-
-    if (ChuckRunner.getRunnerState() == ChuckRunner.ChuckRunnerState.RUNNING) {
-        try {
-            ChuckRunner.stop();
-        } catch (IOException ex) {
-        }
-    }
-    //Want to save settings here!
-    wek.saveCurrentSettings();
-        try {
-          if (WekinatorRunner.isLogging()) {
-              Plog.log(Msg.CLOSE);
-            Plog.close();
-          }
-        } catch (IOException ex) {
-            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
+    WekinatorInstance.shutdown();
     System.exit(0);
-
 }
 
 
@@ -874,6 +844,7 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
             OscHandler.ConnectionState o = (OscHandler.ConnectionState) evt.getOldValue();
             OscHandler.ConnectionState n = (OscHandler.ConnectionState) evt.getNewValue();
 
+            //TODO: Put non-GUI connection logic into WekinatorInstance, not here.
             if (n == OscHandler.ConnectionState.CONNECTED) {
                // panelMainTabs.setSelectedComponent(panelTabFeatureConfiguration);
                 showFeatureConfigurationPanel();
