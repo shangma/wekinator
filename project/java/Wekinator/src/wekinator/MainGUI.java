@@ -19,7 +19,6 @@ import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.UIManager;
 import wekinator.ChuckRunner.ChuckRunnerState;
 import wekinator.Plog.Msg;
 import wekinator.util.Util;
@@ -28,7 +27,7 @@ import wekinator.util.Util;
  *
  * @author  rebecca
  */
-public class MainGUI extends javax.swing.JFrame {
+public final class MainGUI extends javax.swing.JFrame {
 
     WekinatorInstance wek = WekinatorInstance.getWekinatorInstance();
     boolean isConnected = false;
@@ -84,13 +83,12 @@ public class MainGUI extends javax.swing.JFrame {
         });
         updateGUIforChuckSystem();
 
-        Logger.getLogger(MainGUI.class.getName()).log(Level.INFO, "Here's some info");
         OscHandler.getOscHandler().addPropertyChangeListener(new PropertyChangeListener() {
-
             public void propertyChange(PropertyChangeEvent evt) {
                 oscHandlerPropertyChange(evt);
             }
         });
+
         updateGUIforOscStatus();
         //  fm.hidSetup = wek.getCurrentHidSetup(); //TODO: put in fm
         wek.getCurrentHidSetup().addPropertyChangeListener(new PropertyChangeListener() {
@@ -107,26 +105,29 @@ public class MainGUI extends javax.swing.JFrame {
         });
 
         WekinatorLearningManager.getInstance().addPropertyChangeListener(new PropertyChangeListener() {
-
             public void propertyChange(PropertyChangeEvent evt) {
                 learningManagerPropertyChange(evt);
             }
         });
-        ChuckRunner.addPropertyChangeListener(new PropertyChangeListener() {
 
+        ChuckRunner.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 runnerPropertyChange(evt);
             }
         });
+
         try {
             OscHandler.getOscHandler().setupOsc();
         } catch (IOException ex) {
             Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
-        runOscIfNeeded();
-        runChuckIfNeeded();
+       
+        //Moved following to WekinatorInstance.start():
+       // runOscIfNeeded();
+       // runChuckIfNeeded();
         updatePanels();
         updateMenus();
+
         if (WekinatorRunner.isLogging()) {
                     Plog.log(Msg.PANEL_CHUCK_VIEW);
          }
@@ -176,39 +177,26 @@ public class MainGUI extends javax.swing.JFrame {
     }
 
 
-    private void runOscIfNeeded() {
-        if (WekinatorRunner.chuckFile == null &&
-                WekinatorRunner.connectAutomatically &&
-                OscHandler.getOscHandler().getConnectionState() == OscHandler.ConnectionState.NOT_CONNECTED) {
 
-            connectOSC();
-        }
-    }
 
-    private void runChuckIfNeeded() {
-        if (WekinatorRunner.chuckFile != null &&
-                ChuckRunner.getConfiguration() != null &&
-                ChuckRunner.getConfiguration().isUsable() &&
-                ChuckRunner.getRunnerState() == ChuckRunnerState.NOT_RUNNING) {
-            try {
-                ChuckRunner.run();
-            } catch (IOException ex) {
-                Logger.getLogger(ChuckRunnerPanel.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-    }
 
+    //613: This does not belong here.
     private void runnerPropertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(ChuckRunner.PROP_RUNNERSTATE)) {
-            updateRunnerState(ChuckRunner.getRunnerState());
-        } else if (evt.getPropertyName().equals(ChuckRunner.PROP_CONFIGURATION)) {
-            runChuckIfNeeded();
-        }
+        //Took this out
+       // if (evt.getPropertyName().equals(ChuckRunner.PROP_RUNNERSTATE)) {
+       //     updateRunnerState(ChuckRunner.getRunnerState());
+       // }
+        //Took this out: ChucK configuration obj id never changed in practice
+        //else if (evt.getPropertyName().equals(ChuckRunner.PROP_CONFIGURATION)) {
+        //    runChuckIfNeeded();
+        //}
 
     }
 
     private void updateRunnerState(ChuckRunner.ChuckRunnerState state) {
-        if (state == ChuckRunnerState.RUNNING) {
+        //THis functionality now in WekinatorInstance:
+        
+        /*if (state == ChuckRunnerState.RUNNING) {
             wek.useConfigurationNextSession();
         //also connect!
         //connectOSC(); //changed: We'll wait to hear from chuck.
@@ -221,7 +209,7 @@ public class MainGUI extends javax.swing.JFrame {
                 Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
             }
 
-        }
+        } */
     }
 
     /** This method is called from within the constructor to
@@ -615,21 +603,19 @@ public class MainGUI extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void connectOSC() {
+
+
+private void buttonOscConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonOscConnectActionPerformed
         try {
-            OscHandler.getOscHandler().startHandshake();
+            //try {
+            //    OscHandler.getOscHandler().setupOsc();
+            //} catch (IOException ex) {
+            //    Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+            // }
+            OscHandler.getOscHandler().connectOSC();
         } catch (IOException ex) {
             Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-
-private void buttonOscConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonOscConnectActionPerformed
-    //try {
-    //    OscHandler.getOscHandler().setupOsc();
-    //} catch (IOException ex) {
-    //    Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-    // }
-    connectOSC();
 }//GEN-LAST:event_buttonOscConnectActionPerformed
 
 private void buttonOscDisconnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonOscDisconnectActionPerformed
@@ -645,7 +631,6 @@ private void buttonOscDisconnectActionPerformed(java.awt.event.ActionEvent evt) 
 }//GEN-LAST:event_buttonOscDisconnectActionPerformed
 
 private void panelMainTabsComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_panelMainTabsComponentShown
-    System.out.println("Component shown");
 }//GEN-LAST:event_panelMainTabsComponentShown
 
 private void panelMainTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_panelMainTabsStateChanged
@@ -1135,33 +1120,7 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
         }
 
     }
-    // private WekaOperator w;
-    int sendPort, receivePort;
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /*    System.setProperty("apple.laf.useScreenMenuBar", "true");
-        try {
-        UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-        } catch (ClassNotFoundException ex) {
-        Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-        Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-        Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (UnsupportedLookAndFeelException ex) {
-        Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-        } */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-
-            public void run() {
-                MainGUI b = new MainGUI();
-                b.setVisible(true);
-            }
-        });
-    }
 }
 
 

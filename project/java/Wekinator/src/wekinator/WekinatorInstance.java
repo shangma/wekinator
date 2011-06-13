@@ -11,8 +11,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.LinkedList;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
@@ -22,6 +20,7 @@ import java.util.logging.SimpleFormatter;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
+import wekinator.ChuckRunner.ChuckRunnerState;
 import wekinator.Plog.Msg;
 import wekinator.util.*;
 
@@ -31,6 +30,7 @@ import wekinator.util.*;
  * @author rebecca
  */
 public class WekinatorInstance {
+
     protected EventListenerList listenerList = new EventListenerList();
     protected ChuckConfiguration configuration = null;
     private WekinatorSettings settings = null;
@@ -46,12 +46,10 @@ public class WekinatorInstance {
     protected PlayalongScore playalongScore = null;
     public static final String PROP_PLAYALONGSCORE = "playalongScore";
     public static final String PROP_NUMPARAMS = "numParams";
-
     protected String[] customOscFeatureNames = new String[0];
     protected boolean hasCustomOscFeatureNames = false;
     private static WekinatorInstance ref = null;
     private ChangeEvent oscFeatureNameChangeEvent = null;
-
     public static int recvPort = 6448;
     public static int sendPort = 6453;
 
@@ -59,7 +57,7 @@ public class WekinatorInstance {
         return hasCustomOscFeatureNames;
     }
 
-    public void setCustomOscFeatureNames(String[] n){
+    public void setCustomOscFeatureNames(String[] n) {
         customOscFeatureNames = n;
         hasCustomOscFeatureNames = (n != null && n.length != 0);
         fireOscFeatureNamesChanged();
@@ -68,8 +66,6 @@ public class WekinatorInstance {
     public String[] getCustomOscFeatureNames() {
         return customOscFeatureNames;
     }
-
-
     protected int numParams = -1;
 
     /**
@@ -96,7 +92,7 @@ public class WekinatorInstance {
 
     }
 
-        private void chuckSystemUpdated(PropertyChangeEvent evt) {
+    private void chuckSystemUpdated(PropertyChangeEvent evt) {
         ChuckSystem cs = ChuckSystem.getChuckSystem();
         if (evt.getPropertyName().equals(ChuckSystem.PROP_STATE)) {
             if (evt.getOldValue() != ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID && evt.getNewValue() == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID) {
@@ -107,12 +103,11 @@ public class WekinatorInstance {
                     } else {
                         if (learningSystem.getDataset() != null) {
                             for (int i = 0; i < learningSystem.getNumParams(); i++) {
-                                  if (learningSystem.getDataset().isParameterDiscrete(i) != SynthProxy.isParamDiscrete(i) ||
-                                   (SynthProxy.isParamDiscrete(i) && SynthProxy.paramMaxValue(i) != learningSystem.getDataset().maxLegalDiscreteParamValue(i) ))
-                                  {
-                                      setLearningSystem(null);
-                                      break;
-                                  }
+                                if (learningSystem.getDataset().isParameterDiscrete(i) != SynthProxy.isParamDiscrete(i)
+                                        || (SynthProxy.isParamDiscrete(i) && SynthProxy.paramMaxValue(i) != learningSystem.getDataset().maxLegalDiscreteParamValue(i))) {
+                                    setLearningSystem(null);
+                                    break;
+                                }
                             }
                         } else {
                             setLearningSystem(null); //hack: don't want to do this; better to store in learning system cont/disc params
@@ -144,7 +139,6 @@ public class WekinatorInstance {
         this.playalongScore = playalongScore;
         propertyChangeSupport.firePropertyChange(PROP_PLAYALONGSCORE, oldPlayalongScore, playalongScore);
     }
-
 
     /**
      * Get the value of learningSystem
@@ -205,7 +199,7 @@ public class WekinatorInstance {
 
         //New: invalidate learning configuration
         if (!FeatureConfiguration.equal(featureConfiguration, oldFeatureConfiguration)) {
-             setLearningSystem(null); 
+            setLearningSystem(null);
         }
 
     }
@@ -224,7 +218,7 @@ public class WekinatorInstance {
 
 
             if (sd.getNumFeatures() != featureConfiguration.getNumFeaturesEnabled()
-            || sd.getNumParameters() != SynthProxy.getNumParams()) {
+                    || sd.getNumParameters() != SynthProxy.getNumParams()) {
                 System.out.println("cannot use: feature/param mismatch");
                 System.out.println(sF + "/" + tF + ", " + sP + "/" + SynthProxy.getNumParams());
                 return false;
@@ -269,25 +263,23 @@ public class WekinatorInstance {
         this.state = state;
         propertyChangeSupport.firePropertyChange(PROP_STATE, oldState, state);
     }
-
     /**
      * Get the value of featureManager
      *
      * @return the value of featureManager
      */
-   /* public FeatureManager getFeatureManager() {
-        return featureManager;
+    /* public FeatureManager getFeatureManager() {
+    return featureManager;
     } */
-
     /**
      * Set the value of featureManager
      *
      * @param featureManager new value of featureManager
      */
-  /*  public void setFeatureManager(FeatureManager featureManager) {
-        FeatureManager oldFeatureManager = this.featureManager;
-        this.featureManager = featureManager;
-        propertyChangeSupport.firePropertyChange(PROP_FEATUREMANAGER, oldFeatureManager, featureManager);
+    /*  public void setFeatureManager(FeatureManager featureManager) {
+    FeatureManager oldFeatureManager = this.featureManager;
+    this.featureManager = featureManager;
+    propertyChangeSupport.firePropertyChange(PROP_FEATUREMANAGER, oldFeatureManager, featureManager);
     } */
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
@@ -310,8 +302,8 @@ public class WekinatorInstance {
             HidSetup oldCurrentHidSetup = this.currentHidSetup;
             this.currentHidSetup = currentHidSetup;
             if (currentHidSetup != null) {
-            currentHidSetup.startHidRun();
-            currentHidSetup.startHidInit();
+                currentHidSetup.startHidRun();
+                currentHidSetup.startHidInit();
             }
             propertyChangeSupport.firePropertyChange(PROP_CURRENTHIDSETUP, oldCurrentHidSetup, currentHidSetup);
         } catch (IOException ex) {
@@ -356,35 +348,36 @@ public class WekinatorInstance {
     }
 
     public void setupPlog() {
-         String currentDir = Util.getCanonicalPath(new File(""));
-                if (currentDir != null) {
-        try {
-           // String currentDir = Util.getCanonicalPath(new File(""));
-            File tmpf = new File(currentDir);
-            if (tmpf != null && tmpf.getParentFile() != null && tmpf.getParentFile().getParentFile() != null) {
-
-                File projectDir = (new File(currentDir)).getParentFile().getParentFile().getParentFile();
-                Plog.setup(Util.getCanonicalPath(projectDir) + File.separator + "logging");
-                Plog.log(Msg.LOAD);
-            }
-        } catch (IOException ex) {
+        String currentDir = Util.getCanonicalPath(new File(""));
+        if (currentDir != null) {
             try {
-             //   String currentDir = Util.getCanonicalPath(new File(""));
-                File projectDir = (new File(currentDir)).getParentFile().getParentFile();
-            Plog.setup(Util.getCanonicalPath(projectDir) + File.separator + "logging");
-            Plog.log(Msg.LOAD);
+                // String currentDir = Util.getCanonicalPath(new File(""));
+                File tmpf = new File(currentDir);
+                if (tmpf != null && tmpf.getParentFile() != null && tmpf.getParentFile().getParentFile() != null) {
 
-            } catch (Exception ex2) {
-               System.out.println("Couldn't log." + ex.getMessage());
-                System.exit(0);
+                    File projectDir = (new File(currentDir)).getParentFile().getParentFile().getParentFile();
+                    Plog.setup(Util.getCanonicalPath(projectDir) + File.separator + "logging");
+                    Plog.log(Msg.LOAD);
+                }
+            } catch (IOException ex) {
+                try {
+                    //   String currentDir = Util.getCanonicalPath(new File(""));
+                    File projectDir = (new File(currentDir)).getParentFile().getParentFile();
+                    Plog.setup(Util.getCanonicalPath(projectDir) + File.separator + "logging");
+                    Plog.log(Msg.LOAD);
+
+                } catch (Exception ex2) {
+                    System.out.println("Couldn't log." + ex.getMessage());
+                    System.exit(0);
+                }
             }
-        }
 
 
 
         }
     }
 
+    //TODO: Modify so that can be created from Java, not command line.
     private WekinatorInstance() {
         FileInputStream fin = null;
         boolean useChuckFromCL = (WekinatorRunner.chuckFile != null);
@@ -392,10 +385,10 @@ public class WekinatorInstance {
 
 
         try {
-           // fin = new FileInputStream(settingsSaveFile);
-           // ObjectInputStream sin = new ObjectInputStream(fin);
+            // fin = new FileInputStream(settingsSaveFile);
+            // ObjectInputStream sin = new ObjectInputStream(fin);
             settings = WekinatorSettings.readFromFile(new File(settingsSaveFile));
-          
+
             settings.addPropertyChangeListener(new PropertyChangeListener() {
 
                 public void propertyChange(PropertyChangeEvent evt) {
@@ -408,7 +401,7 @@ public class WekinatorInstance {
                 configuration = ChuckConfiguration.readFromFile(new File(cLoc));
                 System.out.println("read chuck config from " + cLoc);
             }
-            
+
             System.out.println("Loaded user settings");
         } catch (Exception ex) {
             System.out.println("No user settings found");
@@ -456,7 +449,7 @@ public class WekinatorInstance {
 
         ChuckRunner.setConfiguration(configuration);
 
-       // featureManager = new FeatureManager();
+        // featureManager = new FeatureManager();
 
         handlers = new LinkedList<Handler>();
         try {
@@ -487,11 +480,50 @@ public class WekinatorInstance {
             }
         });
 
-    // TODO RAF add check for valid model state
+        ChuckRunner.addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent pce) {
+                chuckRunnerUpdated(pce);
+            }
+        });
+
+
+
+        // TODO RAF add check for valid model state
+    }
+
+    //
+    public void start() throws IOException {
+        runOscIfNeeded();
+        runChuckIfNeeded();
+    }
+
+    private static void runOscIfNeeded() throws IOException {
+        if (WekinatorRunner.chuckFile == null
+                && WekinatorRunner.connectAutomatically
+                && OscHandler.getOscHandler().getConnectionState() == OscHandler.ConnectionState.NOT_CONNECTED) {
+
+            OscHandler.getOscHandler().startHandshake();
+            //  connectOSC();
+        }
+    }
+
+    private void runChuckIfNeeded() {
+        if (WekinatorRunner.chuckFile != null
+                && ChuckRunner.getConfiguration() != null
+                && ChuckRunner.getConfiguration().isUsable()
+                && ChuckRunner.getRunnerState() == ChuckRunnerState.NOT_RUNNING) {
+            try {
+                ChuckRunner.run();
+            } catch (IOException ex) {
+                Logger.getLogger(WekinatorRunner.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     public void setWekinatorLearningManager(WekinatorLearningManager m) {
-       m.addPropertyChangeListener(new PropertyChangeListener() {
+        m.addPropertyChangeListener(new PropertyChangeListener() {
+
             public void propertyChange(PropertyChangeEvent evt) {
                 learningManagerPropertyChanged(evt);
             }
@@ -501,6 +533,27 @@ public class WekinatorInstance {
     private void oscPropertyChanged(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(OscHandler.PROP_CONNECTIONSTATE)) {
             setForOscState();
+        }
+    }
+
+    public void chuckRunnerUpdated(PropertyChangeEvent pce) {
+        if (pce.getPropertyName().equals(ChuckRunner.PROP_RUNNERSTATE)) {
+            ChuckRunnerState cs = (ChuckRunnerState) pce.getNewValue();
+            if (cs == ChuckRunnerState.RUNNING) {
+                useConfigurationNextSession();
+                //also connect!
+                //connectOSC(); //changed: We'll wait to hear from chuck.
+
+            } else {
+                try {
+                    OscHandler.getOscHandler().end();
+                    OscHandler.getOscHandler().setupOsc();
+                } catch (IOException ex) {
+                    Logger.getLogger(WekinatorInstance.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+            }
+
         }
     }
 
@@ -531,7 +584,7 @@ public class WekinatorInstance {
         boolean fail = false;
         try {
             settings.writeToFile(new File(settingsSaveFile));
-          
+
             System.out.println("Wrote to settings file");
         } catch (IOException ex1) {
             fail = true;
@@ -595,7 +648,6 @@ public class WekinatorInstance {
         return settings;
     }
 
-
     public void addOscFeatureNamesChangeListener(ChangeListener l) {
         listenerList.add(ChangeListener.class, l);
     }
@@ -606,13 +658,13 @@ public class WekinatorInstance {
 
     protected void fireOscFeatureNamesChanged() {
         Object[] listeners = listenerList.getListenerList();
-        for (int i = listeners.length - 2; i >= 0; i -=2 ) {
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
             if (listeners[i] == ChangeListener.class) {
                 if (oscFeatureNameChangeEvent == null) {
                     oscFeatureNameChangeEvent = new ChangeEvent(this);
-                    
+
                 }
-                ((ChangeListener)listeners[i+1]).stateChanged(oscFeatureNameChangeEvent);
+                ((ChangeListener) listeners[i + 1]).stateChanged(oscFeatureNameChangeEvent);
             }
         }
     }

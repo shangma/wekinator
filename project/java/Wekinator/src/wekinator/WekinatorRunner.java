@@ -12,6 +12,7 @@ import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
+import wekinator.ChuckRunner.ChuckRunnerState;
 import wekinator.util.Util;
 
 /**
@@ -207,10 +208,20 @@ public class WekinatorRunner {
     }
 
     public static void main(String[] args) {
-        run(args);
+        try {
+            configure(args);
+            run(true);
+        } catch (OptionException ex) {
+            System.out.println("Invalid options supplied to Wekinator");
+            try {
+                parser.printHelpOn(System.out);
+            } catch (IOException ex1) {
+                Logger.getLogger(WekinatorRunner.class.getName()).log(Level.SEVERE, null, ex1);
+            }
+        }
     }
 
-    public static void run(String[] args) {
+    public static void configure(String[] args) throws OptionException {
         System.setProperty("apple.laf.useScreenMenuBar", "true");
 
         if (args == null) {
@@ -227,7 +238,7 @@ public class WekinatorRunner {
         }
 
         OptionSet options;
-        try {
+
             options = WekinatorRunner.parser.parse(args);
             System.out.println("parsed successfully");
 
@@ -296,24 +307,28 @@ public class WekinatorRunner {
                 isPlork = true;
                 isLogging = true;
                 System.out.println("Running plork student special build");
-            } 
-
-            //Now run!
-            java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                MainGUI b = new MainGUI();
-                b.setVisible(true);
             }
-        });
-
-        } catch (OptionException ex) {
-            System.out.println("Invalid options supplied to Wekinator");
-            try {
-                WekinatorRunner.parser.printHelpOn(System.out);
-            } catch (IOException ex1) {
-                Logger.getLogger(WekinatorRunner.class.getName()).log(Level.SEVERE, null, ex1);
-            }
-        }
-
     }
+
+    //Barebones run function; can use cmd line configure first if desired
+    public static void run(boolean launchGUI) {
+        try {
+            WekinatorInstance w = WekinatorInstance.getWekinatorInstance();
+            w.start();
+
+            //Launch GUI
+            if (launchGUI) {
+                java.awt.EventQueue.invokeLater(new Runnable() {
+
+                    public void run() {
+                        MainGUI b = new MainGUI();
+                        b.setVisible(true);
+                    }
+                });
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(WekinatorRunner.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
 }

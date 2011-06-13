@@ -204,6 +204,10 @@ public class OscHandler {
         setConnectionState(ConnectionState.CONNECTING);
     }
 
+    public void connectOSC() throws IOException {
+        startHandshake();    
+    }
+
     public String getStatusMessage() {
         return myStatusMessage;
     }
