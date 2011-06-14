@@ -33,6 +33,7 @@ public final class MainGUI extends javax.swing.JFrame {
     boolean isConnected = false;
     public static boolean MAC_OS_X = (System.getProperty("os.name").toLowerCase().startsWith("mac os x"));
     protected JDialog aboutBox, prefs;
+    protected boolean isFirstRun = true;
     
     PropertyChangeListener hidSetupChangeListener = new PropertyChangeListener() {
 
@@ -178,10 +179,6 @@ public final class MainGUI extends javax.swing.JFrame {
         }
         return (option == JOptionPane.YES_OPTION);
     }
-
-
-
-
 
     //613: This does not belong here.
     private void runnerPropertyChange(PropertyChangeEvent evt) {
@@ -848,27 +845,18 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
             if (n == OscHandler.ConnectionState.CONNECTED) {
                // panelMainTabs.setSelectedComponent(panelTabFeatureConfiguration);
                 showFeatureConfigurationPanel();
-                if (WekinatorRunner.getFeatureFile() != null) {
-                    try {
-                        FeatureConfiguration fc = FeatureConfiguration.readFromFile(WekinatorRunner.getFeatureFile());
-                        featureConfigurationPanel1.setFormFromConfiguration(fc);
-
-                        // Thread.sleep(5000);
-                        //  fc.validate(); //does this do it? ABC
-                        WekinatorInstance.getWekinatorInstance().setFeatureConfiguration(fc);
-                    } catch (Exception ex) {
-                        // Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, "Unable to load feature configuration from file");
-                        Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, "Unable to load feature configuration from file");
-                        Logger.getLogger(MainGUI.class.getName()).log(Level.WARNING, null, ex);
-                    }
-
-                //configuration = ChuckConfiguration.readFromFile(new File(cLoc));
-                //WekinatorInstance.getWekinatorInstance().setFeatureConfiguration(featureConfiguration);
-
-                }
-
+              //  if (WekinatorRunner.getFeatureFile() != null) {
+              //      try {
+              //          FeatureConfiguration fc = FeatureConfiguration.readFromFile(WekinatorRunner.getFeatureFile());
+                      //  featureConfigurationPanel1.setFormFromConfiguration(fc); //Make sure this is triggered by following:
+              //          WekinatorInstance.getWekinatorInstance().setFeatureConfiguration(fc);
+              //      } catch (Exception ex) {
+              //          // Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, "Unable to load feature configuration from file");
+              //          Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, "Unable to load feature configuration from file");
+              //          Logger.getLogger(MainGUI.class.getName()).log(Level.WARNING, null, ex);
+              //      }
+             //   }
             }
-
         }
     }
 
@@ -947,8 +935,6 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
     }
 
     protected void updateGUIforOscStatus() {
-
-
         OscHandler h = OscHandler.getOscHandler();
         labelOscStatus.setText("OSC status: " + h.getStatusMessage());
         if (h.getConnectionState() == OscHandler.ConnectionState.CONNECTED ||
@@ -973,8 +959,6 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
         } */
         updatePanels();
         updateMenus();
-
-
     }
 
     //TODO: get rid of this.
@@ -992,15 +976,27 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
             // boolean e = (WekinatorInstance.getWekinatorInstance().getFeatureConfiguration() != null);
             //  System.out.println("enabling feat " + e);
             //  menuItemViewFeatures.setEnabled(e);
+
+            //This should be triggered when WekinatorInstance has feature configuration change.
+            //Moved following line to feature configuration panel class:
+             //featureConfigurationPanel1.setFormFromConfiguration((FeatureConfiguration)evt.getNewValue());
             updatePanels();
             updateMenus();
         } else if (evt.getPropertyName().equals(WekinatorInstance.PROP_LEARNINGSYSTEM)) {
+            //TODO: Make sure this is called correctly even when learning system loaded from file (cmd line + non-cmd line)
             System.out.println("learning system changed");
             if (WekinatorInstance.getWekinatorInstance().getLearningSystem() != null) {
                 showTrainRunPanel();
             }
             updatePanels();
             updateMenus();
+
+            //Moved from WekinatorLearningManager property change, where I don't think it belonged...
+            boolean e = (WekinatorInstance.getWekinatorInstance().getLearningSystem() != null);
+            System.out.println("enabling otf data " + e);
+            menuItemViewParamClipboard.setEnabled(e);
+            menuItemViewDataset.setEnabled(e);
+        
         }
     }
 
@@ -1012,47 +1008,11 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
             updatePanels();
             updateMenus();
             // panelTabLearningSystemConfiguration.setEnabled(cs.getState() == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID);
+            
+            //How should autorun work? WekinatorInstance responds to ChucKSystem connected_and_valid
             if (evt.getOldValue() != ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID && evt.getNewValue() == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID) {
-                //  learningSystemConfigurationPanel.configure(cs.getNumParams(), cs.getParamNames(), cs.isIsParamDiscrete(), WekinatorInstance.getWekinatorInstance().getFeatureConfiguration());
-                //WekinatorInstance.getWekinatorInstance().setNumParams(cs.getNumParams());
-                //WekinatorInstance.getWekinatorInstance().setParamNames(
-
-                //This was causing problem when feature config changed but learning system became invalid!
                 if (WekinatorInstance.getWekinatorInstance().getLearningSystem() == null) {
-                   // panelMainTabs.setSelectedComponent(panelTabLearningSystemConfiguration);
-                   showLearningSystemPanel();
-                    if (WekinatorRunner.getLearningSystemFile() != null) {
-                        try {
-                            LearningSystem ls = LearningSystem.readFromFile(WekinatorRunner.getLearningSystemFile());
-                            if (WekinatorInstance.getWekinatorInstance().canUse(ls)) {
-                                WekinatorInstance.getWekinatorInstance().setLearningSystem(ls);
-
-                                learningSystemConfigurationPanel.setLearningSystem(ls);
-                                panelMainTabs.setSelectedComponent(trainRunPanel1);
-                                if (WekinatorRunner.runAutomatically) {
-                                    //trainRunPanel1.
-                                    //if can run:
-                                    //TODO
-                                    if (trainRunPanel1.canRun()) {
-                                        trainRunPanel1.startAutoRun(); //put elsewhere
-                                        if (WekinatorRunner.isMinimizeOnRun()) {
-                                            this.setState(Frame.ICONIFIED);
-                                        }
-                                    } else {
-                                        System.out.println("Cannot run automatically: learning system not ready");
-                                    }
-
-                                }
-                            } else {
-                                //TODO: more info
-                                System.out.println("This learning system is not configured correctly");
-                            }
-                        } catch (Exception ex) {
-                            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, "Could not load learning system from file");
-
-                            Logger.getLogger(MainGUI.class.getName()).log(Level.WARNING, null, ex);
-                        }
-                    }
+                   showLearningSystemPanel(); 
                 } else {
                     showTrainRunPanel();
                 }
@@ -1082,14 +1042,19 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
     }
 
     private void learningManagerPropertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(WekinatorInstance.PROP_LEARNINGSYSTEM)) {
+        /*if (evt.getPropertyName().equals(WekinatorInstance.PROP_LEARNINGSYSTEM)) {
             boolean e = (WekinatorInstance.getWekinatorInstance().getLearningSystem() != null);
             System.out.println("enabling otf data " + e);
             menuItemViewParamClipboard.setEnabled(e);
             menuItemViewDataset.setEnabled(e);
-
-        }
-
+        } */
+       if (evt.getPropertyName().equals(WekinatorLearningManager.PROP_MODE)) {
+           WekinatorLearningManager.Mode m = (WekinatorLearningManager.Mode)evt.getNewValue();
+           if (m == WekinatorLearningManager.Mode.RUNNING && isFirstRun && WekinatorRunner.minimizeOnRun) {
+               isFirstRun = false;
+               this.setState(Frame.ICONIFIED);
+           }
+       }
     }
 
 }

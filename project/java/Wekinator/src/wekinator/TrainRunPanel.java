@@ -392,9 +392,11 @@ public class TrainRunPanel extends javax.swing.JPanel {
 
     public void startAutoRun() {
 
-        setCurrentPane(Panes.RUN);
-        WekinatorLearningManager.getInstance().startRunning();
-        OscHandler.getOscHandler().startSound();
+      //  setCurrentPane(Panes.RUN); //now in main gui
+
+        //Put in WekinatorInstance
+       // WekinatorLearningManager.getInstance().startRunning();
+       // OscHandler.getOscHandler().startSound();
 
     }
 

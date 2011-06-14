@@ -46,9 +46,15 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
         clearForm();
         updateCustomChuck();
         WekinatorInstance.getWekinatorInstance().getConfiguration().addPropertyChangeListener(new PropertyChangeListener() {
-
             public void propertyChange(PropertyChangeEvent pce) {
                 chuckConfigurationPropertyChanged(pce);
+            }
+        });
+
+        WekinatorInstance.getWekinatorInstance().addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent pce) {
+                wekinatorInstancePropertyChanged(pce);
             }
         });
     }
@@ -58,6 +64,13 @@ public class FeatureConfigurationPanel extends javax.swing.JPanel {
             updateCustomChuck();
         }
     }
+
+    private void wekinatorInstancePropertyChanged(PropertyChangeEvent pce) {
+        if (pce.getPropertyName().equals(WekinatorInstance.PROP_FEATURECONFIGURATION)) {
+            setFormFromConfiguration((FeatureConfiguration)pce.getNewValue());
+        }
+    }
+
 
     private void updateCustomChuck() {
         ChuckConfiguration c = WekinatorInstance.getWekinatorInstance().getConfiguration();

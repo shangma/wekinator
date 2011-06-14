@@ -31,7 +31,9 @@ import wekinator.util.*;
  */
 public class WekinatorInstance {
 
-    protected EventListenerList listenerList = new EventListenerList();
+    protected EventListenerList oscFeatureNamesListenerList = new EventListenerList();
+    protected EventListenerList featureParameterSetupDoneListenerList = new EventListenerList();
+
     protected ChuckConfiguration configuration = null;
     private WekinatorSettings settings = null;
     protected HidSetup currentHidSetup;
@@ -50,6 +52,7 @@ public class WekinatorInstance {
     protected boolean hasCustomOscFeatureNames = false;
     private static WekinatorInstance ref = null;
     private ChangeEvent oscFeatureNameChangeEvent = null;
+    private ChangeEvent featureParameterSetupDoneEvent = null;
     public static int recvPort = 6448;
     public static int sendPort = 6453;
 
@@ -97,6 +100,12 @@ public class WekinatorInstance {
         if (evt.getPropertyName().equals(ChuckSystem.PROP_STATE)) {
             if (evt.getOldValue() != ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID && evt.getNewValue() == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID) {
                 this.setNumParams(SynthProxy.getNumParams());
+
+                //This should inform all GUI listeners that we know what the new learning system will look like.                
+                fireFeatureParameterSetupDone();
+
+                //Invalidate prior learning system if it's incompatible with this #, type of features & params
+                //Otherwise leave it unchanged
                 if (learningSystem != null) {
                     if (learningSystem.getNumParams() != SynthProxy.getNumParams()) {
                         setLearningSystem(null);
@@ -112,9 +121,41 @@ public class WekinatorInstance {
                         } else {
                             setLearningSystem(null); //hack: don't want to do this; better to store in learning system cont/disc params
                         }
-
                     }
+                }
+            }
 
+
+            //Moved from MainGUI:
+            if (evt.getOldValue() != ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID && evt.getNewValue() == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID) {
+                //TODO: Test that this doesn't break when feature configuration changes.
+
+                if (WekinatorInstance.getWekinatorInstance().getLearningSystem() == null) {
+                    if (WekinatorRunner.getLearningSystemFile() != null) {
+                        try {
+                            LearningSystem ls = LearningSystem.readFromFile(WekinatorRunner.getLearningSystemFile());
+                            if (canUse(ls)) {
+                                setLearningSystem(ls);
+                                //X : Add listener to learning system panel: learningSystemConfigurationPanel.setLearningSystem(ls);
+                                //X : doublecheck have listener to panelMainTabs/mainGUI: panelMainTabs.setSelectedComponent(trainRunPanel1);
+                                if (WekinatorRunner.runAutomatically) {
+                                    if (ls != null && ls.isIsRunnable()) {
+                                        WekinatorLearningManager.getInstance().startRunning();
+                                    } else {
+                                        System.out.println("Cannot run automatically: learning system not ready");
+                                    }
+
+                                    //TODO: Test that MainGUI minimizes correctly.
+                                }
+                            } else {
+                                //TODO: more info
+                                System.out.println("This learning system is not configured correctly");
+                            }
+                        } catch (Exception ex) {
+                            Logger.getLogger(WekinatorInstance.class.getName()).log(Level.SEVERE, "Could not load learning system from file");
+                            Logger.getLogger(WekinatorInstance.class.getName()).log(Level.WARNING, null, ex);
+                        }
+                    }
                 }
             }
         }
@@ -154,7 +195,8 @@ public class WekinatorInstance {
      *
      * @param learningSystem new value of learningSystem
      */
-    public void setLearningSystem(LearningSystem learningSystem) {
+    public synchronized void setLearningSystem(LearningSystem learningSystem) {
+
         LearningSystem oldLearningSystem = this.learningSystem;
         this.learningSystem = learningSystem;
         propertyChangeSupport.firePropertyChange(PROP_LEARNINGSYSTEM, oldLearningSystem, learningSystem);
@@ -179,11 +221,16 @@ public class WekinatorInstance {
         this.featureConfiguration = featureConfiguration;
         propertyChangeSupport.firePropertyChange(PROP_FEATURECONFIGURATION, oldFeatureConfiguration, featureConfiguration);
 
+        //New: invalidate learning configuration
+        //Do this before telling chuck system to wait for new settings.
+        if (!FeatureConfiguration.equal(featureConfiguration, oldFeatureConfiguration)) {
+            //Problem: Multiple threads may try to update LearningSYstemConfigurationPanel -- set to null here, set to non-null in LearningSystemConfigurationPanel
+            // when OSC receives chuck settings update.
+            setLearningSystem(null);
+        }
+
         if (featureConfiguration == null) {
-
-            setForOscState(); //TODO: check on this -- not sensible?
-
-
+            // setForOscState(); //TODO: check on this -- not sensible?
         } else {
             ChuckSystem.getChuckSystem().waitForNewSettings();
             try {
@@ -192,15 +239,12 @@ public class WekinatorInstance {
                 Logger.getLogger(WekinatorInstance.class.getName()).log(Level.SEVERE, null, ex);
             }
             OscHandler.getOscHandler().requestChuckSettingsArray();
-            if (state == State.OSC_CONNECTION_MADE) {
-                setState(State.FEATURE_SETUP_DONE);
-            }
+            //  if (state == State.OSC_CONNECTION_MADE) {
+            //      setState(State.FEATURE_SETUP_DONE);
+            //  }
         }
 
-        //New: invalidate learning configuration
-        if (!FeatureConfiguration.equal(featureConfiguration, oldFeatureConfiguration)) {
-            setLearningSystem(null);
-        }
+
 
     }
 
@@ -234,35 +278,33 @@ public class WekinatorInstance {
 
     }
 
-    public enum State {
+    /* public enum State {
 
-        INIT,
-        OSC_CONNECTION_MADE,
-        FEATURE_SETUP_DONE,
-        MODELS_SETUP_DONE
-    };
-    protected State state = State.INIT;
-    public static final String PROP_STATE = "state";
-
+    INIT,
+    OSC_CONNECTION_MADE,
+    FEATURE_SETUP_DONE,
+    MODELS_SETUP_DONE
+    }; */
+    //protected State state = State.INIT;
+    // public static final String PROP_STATE = "state";
     /**
      * Get the value of state
      *
      * @return the value of state
      */
-    public State getState() {
-        return state;
-    }
-
+    /*public State getState() {
+    return state;
+    } */
     /**
      * Set the value of state
      *
      * @param state new value of state
      */
-    public void setState(State state) {
-        State oldState = this.state;
-        this.state = state;
-        propertyChangeSupport.firePropertyChange(PROP_STATE, oldState, state);
-    }
+    /* public void setState(State state) {
+    State oldState = this.state;
+    this.state = state;
+    propertyChangeSupport.firePropertyChange(PROP_STATE, oldState, state);
+    } */
     /**
      * Get the value of featureManager
      *
@@ -538,7 +580,19 @@ public class WekinatorInstance {
 
     private void oscPropertyChanged(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(OscHandler.PROP_CONNECTIONSTATE)) {
-            setForOscState();
+            OscHandler.ConnectionState n = (OscHandler.ConnectionState) evt.getNewValue();
+            if (n == OscHandler.ConnectionState.CONNECTED) {
+                if (WekinatorRunner.getFeatureFile() != null) {
+                    try {
+                        //Maybe should do this earlier? i.e. on start?
+                        FeatureConfiguration fc = FeatureConfiguration.readFromFile(WekinatorRunner.getFeatureFile());
+                        WekinatorInstance.getWekinatorInstance().setFeatureConfiguration(fc); //Make sure triggers feat config panel update
+                    } catch (Exception ex) {
+                        Logger.getLogger(WekinatorInstance.class.getName()).log(Level.SEVERE, "Unable to load feature configuration from file");
+                        Logger.getLogger(WekinatorInstance.class.getName()).log(Level.WARNING, null, ex);
+                    }
+                }
+            }
         }
     }
 
@@ -563,14 +617,13 @@ public class WekinatorInstance {
         }
     }
 
-    private void setForOscState() {
-        if (OscHandler.getOscHandler().getConnectionState() != OscHandler.ConnectionState.CONNECTED) {
-            setState(State.INIT);
-        } else if (state == State.INIT && OscHandler.getOscHandler().getConnectionState() == OscHandler.ConnectionState.CONNECTED) {
-            setState(State.OSC_CONNECTION_MADE);
-        }
+    /*  private void setForOscState() {
+    if (OscHandler.getOscHandler().getConnectionState() != OscHandler.ConnectionState.CONNECTED) {
+    setState(State.INIT);
+    } else if (state == State.INIT && OscHandler.getOscHandler().getConnectionState() == OscHandler.ConnectionState.CONNECTED) {
+    setState(State.OSC_CONNECTION_MADE);
     }
-
+    } */
     private void learningManagerPropertyChanged(PropertyChangeEvent evt) {
         /*   if (evt.getPropertyName().equals(WekinatorLearningManager.PROP_FEATURECONFIGURATION)) {
         if (WekinatorLearningManager.getInstance().getFeatureConfiguration() == null) {
@@ -655,15 +708,17 @@ public class WekinatorInstance {
     }
 
     public void addOscFeatureNamesChangeListener(ChangeListener l) {
-        listenerList.add(ChangeListener.class, l);
+        oscFeatureNamesListenerList.add(ChangeListener.class, l);
     }
 
     public void removeOscFeatureNamesChangeListener(ChangeListener l) {
-        listenerList.remove(ChangeListener.class, l);
+        oscFeatureNamesListenerList.remove(ChangeListener.class, l);
     }
 
+
+
     protected void fireOscFeatureNamesChanged() {
-        Object[] listeners = listenerList.getListenerList();
+        Object[] listeners = oscFeatureNamesListenerList.getListenerList();
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
             if (listeners[i] == ChangeListener.class) {
                 if (oscFeatureNameChangeEvent == null) {
@@ -671,6 +726,26 @@ public class WekinatorInstance {
 
                 }
                 ((ChangeListener) listeners[i + 1]).stateChanged(oscFeatureNameChangeEvent);
+            }
+        }
+    }
+
+    public void addFeatureParameterSetupDoneListener(ChangeListener l) {
+        featureParameterSetupDoneListenerList.add(ChangeListener.class, l);
+    }
+
+    public void removeFeatureParameterSetupDoneListener(ChangeListener l) {
+        featureParameterSetupDoneListenerList.remove(ChangeListener.class, l);
+    }
+
+    protected void fireFeatureParameterSetupDone() {
+        Object[] listeners = featureParameterSetupDoneListenerList.getListenerList();
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] == ChangeListener.class) {
+                if (featureParameterSetupDoneEvent == null) {
+                    featureParameterSetupDoneEvent = new ChangeEvent(this);
+                }
+                ((ChangeListener) listeners[i + 1]).stateChanged(featureParameterSetupDoneEvent);
             }
         }
     }
@@ -703,7 +778,7 @@ public class WekinatorInstance {
         }
         //Want to save settings here!
         saveCurrentSettings();
-        
+
         try {
             if (WekinatorRunner.isLogging()) {
                 Plog.log(Msg.CLOSE);
@@ -712,5 +787,10 @@ public class WekinatorInstance {
         } catch (IOException ex) {
             Logger.getLogger(WekinatorInstance.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public static void startAutoRun() {
+        WekinatorLearningManager.getInstance().startRunning();
+        OscHandler.getOscHandler().startSound();
     }
 }

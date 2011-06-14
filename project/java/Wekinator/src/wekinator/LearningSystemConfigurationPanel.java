@@ -10,6 +10,7 @@
  */
 package wekinator;
 
+import javax.swing.event.ChangeEvent;
 import wekinator.LearningAlgorithms.LearningAlgorithm;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
@@ -21,6 +22,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.border.EtchedBorder;
+import javax.swing.event.ChangeListener;
 import wekinator.util.Util;
 
 /**
@@ -35,11 +37,12 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
     protected int[] maxNumParamVals = new int[0];
     protected FeatureConfiguration featureConfiguration = null;
     protected LearningSystem learningSystem = null;
-    protected Logger logger = Logger.getLogger(LearningSystemConfigurationPanel.class.getName());
+    protected static final Logger logger = Logger.getLogger(LearningSystemConfigurationPanel.class.getName());
     protected MainGUI mainGui = null;
 
     //Call this when chuck system set & reset (this panel can be persistant)
-    public void configure(int numParams, String[] paramNames,
+    //Problem: Don't want order of chuck system property update to result in re-configure after learning system loaded (i.e. from cmd line)
+    public synchronized void configure(int numParams, String[] paramNames,
             boolean[] isParamDiscrete, int[] maxNumParamVals, FeatureConfiguration featureConfiguration) {
         this.numParams = numParams;
         this.paramNames = paramNames;
@@ -52,6 +55,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
     public void setMainGUI(MainGUI m) {
         mainGui = m;
     }
+
     public LearningSystem getLearningSystem() {
         return learningSystem;
     }
@@ -73,33 +77,73 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
         setLearningSystem(null);
         //For now:
         paneTabSimpleAdvanced.setSelectedIndex(1);
-        ChuckSystem.getChuckSystem().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                chuckSystemUpdated(evt);
+      //  ChuckSystem.getChuckSystem().addPropertyChangeListener(new PropertyChangeListener() {
+//
+ //           public void propertyChange(PropertyChangeEvent evt) {
+  //            //  chuckSystemUpdated(evt);
+  //          }
+  //      });
+
+        WekinatorInstance.getWekinatorInstance().addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent pce) {
+                wekinatorInstancePropertyChange(pce);
+            }
+        });
+
+        WekinatorInstance.getWekinatorInstance().addFeatureParameterSetupDoneListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent ce) {
+                wekinatorInstanceReadyForLearningSystem();
             }
         });
 
     }
 
+    //REmoved listener for this: Don't respond to chuck system directly anymore.
     private void chuckSystemUpdated(PropertyChangeEvent evt) {
-        ChuckSystem cs = ChuckSystem.getChuckSystem();
+     /*   ChuckSystem cs = ChuckSystem.getChuckSystem();
         if (evt.getPropertyName().equals(ChuckSystem.PROP_STATE)) {
             if (evt.getOldValue() != ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID && evt.getNewValue() == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID) {
                 if (!WekinatorInstance.getWekinatorInstance().getConfiguration().isUseOscSynth()) {
 
-                this.configure(SynthProxy.getNumParams(),
-                        SynthProxy.paramNames(),
-                        SynthProxy.isParamDiscretes(),
-                        SynthProxy.paramMaxValues(),
-                        WekinatorInstance.getWekinatorInstance().getFeatureConfiguration());
+                    this.configure(SynthProxy.getNumParams(),
+                            SynthProxy.paramNames(),
+                            SynthProxy.isParamDiscretes(),
+                            SynthProxy.paramMaxValues(),
+                            WekinatorInstance.getWekinatorInstance().getFeatureConfiguration());
                 } else {
-                   OscSynthConfiguration config = WekinatorInstance.getWekinatorInstance().getConfiguration().getOscSynthConfiguration();
-                   this.configure(config.getNumParams(), config.getParamNames(), config.isDiscrete, config.getMaxValue(), WekinatorInstance.getWekinatorInstance().getFeatureConfiguration());
+                    OscSynthConfiguration config = WekinatorInstance.getWekinatorInstance().getConfiguration().getOscSynthConfiguration();
+                    this.configure(config.getNumParams(), config.getParamNames(), config.isDiscrete, config.getMaxValue(), WekinatorInstance.getWekinatorInstance().getFeatureConfiguration());
                 }
             }
-        }
+        } */
     }
 
+    //TODO: Take out OSC synth/ chuck synth distinction here.
+    private void wekinatorInstanceReadyForLearningSystem() {
+        //ChuckSystem cs = ChuckSystem.getChuckSystem();
+        if (!WekinatorInstance.getWekinatorInstance().getConfiguration().isUseOscSynth()) {
+            this.configure(SynthProxy.getNumParams(),
+                    SynthProxy.paramNames(),
+                    SynthProxy.isParamDiscretes(),
+                    SynthProxy.paramMaxValues(),
+                    WekinatorInstance.getWekinatorInstance().getFeatureConfiguration());
+        } else {
+            OscSynthConfiguration config = WekinatorInstance.getWekinatorInstance().getConfiguration().getOscSynthConfiguration();
+            this.configure(config.getNumParams(), config.getParamNames(), config.isDiscrete, config.getMaxValue(), WekinatorInstance.getWekinatorInstance().getFeatureConfiguration());
+        }
+
+
+    }
+
+    private void wekinatorInstancePropertyChange(PropertyChangeEvent pce) {
+        if (pce.getPropertyName().equals(WekinatorInstance.PROP_LEARNINGSYSTEM)) {
+            if (pce.getNewValue() != null) {
+                setLearningSystem((LearningSystem) pce.getNewValue());
+            }
+
+        }
+    }
     protected DatasetLoadingPanel myDatasetPanel = null;
     protected LearningAlgorithmConfigurationPanel[] myAlgorithmPanels = new LearningAlgorithmConfigurationPanel[0];
 
@@ -361,17 +405,17 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
 
         setFormFromLearningSystem();
 
-    //try {
-    //  LearningSystem next = (LearningSystem) DeepCopy.copy(learningSystem); //DO I REALLY want to do this?!?! Really want shallow copy.  TODO TODO TODO
-    //} catch (IOException ex) {
-    //    Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
-    //} catch (ClassNotFoundException ex) {
-    //    Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
-    // }
-        
+        //try {
+        //  LearningSystem next = (LearningSystem) DeepCopy.copy(learningSystem); //DO I REALLY want to do this?!?! Really want shallow copy.  TODO TODO TODO
+        //} catch (IOException ex) {
+        //    Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
+        //} catch (ClassNotFoundException ex) {
+        //    Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
+        // }
+
         if (WekinatorLearningManager.getInstance().getMode() == WekinatorLearningManager.Mode.RUNNING) {
             WekinatorLearningManager.getInstance().stopRunning();
-                OscHandler.getOscHandler().stopSound();
+            OscHandler.getOscHandler().stopSound();
         } else if (WekinatorLearningManager.getInstance().getMode() == WekinatorLearningManager.Mode.EVALUATING) {
             WekinatorLearningManager.getInstance().stopEvaluating();
 
@@ -379,6 +423,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
             WekinatorLearningManager.getInstance().stopTraining();
         }
 
+        //TODO: put in main gui listener
         mainGui.showTrainRunPanel();
 
     }//GEN-LAST:event_buttonGoActionPerformed
@@ -437,60 +482,60 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
             myAlgorithmPanels = new LearningAlgorithmConfigurationPanel[0];
         } else {
             //if (myAlgorithmPanels == null || myAlgorithmPanels.length != algs.length) {
-                //Reset from scratch
-                if (myAlgorithmPanels != null) {
-                    for (int i = 0; i < myAlgorithmPanels.length; i++) {
-                        panelAdvancedParent.remove(myAlgorithmPanels[i]);
-                    }
+            //Reset from scratch
+            if (myAlgorithmPanels != null) {
+                for (int i = 0; i < myAlgorithmPanels.length; i++) {
+                    panelAdvancedParent.remove(myAlgorithmPanels[i]);
                 }
-                myAlgorithmPanels = new LearningAlgorithmConfigurationPanel[algs.length];
+            }
+            myAlgorithmPanels = new LearningAlgorithmConfigurationPanel[algs.length];
 
 
-                for (int i = 0; i < algs.length; i++) {
-                    LearningAlgorithmConfigurationPanel p =
-                            new LearningAlgorithmConfigurationPanel(
-                            i, //paramNum
-                            paramNames[i],
-                            isParamDiscrete[i],
-                            maxNumParamVals[i],
-                            algs[i],
-                            true,
-                            featureConfiguration);
-                    myAlgorithmPanels[i] = p;
-                    p.setBorder(new EtchedBorder());
-                    panelAdvancedParent.add(p);
-                }
-         /*   } else {
-                //Just update the panels we've already got
-                for (int i = 0; i < algs.length; i++) {
-                    //verify panels[i] will never be null here
-                    //Problem, what if I used to be discrete and now I'm not??
-                    if (myAlgorithmPanels[i].discrete == isParamDiscrete[i]) {
+            for (int i = 0; i < algs.length; i++) {
+                LearningAlgorithmConfigurationPanel p =
+                        new LearningAlgorithmConfigurationPanel(
+                        i, //paramNum
+                        paramNames[i],
+                        isParamDiscrete[i],
+                        maxNumParamVals[i],
+                        algs[i],
+                        true,
+                        featureConfiguration);
+                myAlgorithmPanels[i] = p;
+                p.setBorder(new EtchedBorder());
+                panelAdvancedParent.add(p);
+            }
+            /*   } else {
+            //Just update the panels we've already got
+            for (int i = 0; i < algs.length; i++) {
+            //verify panels[i] will never be null here
+            //Problem, what if I used to be discrete and now I'm not??
+            if (myAlgorithmPanels[i].discrete == isParamDiscrete[i]) {
 
-                        myAlgorithmPanels[i].setCurrentLearningAlgorithm(algs[i]);
-                        if (algs[i] != null) {
-                            myAlgorithmPanels[i].setCurrentLearningAlgorithmSelected();
-                        } else {
-                            myAlgorithmPanels[i].setNewLearningAlgorithmSelected();
-                        }
-                    } else {
-                        panelAdvancedParent.remove(myAlgorithmPanels[i]);
-                        LearningAlgorithmConfigurationPanel p =
-                            new LearningAlgorithmConfigurationPanel(
-                            i, //paramNum
-                            paramNames[i],
-                            isParamDiscrete[i],
-                            maxNumParamVals[i],
-                            algs[i],
-                            true,
-                            featureConfiguration);
-                        myAlgorithmPanels[i] = p;
-                        p.setBorder(new EtchedBorder());
-                        panelAdvancedParent.add(p);
+            myAlgorithmPanels[i].setCurrentLearningAlgorithm(algs[i]);
+            if (algs[i] != null) {
+            myAlgorithmPanels[i].setCurrentLearningAlgorithmSelected();
+            } else {
+            myAlgorithmPanels[i].setNewLearningAlgorithmSelected();
+            }
+            } else {
+            panelAdvancedParent.remove(myAlgorithmPanels[i]);
+            LearningAlgorithmConfigurationPanel p =
+            new LearningAlgorithmConfigurationPanel(
+            i, //paramNum
+            paramNames[i],
+            isParamDiscrete[i],
+            maxNumParamVals[i],
+            algs[i],
+            true,
+            featureConfiguration);
+            myAlgorithmPanels[i] = p;
+            p.setBorder(new EtchedBorder());
+            panelAdvancedParent.add(p);
 
-                    }
-                //   myAlgorithmPanels[i].setDisabled(!learningSystem.getLearnerEnabled(i));
-                }
+            }
+            //   myAlgorithmPanels[i].setDisabled(!learningSystem.getLearnerEnabled(i));
+            }
 
             } */
         }
@@ -533,7 +578,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
                     System.out.println("Error with setting mapping for learner " + i);
                 }
             }
-         //   Plog.logFeatureMap(i);
+            //   Plog.logFeatureMap(i);
         }
     }
 
