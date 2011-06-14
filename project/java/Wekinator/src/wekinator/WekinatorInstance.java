@@ -197,6 +197,15 @@ public class WekinatorInstance {
      */
     public synchronized void setLearningSystem(LearningSystem learningSystem) {
 
+        if (WekinatorLearningManager.getInstance().getMode() == WekinatorLearningManager.Mode.RUNNING) {
+            WekinatorLearningManager.getInstance().stopRunning();
+            OscHandler.getOscHandler().stopSound();
+        } else if (WekinatorLearningManager.getInstance().getMode() == WekinatorLearningManager.Mode.EVALUATING) {
+            WekinatorLearningManager.getInstance().stopEvaluating();
+        } else if (WekinatorLearningManager.getInstance().getMode() == WekinatorLearningManager.Mode.TRAINING) {
+            WekinatorLearningManager.getInstance().stopTraining();
+        }
+
         LearningSystem oldLearningSystem = this.learningSystem;
         this.learningSystem = learningSystem;
         propertyChangeSupport.firePropertyChange(PROP_LEARNINGSYSTEM, oldLearningSystem, learningSystem);
@@ -243,14 +252,16 @@ public class WekinatorInstance {
             //      setState(State.FEATURE_SETUP_DONE);
             //  }
         }
-
-
-
     }
 
     boolean canUse(LearningSystem ls) {
         if (ls == null || featureConfiguration == null) {
-            System.out.println("Cannot use: ls or featconfig null");
+            System.out.print("Cannot use this learning system: ");
+            if (ls == null)
+                System.out.println("Learning system is null.");
+            else
+                System.out.println("Feature conifguration is null.");
+
             return false;
         }
 
@@ -263,13 +274,27 @@ public class WekinatorInstance {
 
             if (sd.getNumFeatures() != featureConfiguration.getNumFeaturesEnabled()
                     || sd.getNumParameters() != SynthProxy.getNumParams()) {
-                System.out.println("cannot use: feature/param mismatch");
-                System.out.println(sF + "/" + tF + ", " + sP + "/" + SynthProxy.getNumParams());
+                System.out.println("Cannot use this learning system: feature/param mismatch");
+                System.out.println("Loaded " + sF + "/" + tF + ", expecting " + sP + "/" + SynthProxy.getNumParams());
                 return false;
             }
 
-            //TODO check that each param type is same
-            // ?? uhh ?
+            for (int i =0; i < SynthProxy.getNumParams(); i++) {
+                if (SynthProxy.isParamDiscrete(i) != sd.isParameterDiscrete(i)) {
+                    System.out.print("Cannot use learning system: Parameter " + i + " discrete is ");
+                    System.out.println(sd.isParameterDiscrete(i) + ", expected " + SynthProxy.isParamDiscrete(i));
+                    return false;
+                }
+                if (SynthProxy.isParamDiscrete(i)) {
+                    if (SynthProxy.paramMaxValue(i) < sd.getMaxLegalDiscreteParamValues()[i]) {
+                        System.out.print("Cannot use learning system: Parameter " + i + " requires max value of ");
+                        System.out.println(SynthProxy.paramMaxValue(i)
+                                + " or less, learning system has max value of " + sd.getMaxLegalDiscreteParamValues()[i]);
+                        return false;
+                    }
+                }
+            }
+
             return true;
 
         }

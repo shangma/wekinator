@@ -23,6 +23,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.EventListenerList;
 import wekinator.util.Util;
 
 /**
@@ -38,7 +39,12 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
     protected FeatureConfiguration featureConfiguration = null;
     protected LearningSystem learningSystem = null;
     protected static final Logger logger = Logger.getLogger(LearningSystemConfigurationPanel.class.getName());
-    protected MainGUI mainGui = null;
+  //  protected MainGUI mainGui = null;
+
+
+    protected EventListenerList advanceRequestListenerList = new EventListenerList();
+    private ChangeEvent advanceRequestEvent = null;
+
 
     //Call this when chuck system set & reset (this panel can be persistant)
     //Problem: Don't want order of chuck system property update to result in re-configure after learning system loaded (i.e. from cmd line)
@@ -52,9 +58,9 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
         this.setLearningSystem(new LearningSystem(numParams));
     }
 
-    public void setMainGUI(MainGUI m) {
+ /*   public void setMainGUI(MainGUI m) {
         mainGui = m;
-    }
+    } */
 
     public LearningSystem getLearningSystem() {
         return learningSystem;
@@ -99,41 +105,12 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
 
     }
 
-    //REmoved listener for this: Don't respond to chuck system directly anymore.
-    private void chuckSystemUpdated(PropertyChangeEvent evt) {
-     /*   ChuckSystem cs = ChuckSystem.getChuckSystem();
-        if (evt.getPropertyName().equals(ChuckSystem.PROP_STATE)) {
-            if (evt.getOldValue() != ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID && evt.getNewValue() == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID) {
-                if (!WekinatorInstance.getWekinatorInstance().getConfiguration().isUseOscSynth()) {
-
-                    this.configure(SynthProxy.getNumParams(),
-                            SynthProxy.paramNames(),
-                            SynthProxy.isParamDiscretes(),
-                            SynthProxy.paramMaxValues(),
-                            WekinatorInstance.getWekinatorInstance().getFeatureConfiguration());
-                } else {
-                    OscSynthConfiguration config = WekinatorInstance.getWekinatorInstance().getConfiguration().getOscSynthConfiguration();
-                    this.configure(config.getNumParams(), config.getParamNames(), config.isDiscrete, config.getMaxValue(), WekinatorInstance.getWekinatorInstance().getFeatureConfiguration());
-                }
-            }
-        } */
-    }
-
-    //TODO: Take out OSC synth/ chuck synth distinction here.
     private void wekinatorInstanceReadyForLearningSystem() {
-        //ChuckSystem cs = ChuckSystem.getChuckSystem();
-        if (!WekinatorInstance.getWekinatorInstance().getConfiguration().isUseOscSynth()) {
-            this.configure(SynthProxy.getNumParams(),
+        this.configure(SynthProxy.getNumParams(),
                     SynthProxy.paramNames(),
                     SynthProxy.isParamDiscretes(),
                     SynthProxy.paramMaxValues(),
                     WekinatorInstance.getWekinatorInstance().getFeatureConfiguration());
-        } else {
-            OscSynthConfiguration config = WekinatorInstance.getWekinatorInstance().getConfiguration().getOscSynthConfiguration();
-            this.configure(config.getNumParams(), config.getParamNames(), config.isDiscrete, config.getMaxValue(), WekinatorInstance.getWekinatorInstance().getFeatureConfiguration());
-        }
-
-
     }
 
     private void wekinatorInstancePropertyChange(PropertyChangeEvent pce) {
@@ -397,9 +374,11 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
         if (learningSystem != WekinatorInstance.getWekinatorInstance().getLearningSystem()) {
             WekinatorInstance.getWekinatorInstance().setLearningSystem(learningSystem);
             //ABC: set mask NOW.
-            boolean[] trainMask = getMaskFromForm();
-            WekinatorLearningManager.getInstance().setTrainingMask(trainMask);
+            
         }
+
+        boolean[] trainMask = getMaskFromForm();
+        WekinatorLearningManager.getInstance().setTrainingMask(trainMask);
 
         labelLearningSystemStatus.setText("Learning system configured.");
 
@@ -413,7 +392,9 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
         //    Logger.getLogger(FeatureConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
         // }
 
-        if (WekinatorLearningManager.getInstance().getMode() == WekinatorLearningManager.Mode.RUNNING) {
+
+        //Move into wekinator instance:
+      /*  if (WekinatorLearningManager.getInstance().getMode() == WekinatorLearningManager.Mode.RUNNING) {
             WekinatorLearningManager.getInstance().stopRunning();
             OscHandler.getOscHandler().stopSound();
         } else if (WekinatorLearningManager.getInstance().getMode() == WekinatorLearningManager.Mode.EVALUATING) {
@@ -421,10 +402,11 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
 
         } else if (WekinatorLearningManager.getInstance().getMode() == WekinatorLearningManager.Mode.TRAINING) {
             WekinatorLearningManager.getInstance().stopTraining();
-        }
+        } */
 
         //TODO: put in main gui listener
-        mainGui.showTrainRunPanel();
+       // mainGui.showTrainRunPanel();
+        fireAdvanceRequested();
 
     }//GEN-LAST:event_buttonGoActionPerformed
 
@@ -606,6 +588,28 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
         }
         return ls;
     }
+
+    public void addAdvanceRequestListener(ChangeListener l) {
+        advanceRequestListenerList.add(ChangeListener.class, l);
+    }
+
+    public void removeAdvanceRequestListener(ChangeListener l) {
+        advanceRequestListenerList.remove(ChangeListener.class, l);
+    }
+
+    protected void fireAdvanceRequested() {
+        Object[] listeners = advanceRequestListenerList.getListenerList();
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] == ChangeListener.class) {
+                if (advanceRequestListenerList == null) {
+                    advanceRequestEvent = new ChangeEvent(this);
+
+                }
+                ((ChangeListener) listeners[i + 1]).stateChanged(advanceRequestEvent);
+            }
+        }
+    }
+
 
     public static void main(String[] args) {
         FeatureConfiguration fc = new FeatureConfiguration();

@@ -19,6 +19,8 @@ import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import wekinator.ChuckRunner.ChuckRunnerState;
 import wekinator.Plog.Msg;
 import wekinator.util.Util;
@@ -74,7 +76,14 @@ public final class MainGUI extends javax.swing.JFrame {
             menuPerformanceMode.setEnabled(false);
         }
 
-        learningSystemConfigurationPanel.setMainGUI(this);
+        learningSystemConfigurationPanel.addAdvanceRequestListener(new ChangeListener() {
+
+            public void stateChanged(ChangeEvent ce) {
+                showTrainRunPanel();
+            }
+        });
+
+
         //Anywhere we add a listener, also update to current property.
 
         // FeatureManager fm = wek.getFeatureManager();
