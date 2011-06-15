@@ -418,10 +418,10 @@ public class LearningSystem {
     this.evaluationState = evaluationState;
     propertyChangeSupport.firePropertyChange(PROP_EVALUATIONSTATE, oldEvaluationState, evaluationState);
     } */
-    void addToTraining(double[] features, double[] params) {
+    void addToTraining(Integer id, double[] features, double[] params) {
         //Add to the training dataset.
         try {
-            dataset.addInstance(features, params, paramMask, new Date());
+            dataset.addInstance(id, features, params, paramMask, new Date());
         } catch (IllegalArgumentException ex) {
             Logger.getLogger(LearningSystem.class.getName()).log(Level.SEVERE, "Invalid features or parameters");
         }

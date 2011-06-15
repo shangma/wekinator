@@ -29,7 +29,9 @@ public class OscHandler {
     String returnHandshakeString = "/hiback";
     String featureInfoString = "/featureInfo";
     String featuresString = "/features"; //used for chuck features (not osc feats)
+    String featuresWithIdString = "/featuresWithId";
     String oscFeatureString = "/oscCustomFeatures";
+    String oscFeatureWithIdString = "/oscCustomFeaturesWithId";
     String oscFeatureNamesString = "/oscCustomFeaturesNames";
     String stopString = "/stop";
     String realValueString = "/realValue";
@@ -183,7 +185,9 @@ public class OscHandler {
         addHandshakeListener();
         addFeatureInfoListener();
         addFeatureListener();
+        addFeatureWithIdListener();
         addOscFeatureListener();
+        addOscFeatureWithIdListener();
         addOscFeatureNameListener();
         addParamFromSynthListener();
         addHidSetupBegunListener();
@@ -644,10 +648,36 @@ public class OscHandler {
                         Logger.getLogger(OscHandler.class.getName()).log(Level.WARNING, "Received feature is not a float");
                     }
                 }
-                FeatureExtractionController.updateChuckFeatures(d);
+                FeatureExtractionController.updateChuckFeatures(null, d);
             }
         };
         receiver.addListener(featuresString, listener);
+    }
+
+    private void addFeatureWithIdListener() {
+        OSCListener listener = new OSCListener() {
+
+            public void acceptMessage(java.util.Date time, OSCMessage message) {
+               // System.out.println("Received chuck features");
+                Object[] o = message.getArguments();
+                Integer id = new Integer(0);
+                if (o[0] instanceof Integer) {
+                    id = (Integer)o[0];
+                } else {
+                    Logger.getLogger(OscHandler.class.getName()).log(Level.WARNING, "Received ID is not an integer");
+                }
+                double d[] = new double[o.length - 1];
+                for (int i = 0; i < o.length-1; i++) {
+                    if (o[i+1] instanceof Float) {
+                        d[i] = ((Float) o[i+1]).floatValue();
+                    } else {
+                        Logger.getLogger(OscHandler.class.getName()).log(Level.WARNING, "Received feature is not a float");
+                    }
+                }
+                FeatureExtractionController.updateChuckFeatures(id, d);
+            }
+        };
+        receiver.addListener(featuresWithIdString, listener);
     }
 
     private void addOscFeatureListener() {
@@ -663,10 +693,36 @@ public class OscHandler {
                         Logger.getLogger(OscHandler.class.getName()).log(Level.WARNING, "Received feature is not a float");
                     }
                 }
-                FeatureExtractionController.updateOscFeatures(d);
+                FeatureExtractionController.updateOscFeatures(null, d);
             }
         };
         receiver.addListener(oscFeatureString, listener);
+    }
+
+        private void addOscFeatureWithIdListener() {
+        OSCListener listener = new OSCListener() {
+
+            public void acceptMessage(java.util.Date time, OSCMessage message) {
+                Object[] o = message.getArguments();
+                Integer id = new Integer(0);
+                if (o[0] instanceof Integer) {
+                    id = (Integer)o[0];
+                } else {
+                    Logger.getLogger(OscHandler.class.getName()).log(Level.WARNING, "Received ID is not an integer");
+                }
+                double d[] = new double[o.length - 1];
+                for (int i = 0; i < o.length-1; i++) {
+                    if (o[i+1] instanceof Float) {
+                        d[i] = ((Float) o[i+1]).floatValue();
+                    } else {
+                        Logger.getLogger(OscHandler.class.getName()).log(Level.WARNING, "Received feature is not a float");
+                    }
+                }
+
+                FeatureExtractionController.updateOscFeatures(id, d);
+            }
+        };
+        receiver.addListener(oscFeatureWithIdString, listener);
     }
 
     private void addOscFeatureNameListener() {

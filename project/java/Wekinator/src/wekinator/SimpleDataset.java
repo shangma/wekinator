@@ -39,6 +39,7 @@ public class SimpleDataset {
 
 
     protected EventListenerList listenerList = new EventListenerList();
+    protected EventListenerList trainingExampleAddedListenerList = new EventListenerList();
     protected int numParams = 0;
     protected int numFeatures = 0; //Total # features being stored, doesn't include my metadata
 //    private boolean featureParamMask[][] = null;
@@ -66,6 +67,17 @@ public class SimpleDataset {
     public static final String PROP_HASINSTANCES = "hasInstances";
     protected FeatureLearnerConfiguration featureLearnerConfiguration = null;
     private ChangeEvent changeEvent = null;
+
+    public class ExampleAddEvent extends ChangeEvent {
+        public int id = -1;
+        public ExampleAddEvent(Object o, int id) {
+            super(o);
+            this.id = id;
+        }
+    }
+
+    private ExampleAddEvent exampleAddEvent = null;
+
 
     public static String getFileExtension() {
         return "wdata";
@@ -646,9 +658,25 @@ public class SimpleDataset {
         currentTrainingRound++;
     }
 
+
+   /* public void addInstance(double[] featureVals, double paramVals[], boolean paramMask[], Date timeStamp) {
+        int thisId = nextID;
+        nextID++;
+
+        addInstance(thisId, featureVals, paramVals, paramMask, timeStamp);
+    } */
+
+    //Updated to add ID: june 2011
     //TODO TODO TODO: Error in addInstance - wrong parameter value
     //How do we handle missing features or missing parameters??
-    public void addInstance(double[] featureVals, double paramVals[], boolean paramMask[], Date timeStamp) {
+    public void addInstance(Integer id, double[] featureVals, double paramVals[], boolean paramMask[], Date timeStamp) {
+        int thisId;
+        if (id == null) {
+            thisId = nextID;
+            nextID++;
+        } else {
+            thisId = id;
+        }
 
         if (featureVals == null || featureVals.length != numFeatures) {
             String err = "Wrong feature vals; ";
@@ -663,11 +691,6 @@ public class SimpleDataset {
             //TODO: Error happens here when switch to discrete params:
             throw new IllegalArgumentException("Wrong parameter values or mask");
         }
-
-
-
-        int thisId = nextID;
-        nextID++;
 
         double myVals[] = new double[numMetaData + numFeatures + numParams];
         myVals[idIndex] = thisId;
@@ -696,8 +719,7 @@ public class SimpleDataset {
         allInstances.add(in);
         setHasInstances(true);
         fireStateChanged();
-
-
+        fireExampleAdded(thisId);
     // idMap.put(thisId, in);
 
     }
@@ -711,7 +733,7 @@ public class SimpleDataset {
         for (int i = 0; i < mask.length; i++) {
             mask[i] = true;
         }
-        addInstance(featureVals, paramVals, mask, timestamp);
+        addInstance(null, featureVals, paramVals, mask, timestamp);
     }
 
     public void addInstance(double[] featureVals, double paramVals[]) {
@@ -949,7 +971,7 @@ public class SimpleDataset {
 
         boolean mask1[] = {false, false};
         s.startNewTrainingRound();
-        s.addInstance(fvals2, pvals2, mask1, new Date());
+        s.addInstance(null, fvals2, pvals2, mask1, new Date());
 
         FeatureLearnerConfiguration flc = new FeatureLearnerConfiguration(2, 5);
         int[] t = {4, 3};
@@ -1121,6 +1143,30 @@ public class SimpleDataset {
             }
         }
     }
+
+   public void addExampleAddedListener(ChangeListener l) {
+        trainingExampleAddedListenerList.add(ChangeListener.class, l);
+    }
+
+    public void removeExampleAddedListener(ChangeListener l) {
+        trainingExampleAddedListenerList.remove(ChangeListener.class, l);
+    }
+
+    protected void fireExampleAdded(int id) {
+        Object[] listeners = trainingExampleAddedListenerList.getListenerList();
+        for (int i = listeners.length - 2; i >= 0; i -=2 ) {
+            if (listeners[i] == ChangeListener.class) {
+                //TODO: Not ideal: Can we make a new ChangeListener child class instead of create a new object every time?
+                ExampleAddEvent e = new ExampleAddEvent(this, id);
+              /*  if (exampleAddEvent == null) {
+                    exampleAddEvent = new ExampleAddEvent(this, id);
+                } else {
+                    exampleAddEvent.id = id;
+                } */
+                ((ChangeListener)listeners[i+1]).stateChanged(e);
+            }
+        }
+    }
     
     public void writeToOutputStreamNew(ObjectOutputStream o) throws IOException {
                 o.writeInt(numParams);
@@ -1184,8 +1230,6 @@ public class SimpleDataset {
        s.currentTrainingRound = currentTrainingRound + 1;
 
        return s;
-    }
-
-    
+    }    
 
 }

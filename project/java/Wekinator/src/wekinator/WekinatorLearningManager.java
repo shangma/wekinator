@@ -284,7 +284,7 @@ public class WekinatorLearningManager {
     protected double[] lastFeatures;
     protected double[] lastParams;
 
-    public void updateFeatures(double[] features) {
+    public void updateFeatures(Integer id, double[] features) {
         if (mode == Mode.RUNNING) {
             try {
                 double[] os = WekinatorInstance.getWekinatorInstance().getLearningSystem().classify(features);
@@ -303,7 +303,8 @@ public class WekinatorLearningManager {
         } else if (mode == Mode.DATASET_CREATION) {
            // if (!WekinatorInstance.getWekinatorInstance().isGestureEndMode()) {
             //Why is learningsystem null here??
-                WekinatorInstance.getWekinatorInstance().getLearningSystem().addToTraining(features, params);
+            
+           WekinatorInstance.getWekinatorInstance().getLearningSystem().addToTraining(id, features, params);
            // } else {
            //     lastFeatures = features;
            //     lastParams = params;

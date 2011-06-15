@@ -32,7 +32,7 @@ public class WekinatorWrapperDriver {
 
     public void test() throws InterruptedException {
 
-        int numFeats = 3;
+        int numFeats = 1;
         String[] featureNames = new String[numFeats];
         for (int i = 0; i < numFeats; i++) {
             featureNames[i] = "f" + i;
@@ -173,7 +173,7 @@ public class WekinatorWrapperDriver {
     }
 
     private void wekinatorTrainingExampleRecorded(int id, int classValue) {
-        System.out.println("Wekinator recorded new training example with classValue=" + classValue + " id=" + id);
+        System.out.println("***** Wekinator recorded new training example with classValue=" + classValue + " id=" + id);
     }
 
     private void wekinatorClassifierStateChanged(PropertyChangeEvent pce) {

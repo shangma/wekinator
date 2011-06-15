@@ -10,9 +10,6 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -55,15 +52,7 @@ public class BeatboxWekinatorWrapper {
     public static String PROP_CLASSIFIERSTATE = "classifierState";
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     //Temp for this skeleton:
-    int maxId = 0;
     protected HashMap<Integer, double[]> examples = new HashMap<Integer, double[]>();
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    ScheduledFuture<?> trainSimulationHandler = null;
-    // final Runnable trainSimulator = new Runnable() {
-    //     public void run() {
-    //         setTrainingState(TrainingState.NOT_TRAINING);
-    //     }
-    // };
 
     /**
      * Add PropertyChangeListener.
@@ -107,6 +96,7 @@ public class BeatboxWekinatorWrapper {
         setupCompleteListenerList.remove(ChangeListener.class, l);
     }
 
+    //X Fired when Chuck & Java components talking to each other as required
     protected void fireSetupComplete() {
         Object[] listeners = setupCompleteListenerList.getListenerList();
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
@@ -151,6 +141,9 @@ public class BeatboxWekinatorWrapper {
         ERROR
     };
 
+    //Constructor
+    //Error will happen later (during recording possibly) if features mismatch those being extracted,
+    // or # classes does not match synth
     public BeatboxWekinatorWrapper(int numFeatures, int numClasses, String[] featureNames) throws Exception {
         this.numFeatures = numFeatures;
         this.numClasses = numClasses;
@@ -162,10 +155,12 @@ public class BeatboxWekinatorWrapper {
 
         setupChuckConfiguration();
         try {
-            ChuckRunner.run(); //In future might want this to not run, only to communicate with other running chuck code.
+       //     ChuckRunner.run(); //In future might want this to not run, only to communicate with other running chuck code.
+
             WekinatorInstance.getWekinatorInstance().addFeatureParameterSetupDoneListener(new ChangeListener() {
 
                 public void stateChanged(ChangeEvent ce) {
+                    System.out.println("********* FEAT PARAM SETUP DONE");
                     buildLearningSystem();
                 }
             });
@@ -177,9 +172,11 @@ public class BeatboxWekinatorWrapper {
                 }
             });
 
+            ChuckRunner.runConfigFile("/Users/rebecca/config.ck");
+
+            Thread.sleep(5000); //TODO: Replace with callback, handle errors.
+
             setupFeatureConfiguration();
-
-
 
         } catch (IOException ex) {
             System.out.println("Chuck runner failed");
@@ -210,18 +207,24 @@ public class BeatboxWekinatorWrapper {
                 paramNamesArray);
 
 
+        s.addExampleAddedListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent ce) {
+                newTrainingExampleRecorded(((SimpleDataset.ExampleAddEvent)ce).id);
+            }
+        });
+
         ls.setDataset(s);
 
         LearningAlgorithm a = new IbkLearningAlgorithm();
 
         ls.setLearners(0, a);
 
-        ls.addPropertyChangeListener(new PropertyChangeListener() {
+        /*  ls.addPropertyChangeListener(new PropertyChangeListener() {
 
-            public void propertyChange(PropertyChangeEvent pce) {
-                learningSystemPropertyChanged(pce);
-            }
-        });
+        public void propertyChange(PropertyChangeEvent pce) {
+        learningSystemPropertyChanged(pce);
+        }
+        }); */
 
         WekinatorInstance.getWekinatorInstance().setLearningSystem(ls);
         fireSetupComplete();
@@ -241,22 +244,30 @@ public class BeatboxWekinatorWrapper {
         //  c.setLocationToSaveMyself(PROP_RECORDINGSTATE);
         //  c.setNumCustomChuckFeaturesExtracted(numFeatures);
         //  c.setNumOSCFeaturesExtracted(0);
-        c.setOscFeatureExtractorEnabled(false);
+       // c.setOscFeatureExtractorEnabled(true);
+       // c.setNumOSCFeaturesExtracted(1);
         //c.setOscFeatureExtractorSendPort();
         //c.setOscSynthConfiguration(null);
         //c.setOscSynthReceivePort(numFeatures);
         //c.setOscSynthSendPort(numFeatures);
         //c.setPlayalongLearningFile(PROP_RECORDINGSTATE);
         //c.setSaveLocation(PROP_RECORDINGSTATE);
+
         c.setUseChuckSynthClass(true);
+
         c.setUseOscSynth(false);
+
         //c.setWekDir(PROP_RUNNINGSTATE);
 
     }
 
     private void setupFeatureConfiguration() throws Exception {
         FeatureConfiguration fc = new FeatureConfiguration();
-        fc.setUseMotionSensor(true);
+        //fc.setUseMotionSensor(true);
+
+        fc.setUseCustomOscFeatures(true);
+        fc.setNumCustomOscFeatures(numFeatures);
+
         fc.validate();
         WekinatorInstance.getWekinatorInstance().setFeatureConfiguration(fc);
     }
@@ -290,17 +301,12 @@ public class BeatboxWekinatorWrapper {
         WekinatorLearningManager.getInstance().setParams(d);
     }
 
-    /*public double[] getTrainingExample(int id) {
-    if (examples.containsKey(id)) {
-    return examples.get(id);
-    } else {
-    return null;
-    }
-    } */
+    //TODO
     public boolean exampleIdExists(int id) {
         return examples.containsKey(id);
     }
 
+    //TODO
     public int numTrainingExamples() {
         return examples.size();
     }
@@ -308,14 +314,11 @@ public class BeatboxWekinatorWrapper {
     public void startTraining() {
         if (trainingState != TrainingState.TRAINING) {
             setTrainingState(TrainingState.TRAINING);
-            //Just for this version: Simulates a 2-second training time
-            // trainSimulationHandler =
-            //         scheduler.schedule(trainSimulator, 2l, TimeUnit.SECONDS);
             WekinatorLearningManager.getInstance().startTraining();
-
         }
     }
 
+    //TODO
     public void cancelTraining() {
         if (trainingState == TrainingState.TRAINING) {
             setTrainingState(TrainingState.NOT_TRAINING);
@@ -326,7 +329,6 @@ public class BeatboxWekinatorWrapper {
     public void startRecordingExamples() throws Exception {
         if (recordingState == RecordingState.NOT_RECORDING) {
             WekinatorLearningManager.getInstance().startDatasetCreation();
-
             setRecordingState(RecordingState.RECORDING);
         }
     }
@@ -348,20 +350,24 @@ public class BeatboxWekinatorWrapper {
 
     public void stopRunning() {
         if (runningState == RunningState.RUNNING) {
+            WekinatorLearningManager.getInstance().stopRunning();
             setRunningState(RunningState.NOT_RUNNING);
         }
     }
 
+    //TODO
     public void deleteTrainingExample(int id) {
         if (examples.containsKey(id)) {
             examples.remove(id);
         }
     }
 
+    //TODO
     public void deleteAllTrainingExamples() {
         examples.clear();
     }
 
+    //TODO
     public int classifyExample(double[] features) {
         //TODO: For now, this will always return 0.
         return 0;
@@ -374,7 +380,6 @@ public class BeatboxWekinatorWrapper {
     protected void setRecordingState(RecordingState recordingState) {
         RecordingState oldState = this.recordingState;
         this.recordingState = recordingState;
-        // System.out.println("Wekinator recording state set to " + recordingState);
         propertyChangeSupport.firePropertyChange(PROP_RECORDINGSTATE, oldState, recordingState);
     }
 
@@ -385,8 +390,6 @@ public class BeatboxWekinatorWrapper {
     protected void setRunningState(RunningState runningState) {
         RunningState oldState = this.runningState;
         this.runningState = runningState;
-        // System.out.println("Wekinator running state set to " + runningState);
-
         propertyChangeSupport.firePropertyChange(PROP_RUNNINGSTATE, oldState, runningState);
     }
 
@@ -397,8 +400,6 @@ public class BeatboxWekinatorWrapper {
     protected void setTrainingState(TrainingState trainingState) {
         TrainingState oldState = this.trainingState;
         this.trainingState = trainingState;
-        // System.out.println("Wekinator training state set to " + trainingState);
-
         propertyChangeSupport.firePropertyChange(PROP_TRAININGSTATE, oldState, trainingState);
     }
 
@@ -409,28 +410,22 @@ public class BeatboxWekinatorWrapper {
     protected void setClassifierState(ClassifierState classifierState) {
         ClassifierState oldState = this.classifierState;
         this.classifierState = classifierState;
-        //  System.out.println("Wekinator classifier state set to " + classifierState);
         propertyChangeSupport.firePropertyChange(PROP_CLASSIFIERSTATE, oldState, classifierState);
     }
 
+    //TODO
     public void saveWekinatorToFile(File f) {
-        //TODO
     }
 
+    //TODO
     public static BeatboxWekinatorWrapper loadFromFile(File f) {
         //return new BeatboxWekinatorWrapper();
         System.out.println("This method loadFromFile is not implemented yet.");
         return null; //TODO
     }
 
+    //X
     public double[] getExampleIds() {
-        /*  Set<Integer> set = examples.keySet();
-        int[] ints = new int[set.size()];
-        int j = 0;
-        for (Integer i : set) {
-        ints[j++] = i;
-        }
-        return ints; */
         LearningSystem ls = WekinatorInstance.getWekinatorInstance().getLearningSystem();
         if (ls != null) {
             SimpleDataset d = ls.getDataset();
@@ -441,6 +436,7 @@ public class BeatboxWekinatorWrapper {
         return new double[0];
     }
 
+    //TODO
     //This method will be initiated by wekinator receiving a new feature vector while in "run" mode
     protected void newClassificationResult(int id, int classValue) {
         // Guaranteed to return a non-null array
@@ -454,6 +450,7 @@ public class BeatboxWekinatorWrapper {
         }
     }
 
+    //TODO
     //This method will be initiated by Wekinator receiving a new feature vector while in "record" mode
     protected void newTrainingExampleRecorded(int id) {
         Object[] listeners = trainingListenerList.getListenerList();
@@ -466,29 +463,12 @@ public class BeatboxWekinatorWrapper {
         }
     }
 
-    private void learningSystemPropertyChanged(PropertyChangeEvent pce) {
-        /*  if (pce.getPropertyName().equals(LearningSystem.PROP_TRAININGPROGRESS)) {
-        TrainingStatus s = WekinatorInstance.getWekinatorInstance().getLearningSystem().getTrainingProgress();
+    private void learningManagerPropertyChanged(PropertyChangeEvent pce) {
+        if (pce.getPropertyName().equals(WekinatorLearningManager.PROP_MODE)) {
+            WekinatorLearningManager.Mode oldM = (WekinatorLearningManager.Mode) pce.getOldValue();
+            WekinatorLearningManager.Mode newM = (WekinatorLearningManager.Mode) pce.getNewValue();
 
-        int i = s.getNumTrained();
-        int j = s.getNumErrorsEncountered();
-        int k = s.getNumToTrain();
-
-
-        if ((s.getNumTrained() + s.getNumErrorsEncountered()) == s.getNumToTrain()) {
-        setTrainingState(TrainingState.NOT_TRAINING);
-        if (s.getNumErrorsEncountered() == 0) {
-        setClassifierState(ClassifierState.TRAINED);
-        } else {
-        setClassifierState(ClassifierState.ERROR);
-        }
-        }
-
-        } */
-        /*if (pce.getPropertyName().equals(LearningSystem.PROP_ISTRAINING)) {
-            boolean wasTraining = (Boolean) pce.getOldValue();
-            boolean isTraining = (Boolean) pce.getNewValue();
-            if (wasTraining && !isTraining) {
+            if (oldM == WekinatorLearningManager.Mode.TRAINING && newM == WekinatorLearningManager.Mode.NONE) {
                 setTrainingState(TrainingState.NOT_TRAINING);
                 TrainingStatus s = WekinatorInstance.getWekinatorInstance().getLearningSystem().getTrainingProgress();
 
@@ -497,35 +477,8 @@ public class BeatboxWekinatorWrapper {
                 } else {
                     setClassifierState(ClassifierState.ERROR);
                 }
-
-
             }
-
-        } */
-
-    }
-
-    private void learningManagerPropertyChanged(PropertyChangeEvent pce) {
-        if (pce.getPropertyName().equals(WekinatorLearningManager.PROP_MODE)) {
-            WekinatorLearningManager.Mode oldM = (WekinatorLearningManager.Mode)pce.getOldValue();
-
-                        WekinatorLearningManager.Mode newM = (WekinatorLearningManager.Mode)pce.getNewValue();
-
-                        if (oldM == WekinatorLearningManager.Mode.TRAINING && newM == WekinatorLearningManager.Mode.NONE) {
-                            setTrainingState(TrainingState.NOT_TRAINING);
-                TrainingStatus s = WekinatorInstance.getWekinatorInstance().getLearningSystem().getTrainingProgress();
-
-                if (s.getNumErrorsEncountered() == 0) {
-                    setClassifierState(ClassifierState.TRAINED);
-                } else {
-                    setClassifierState(ClassifierState.ERROR);
-                }
-
-                        }
-
         }
-
     }
-
     //TODO: Ensure add, remove operations are atomic if using Collection underneath
 }

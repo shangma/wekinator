@@ -64,7 +64,7 @@ public class DataTableModel extends AbstractTableModel {
         double[] features = new double[numFeats];
         double[] params = new double[numParams];
         boolean[] mask = new boolean[numParams];
-        dataset.addInstance(features, params, mask, new Date());
+        dataset.addInstance(null, features, params, mask, new Date());
         int row = dataset.getNumDatapoints();
 
         fireTableRowsInserted(row, row);

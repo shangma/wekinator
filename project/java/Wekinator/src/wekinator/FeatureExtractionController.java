@@ -89,7 +89,7 @@ public class FeatureExtractionController {
         ref.featureViewer.toFront();
     }
 
-    private static void updateFeatures() {
+    private static void updateFeatures(Integer id) {
         double[] fs;
         if (numChuckFeatures != 0 && numOscFeatures == 0) {        
             fs = WekinatorInstance.getWekinatorInstance().getFeatureConfiguration().process(lastChuckFeatures);
@@ -97,12 +97,19 @@ public class FeatureExtractionController {
             fs = WekinatorInstance.getWekinatorInstance().getFeatureConfiguration().process(lastOscFeatures);
         } else {
 
-            for (int i = 0; i < numChuckFeatures; i++) {
+            System.arraycopy(lastChuckFeatures, 0, lastAllFeatures, 0, numChuckFeatures);
+
+          /*  for (int i = 0; i < numChuckFeatures; i++) {
                 lastAllFeatures[i] = lastChuckFeatures[i];
-            }
-            for (int i = 0; i < numOscFeatures; i++) {
+            } */
+
+            System.arraycopy(lastOscFeatures, 0, lastAllFeatures, numChuckFeatures, numOscFeatures);
+
+            
+           /* for (int i = 0; i < numOscFeatures; i++) {
                 lastAllFeatures[numChuckFeatures + i] = lastOscFeatures[i];
-            }
+            } */
+            
             fs = WekinatorInstance.getWekinatorInstance().getFeatureConfiguration().process(lastAllFeatures);
         }
 
@@ -110,21 +117,21 @@ public class FeatureExtractionController {
             if (ref.featureViewer != null) {
                 ref.featureViewer.updateFeatures(fs);
             }
-            WekinatorLearningManager.getInstance().updateFeatures(fs);
+            WekinatorLearningManager.getInstance().updateFeatures(id, fs);
        // }
     }
 
-    public static void updateChuckFeatures(double[] d) {
+    public static void updateChuckFeatures(Integer id, double[] d) {
         if (d.length == numChuckFeatures) {
             lastChuckFeatures = d;
-            updateFeatures();
+            updateFeatures(id);
         }
     }
 
-    public static void updateOscFeatures(double[] d) {
+    public static void updateOscFeatures(Integer id, double[] d) {
         if (d.length == numOscFeatures) {
             lastOscFeatures = d;
-            updateFeatures();
+            updateFeatures(id);
         }
     }
 
