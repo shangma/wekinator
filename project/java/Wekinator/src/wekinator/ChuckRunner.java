@@ -42,9 +42,9 @@ public class ChuckRunner {
 
     private static String removeC(String s) {
         //Removes "C:" from beginning of string if on windows
-       // s.charAt(1) == ":"
-       //if (isWindows && (s.startsWith("C:") || s.startsWith("D:"))) {
-        if (isWindows && s.length() > 0 && s.charAt(1)==':')     {
+        // s.charAt(1) == ":"
+        //if (isWindows && (s.startsWith("C:") || s.startsWith("D:"))) {
+        if (isWindows && s.length() > 0 && s.charAt(1) == ':') {
             return s.substring(2);
         } else {
             return s;
@@ -52,7 +52,7 @@ public class ChuckRunner {
     }
 
     private ChuckRunner() {
-      //  isWindows = ;
+        //  isWindows = ;
     }
 
     public enum ChuckRunnerState {
@@ -127,6 +127,55 @@ public class ChuckRunner {
         ref.propertyChangeSupport.firePropertyChange(PROP_CONFIGURATION, oldConfiguration, configuration);
     }
 
+    public static void runConfigFile(String configFilename) throws IOException {
+        stop();
+        lastErrorMessages = "";
+        String[] cmd = new String[2];
+        cmd[0] = configuration.getChuckExecutable();
+        cmd[1] = configFilename;
+
+        try {
+            String line, output;
+            output = "";
+            Process child = Runtime.getRuntime().exec(cmd);
+            int numErrLines= 0;
+            new LoggerThread(child.getErrorStream());
+            new LoggerThread(child.getInputStream());
+
+            //Doesn't work: Chuck normally writes to stderr
+         /*   try {
+
+                        System.out.println("Waiting child");
+                        child.waitFor();
+                        System.out.println("Done waiting");
+                    } catch (InterruptedException ex) {
+                        System.out.println("Couldn't wait");
+                        logger.log(Level.SEVERE, null, ex);
+                    }
+
+                    BufferedReader input = new BufferedReader(new InputStreamReader(child.getErrorStream()));
+
+                    while ((line = input.readLine()) != null) {
+                        numErrLines++;
+                        output += "In executing command " + cmd + " received error:\n";
+                        output += (line + '\n');
+                        System.out.println("**" + output);
+                        lastErrorMessages += line + "\n";
+                    }
+                    input.close();
+
+                    if (numErrLines > 0) {
+                        logger.log(Level.SEVERE, "Errors encountered running chuck: " + lastErrorMessages);
+                        System.out.println("Errors encountered running chuck: " + lastErrorMessages);
+                        setRunnerState(ChuckRunnerState.TRYING_TO_RUN);
+
+                    } */
+
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
+    }
+
     public static void run() throws IOException {
         stop();
         lastErrorMessages = "";
@@ -168,10 +217,10 @@ public class ChuckRunner {
         s[0] = configuration.getChuckExecutable();
         s[1] = "+";
         s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "HidDiscoverer.ck";
-       s[2] = removeC(s[2]);
-       cmds.add(s);
+        s[2] = removeC(s[2]);
+        cmds.add(s);
 
-      /*  s = new String[3];
+        /*  s = new String[3];
         s[0] = configuration.getChuckExecutable();
         s[1] = "+";
         s[2] = configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "CustomOSCFeatureExtractor.ck";
@@ -342,9 +391,8 @@ public class ChuckRunner {
         String cmd2;
         if (isWindows) {
             cmd2 = "taskkill /f /im chuck";
-        } else
-        {
-            cmd2 =  "killall chuck";
+        } else {
+            cmd2 = "killall chuck";
         }
         try {
             Process child2 = Runtime.getRuntime().exec(cmd2);
@@ -387,13 +435,13 @@ public class ChuckRunner {
         w.write("Machine.add(\"" + winescape(configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "MotionFeatureExtractor.ck") + "\");\n");
         w.write("Machine.add(\"" + winescape(configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "AudioFeatureExtractor.ck") + "\");\n");
         w.write("Machine.add(\"" + winescape(configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "HidDiscoverer.ck") + "\");\n");
-       // w.write("Machine.add(\"" + winescape(configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "CustomOSCFeatureExtractor.ck") + "\");\n");
+        // w.write("Machine.add(\"" + winescape(configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "CustomOSCFeatureExtractor.ck") + "\");\n");
 
-        w.write("Machine.add(\"" +winescape( configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "ProcessingFeatureExtractor.ck") + "\");\n");
+        w.write("Machine.add(\"" + winescape(configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "ProcessingFeatureExtractor.ck") + "\");\n");
         if (configuration.isCustomChuckFeatureExtractorEnabled()) {
             w.write("Machine.add(\"" + winescape(configuration.getCustomChuckFeatureExtractorFilename()) + "\");\n");
         } else {
-            w.write("Machine.add(\"" +winescape( configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "DummyFeatureExtractor.ck") + "\");\n");
+            w.write("Machine.add(\"" + winescape(configuration.getChuckDir() + File.separator + "core_chuck" + File.separator + "DummyFeatureExtractor.ck") + "\");\n");
         }
 
         if (configuration.isUseOscSynth()) {
@@ -433,7 +481,7 @@ public class ChuckRunner {
             String[] parts = s.split("\\\\");
             String r;
             if (parts.length > 0 && parts[0].length() > 1 && parts[0].charAt(1) == ':') {
-              //  r = parts[0].charAt(0) + "\\" + ":";
+                //  r = parts[0].charAt(0) + "\\" + ":";
                 r = "";
             } else {
                 r = parts[0];
@@ -472,7 +520,7 @@ class LoggerThread implements Runnable {
 
                 if (b == -1) {
                     stop = true;
-                // System.out.println("made it to end of stream");
+                    // System.out.println("made it to end of stream");
                 } else {
                     //TODO: send to console in reasonable way
                     System.out.print((char) b);
