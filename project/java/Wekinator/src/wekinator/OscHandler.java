@@ -588,6 +588,8 @@ public class OscHandler {
                 System.out.println("playalong message received!"); //only gets here after "Play along" executed-- because xmit not ready yet!!
                 Object[] o = message.getArguments();
                 //    w.receivedPlayalongUpdate((String) o[0]);
+
+                //TODO: Get the panel out of here!
                 if (bp != null) {
                     bp.updatePlayalongMessage((String) o[0]);
                 }
@@ -632,6 +634,7 @@ public class OscHandler {
         OSCListener listener = new OSCListener() {
 
             public void acceptMessage(java.util.Date time, OSCMessage message) {
+               // System.out.println("Received chuck features");
                 Object[] o = message.getArguments();
                 double d[] = new double[o.length];
                 for (int i = 0; i < o.length; i++) {

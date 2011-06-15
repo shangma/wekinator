@@ -116,6 +116,13 @@ public final class MainGUI extends javax.swing.JFrame {
             }
         });
 
+        wek.addAutorunBegunListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent ce) {
+                 showTrainRunPanel();
+                 trainRunPanel1.setCurrentPane(TrainRunPanel.Panes.RUN);
+            }
+        });
+
         WekinatorLearningManager.getInstance().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 learningManagerPropertyChange(evt);

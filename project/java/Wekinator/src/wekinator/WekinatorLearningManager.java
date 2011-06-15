@@ -302,6 +302,7 @@ public class WekinatorLearningManager {
             }
         } else if (mode == Mode.DATASET_CREATION) {
            // if (!WekinatorInstance.getWekinatorInstance().isGestureEndMode()) {
+            //Why is learningsystem null here??
                 WekinatorInstance.getWekinatorInstance().getLearningSystem().addToTraining(features, params);
            // } else {
            //     lastFeatures = features;

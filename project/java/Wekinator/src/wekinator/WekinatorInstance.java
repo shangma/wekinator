@@ -33,6 +33,7 @@ public class WekinatorInstance {
 
     protected EventListenerList oscFeatureNamesListenerList = new EventListenerList();
     protected EventListenerList featureParameterSetupDoneListenerList = new EventListenerList();
+    protected EventListenerList autorunBegunListenerList = new EventListenerList();
 
     protected ChuckConfiguration configuration = null;
     private WekinatorSettings settings = null;
@@ -53,6 +54,7 @@ public class WekinatorInstance {
     private static WekinatorInstance ref = null;
     private ChangeEvent oscFeatureNameChangeEvent = null;
     private ChangeEvent featureParameterSetupDoneEvent = null;
+    private ChangeEvent autorunBegunEvent = null;
     public static int recvPort = 6448;
     public static int sendPort = 6453;
 
@@ -114,6 +116,14 @@ public class WekinatorInstance {
                             for (int i = 0; i < learningSystem.getNumParams(); i++) {
                                 if (learningSystem.getDataset().isParameterDiscrete(i) != SynthProxy.isParamDiscrete(i)
                                         || (SynthProxy.isParamDiscrete(i) && SynthProxy.paramMaxValue(i) != learningSystem.getDataset().maxLegalDiscreteParamValue(i))) {
+
+
+                                    boolean a = learningSystem.getDataset().isParameterDiscrete(i);
+                                    boolean b= SynthProxy.isParamDiscrete(i);
+                                    int c = learningSystem.getDataset().maxLegalDiscreteParamValue(i);
+                                    int d =SynthProxy.paramMaxValue(i);
+
+
                                     setLearningSystem(null);
                                     break;
                                 }
@@ -140,7 +150,8 @@ public class WekinatorInstance {
                                 //X : doublecheck have listener to panelMainTabs/mainGUI: panelMainTabs.setSelectedComponent(trainRunPanel1);
                                 if (WekinatorRunner.runAutomatically) {
                                     if (ls != null && ls.isIsRunnable()) {
-                                        WekinatorLearningManager.getInstance().startRunning();
+                                        startAutoRun();
+                                      //  WekinatorLearningManager.getInstance().startRunning();
                                     } else {
                                         System.out.println("Cannot run automatically: learning system not ready");
                                     }
@@ -775,6 +786,26 @@ public class WekinatorInstance {
         }
     }
 
+        public void addAutorunBegunListener(ChangeListener l) {
+        autorunBegunListenerList.add(ChangeListener.class, l);
+    }
+
+    public void removeAutorunBegunListener(ChangeListener l) {
+        autorunBegunListenerList.remove(ChangeListener.class, l);
+    }
+
+    protected void fireAutorunBegun() {
+        Object[] listeners = autorunBegunListenerList.getListenerList();
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] == ChangeListener.class) {
+                if (autorunBegunEvent == null) {
+                    autorunBegunEvent = new ChangeEvent(this);
+                }
+                ((ChangeListener) listeners[i + 1]).stateChanged(autorunBegunEvent);
+            }
+        }
+    }
+
     public static void resetOscConnection() throws IOException {
         if (FeatureExtractionController.isExtracting()) {
             FeatureExtractionController.stopExtracting();
@@ -817,5 +848,6 @@ public class WekinatorInstance {
     public static void startAutoRun() {
         WekinatorLearningManager.getInstance().startRunning();
         OscHandler.getOscHandler().startSound();
+        getWekinatorInstance().fireAutorunBegun();
     }
 }

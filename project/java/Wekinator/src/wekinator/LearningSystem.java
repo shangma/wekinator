@@ -1391,6 +1391,22 @@ public class LearningSystem {
 
         public TrainingStatus() {
         }
+
+        public int getNumToTrain() {
+            return numToTrain;
+        }
+
+        public int getNumTrained() {
+            return numTrained;
+        }
+
+        public int getNumErrorsEncountered() {
+            return numErrorsEncountered;
+        }
+
+        public boolean wasCancelled() {
+            return wasCancelled;
+        }
     }
 
     public static class EvalStatus {

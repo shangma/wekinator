@@ -557,6 +557,11 @@ public class SimpleDataset {
         return i.value(numMetaData + numFeatures + paramNum);
     }
 
+    //TODO: Might return bogus values
+    public double[] getIDs() {
+        return allInstances.attributeToDoubleArray(idIndex);
+    }
+
     public double getID(int index) {
         //   if (idMap.containsKey(index)) {
         if (index >= 0 && index < allInstances.numInstances()) {

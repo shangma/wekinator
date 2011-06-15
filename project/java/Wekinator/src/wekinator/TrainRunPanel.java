@@ -390,15 +390,6 @@ public class TrainRunPanel extends javax.swing.JPanel {
         OscHandler.getOscHandler().stopSound();
 }//GEN-LAST:event_buttonShhActionPerformed
 
-    public void startAutoRun() {
-
-      //  setCurrentPane(Panes.RUN); //now in main gui
-
-        //Put in WekinatorInstance
-       // WekinatorLearningManager.getInstance().startRunning();
-       // OscHandler.getOscHandler().startSound();
-
-    }
 
     private void toggleCollectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toggleCollectActionPerformed
         if (toggleCollect.isSelected()) {
