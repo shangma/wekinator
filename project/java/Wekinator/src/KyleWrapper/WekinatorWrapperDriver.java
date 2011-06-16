@@ -40,6 +40,7 @@ public class WekinatorWrapperDriver {
 
         //  final BeatboxWekinatorWrapper w;
         try {
+            //Kyle: Change # features, # classes, feature names, chuck configuraiton file location, and chuck executable location here.
             w = new BeatboxWekinatorWrapper(numFeats, 24, featureNames, "/Users/rebecca/config.ck", true, "/Users/rebecca/work/projects/wekinatorbeatbox/wekinator/project/chuck/executable/osx/chuck");
         } catch (Exception ex) {
             Logger.getLogger(WekinatorWrapperDriver.class.getName()).log(Level.SEVERE, null, ex);
@@ -106,7 +107,7 @@ public class WekinatorWrapperDriver {
 
              
             Thread.sleep(5000);
-            w.setTrainingClassValue(10);
+            w.setTrainingClassValue(1);
             System.out.println("*******RECORDING STARTED");
 
             w.startRecordingExamples();
