@@ -129,6 +129,13 @@ public class ChuckRunner {
 
     public static void runConfigFile(String configFilename) throws IOException {
         stop();
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            ChuckRunner.logger.log(Level.SEVERE, null, ex);
+        }
+        
         lastErrorMessages = "";
         String[] cmd = new String[2];
         cmd[0] = configuration.getChuckExecutable();
