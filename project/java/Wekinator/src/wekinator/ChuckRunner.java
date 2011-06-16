@@ -361,10 +361,12 @@ public class ChuckRunner {
             if (WekinatorRunner.isLogging()) {
                 Plog.chuckRunSuccessful(configuration);
             }
+
+            //Moved to Wekinator Instance -- still better might be to put in ChuckSystem?
             //TODO: Move elsewhere: If using OSC synth, call its setup now too
-            if (configuration.isUseOscSynth()) {
-                OscSynthProxy.setup();
-            }
+            //if (configuration.isUseOscSynth()) {
+            //    OscSynthProxy.setup();
+           // }
         }
     }
 

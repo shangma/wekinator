@@ -23,6 +23,7 @@ import wekinator.LearningAlgorithms.LearningAlgorithm;
 import wekinator.LearningSystem;
 import wekinator.LearningSystem.TrainingStatus;
 import wekinator.OscHandler;
+import wekinator.OscSynthConfiguration;
 import wekinator.SimpleDataset;
 import wekinator.WekinatorInstance;
 import wekinator.WekinatorLearningManager;
@@ -53,6 +54,9 @@ public class BeatboxWekinatorWrapper {
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     //Temp for this skeleton:
     protected HashMap<Integer, double[]> examples = new HashMap<Integer, double[]>();
+    private final String chuckConfigFilename;
+    private final boolean runChuckOnStart;
+    private final String chuckExecutableLocation;
 
     /**
      * Add PropertyChangeListener.
@@ -144,10 +148,14 @@ public class BeatboxWekinatorWrapper {
     //Constructor
     //Error will happen later (during recording possibly) if features mismatch those being extracted,
     // or # classes does not match synth
-    public BeatboxWekinatorWrapper(int numFeatures, int numClasses, String[] featureNames) throws Exception {
+    public BeatboxWekinatorWrapper(int numFeatures, int numClasses, String[] featureNames, String chuckConfigFilename, boolean runChuckOnStart, String chuckExecutableLocation) throws Exception {
         this.numFeatures = numFeatures;
         this.numClasses = numClasses;
         this.featureNames = new String[featureNames.length];
+        this.chuckConfigFilename = chuckConfigFilename;
+        this.runChuckOnStart = runChuckOnStart;
+        this.chuckExecutableLocation = chuckExecutableLocation;
+        
         System.arraycopy(featureNames, 0, this.featureNames, 0, featureNames.length);
         //TODO: check that all these values/lengths are valid
 
@@ -155,8 +163,6 @@ public class BeatboxWekinatorWrapper {
 
         setupChuckConfiguration();
         try {
-       //     ChuckRunner.run(); //In future might want this to not run, only to communicate with other running chuck code.
-
             WekinatorInstance.getWekinatorInstance().addFeatureParameterSetupDoneListener(new ChangeListener() {
 
                 public void stateChanged(ChangeEvent ce) {
@@ -172,9 +178,10 @@ public class BeatboxWekinatorWrapper {
                 }
             });
 
-            ChuckRunner.runConfigFile("/Users/rebecca/config.ck");
-
-            Thread.sleep(5000); //TODO: Replace with callback, handle errors.
+            if (runChuckOnStart) {
+                ChuckRunner.runConfigFile(chuckConfigFilename);
+                Thread.sleep(5000); //TODO: Replace with callback, handle errors if possible
+            }
 
             setupFeatureConfiguration();
 
@@ -236,26 +243,24 @@ public class BeatboxWekinatorWrapper {
         //TODO: Make sure config is set properly
         //TODO: Change from my system defaults.
 
-        // c.setChuckExecutable(A);
-        c.setChuckSynthFilename("/Users/rebecca/work/projects/wekinator/project/chuck/synths/simple_melody_discrete.ck");
-        c.setCustomChuckFeatureExtractorEnabled(false);
-        c.setCustomChuckFeatureExtractorFilename("");
-        c.setIsPlayalongLearningEnabled(false);
-        //  c.setLocationToSaveMyself(PROP_RECORDINGSTATE);
-        //  c.setNumCustomChuckFeaturesExtracted(numFeatures);
-        //  c.setNumOSCFeaturesExtracted(0);
-       // c.setOscFeatureExtractorEnabled(true);
-       // c.setNumOSCFeaturesExtracted(1);
-        //c.setOscFeatureExtractorSendPort();
-        //c.setOscSynthConfiguration(null);
-        //c.setOscSynthReceivePort(numFeatures);
-        //c.setOscSynthSendPort(numFeatures);
-        //c.setPlayalongLearningFile(PROP_RECORDINGSTATE);
-        //c.setSaveLocation(PROP_RECORDINGSTATE);
+         c.setChuckExecutable(chuckExecutableLocation);
+     //   c.setChuckSynthFilename("/Users/rebecca/work/projects/wekinator/project/chuck/synths/simple_melody_discrete.ck");
+     //   c.setCustomChuckFeatureExtractorEnabled(false);
+     //   c.setCustomChuckFeatureExtractorFilename("");
+      //  c.setIsPlayalongLearningEnabled(false);
+    //    c.setUseChuckSynthClass(true);
 
-        c.setUseChuckSynthClass(true);
+      //  c.setUseOscSynth(false);
+        c.setUseChuckSynthClass(false);
+        c.setUseOscSynth(true);
 
-        c.setUseOscSynth(false);
+        boolean[] isDiscreteArray = {true};
+        boolean[] isDistArray = {false};
+        int[] maxValueArray = {numClasses-1};
+        String[] paramNamesArray = {"HitClass"};
+
+        OscSynthConfiguration synthConfig = new OscSynthConfiguration(1, paramNamesArray, isDiscreteArray, isDistArray, maxValueArray);
+        c.setOscSynthConfiguration(synthConfig);
 
         //c.setWekDir(PROP_RUNNINGSTATE);
 

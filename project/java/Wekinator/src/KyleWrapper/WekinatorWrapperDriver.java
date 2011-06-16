@@ -40,7 +40,7 @@ public class WekinatorWrapperDriver {
 
         //  final BeatboxWekinatorWrapper w;
         try {
-            w = new BeatboxWekinatorWrapper(numFeats, 24, featureNames);
+            w = new BeatboxWekinatorWrapper(numFeats, 24, featureNames, "/Users/rebecca/config.ck", true, "/Users/rebecca/work/projects/wekinatorbeatbox/wekinator/project/chuck/executable/osx/chuck");
         } catch (Exception ex) {
             Logger.getLogger(WekinatorWrapperDriver.class.getName()).log(Level.SEVERE, null, ex);
             return;

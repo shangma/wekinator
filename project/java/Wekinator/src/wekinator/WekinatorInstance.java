@@ -11,6 +11,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
@@ -105,6 +107,19 @@ public class WekinatorInstance {
 
                 //This should inform all GUI listeners that we know what the new learning system will look like.                
                 fireFeatureParameterSetupDone();
+                if (configuration.isUseOscSynth()) {
+                    try {
+                        //TODO: Move elsewhere: If using OSC synth, call its setup now too
+                        OscSynthProxy.setup();
+                    } catch (UnknownHostException ex) {
+                        System.out.println("Problem setting up OSC synth");
+                        Logger.getLogger(WekinatorInstance.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (SocketException ex) {
+                        System.out.println("Problem setting up OSC synth");
+                        Logger.getLogger(WekinatorInstance.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+
 
                 //Invalidate prior learning system if it's incompatible with this #, type of features & params
                 //Otherwise leave it unchanged
@@ -123,7 +138,7 @@ public class WekinatorInstance {
                                     int c = learningSystem.getDataset().maxLegalDiscreteParamValue(i);
                                     int d =SynthProxy.paramMaxValue(i);
 
-
+                                    //ISSUE: This being called when c=23, d=1
                                     setLearningSystem(null);
                                     break;
                                 }
