@@ -35,6 +35,7 @@ public class LearningSystem {
 
     private ChangeEvent changeEvent = null;
     protected EventListenerList listenerList = new EventListenerList();
+    protected EventListenerList classificationResultListenerList = new EventListenerList();
     // protected EventListenerList cvListenerList = new EventListenerList();
     // protected EventListenerList trListenerList = new EventListenerList();
     protected boolean[] paramMask;
@@ -59,6 +60,18 @@ public class LearningSystem {
     protected TrainingStatus trainingProgress = new TrainingStatus();
     public static final String PROP_TRAININGPROGRESS = "trainingProgress";
     protected boolean isEvaluating = false;
+
+    public class ClassificationEvent extends ChangeEvent {
+        public Integer id = null;
+        public double[] results;
+
+        public ClassificationEvent(Object o, Integer id, double[] results) {
+            super(o);
+            this.id = id;
+            this.results = new double[results.length];
+            System.arraycopy(results, 0, this.results, 0, results.length);
+        }
+    }
 
     /**
      * Get the value of trainingProgress
@@ -427,7 +440,7 @@ public class LearningSystem {
         }
     }
 
-    double[] classify(double[] features) {
+    double[] classify(Integer id, double[] features) {
         Instance[] instances = dataset.convertToClassifiableInstances(features);
         int next = 0;
         for (int i = 0; i < numParams; i++) {
@@ -461,6 +474,7 @@ public class LearningSystem {
                 }
             }
         }
+        fireClassificationResult(id, outputs);
         return outputs;
     }
 
@@ -1181,6 +1195,24 @@ public class LearningSystem {
                     changeEvent = new ChangeEvent(this);
                 }
                 ((ChangeListener) listeners[i + 1]).stateChanged(changeEvent);
+            }
+        }
+    }
+
+    public void addClassificationResultListener(ChangeListener l) {
+        classificationResultListenerList.add(ChangeListener.class, l);
+    }
+
+    public void removeClassificationResultListener(ChangeListener l) {
+        classificationResultListenerList.remove(ChangeListener.class, l);
+    }
+
+    protected void fireClassificationResult(Integer id, double[] result) {
+        Object[] listeners = classificationResultListenerList.getListenerList();
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] == ChangeListener.class) {
+               ClassificationEvent c = new ClassificationEvent(this, id, result);
+                ((ChangeListener) listeners[i + 1]).stateChanged(c);
             }
         }
     }

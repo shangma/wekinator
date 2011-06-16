@@ -226,6 +226,16 @@ public class BeatboxWekinatorWrapper {
 
         ls.setLearners(0, a);
 
+        ls.addClassificationResultListener(new ChangeListener() {
+
+            public void stateChanged(ChangeEvent ce) {
+                LearningSystem.ClassificationEvent e = (LearningSystem.ClassificationEvent)ce;
+                newClassificationResult(e.id, (int)e.results[0]);
+              //  (LearningSystem.ClassificationEvent; ce)
+            }
+        });
+
+
         /*  ls.addPropertyChangeListener(new PropertyChangeListener() {
 
         public void propertyChange(PropertyChangeEvent pce) {
@@ -240,17 +250,7 @@ public class BeatboxWekinatorWrapper {
 
     private void setupChuckConfiguration() {
         ChuckConfiguration c = ChuckRunner.getConfiguration();
-        //TODO: Make sure config is set properly
-        //TODO: Change from my system defaults.
-
-         c.setChuckExecutable(chuckExecutableLocation);
-     //   c.setChuckSynthFilename("/Users/rebecca/work/projects/wekinator/project/chuck/synths/simple_melody_discrete.ck");
-     //   c.setCustomChuckFeatureExtractorEnabled(false);
-     //   c.setCustomChuckFeatureExtractorFilename("");
-      //  c.setIsPlayalongLearningEnabled(false);
-    //    c.setUseChuckSynthClass(true);
-
-      //  c.setUseOscSynth(false);
+        c.setChuckExecutable(chuckExecutableLocation);
         c.setUseChuckSynthClass(false);
         c.setUseOscSynth(true);
 
@@ -258,33 +258,30 @@ public class BeatboxWekinatorWrapper {
         boolean[] isDistArray = {false};
         int[] maxValueArray = {numClasses-1};
         String[] paramNamesArray = {"HitClass"};
-
         OscSynthConfiguration synthConfig = new OscSynthConfiguration(1, paramNamesArray, isDiscreteArray, isDistArray, maxValueArray);
         c.setOscSynthConfiguration(synthConfig);
-
-        //c.setWekDir(PROP_RUNNINGSTATE);
-
     }
 
+    //X
     private void setupFeatureConfiguration() throws Exception {
         FeatureConfiguration fc = new FeatureConfiguration();
-        //fc.setUseMotionSensor(true);
-
         fc.setUseCustomOscFeatures(true);
         fc.setNumCustomOscFeatures(numFeatures);
-
         fc.validate();
         WekinatorInstance.getWekinatorInstance().setFeatureConfiguration(fc);
     }
 
+    //X
     public int getNumFeatures() {
         return numFeatures;
     }
 
+    //X
     public String[] getFeatureNames() {
         return featureNames;
     }
 
+    //TODO
     //Don't use this method unless you're simulating Chuck FE sending this info to Wekinator directly.
     public void addTrainingExample(int id, double[] features) {
         double[] featuresCopy = new double[features.length];
@@ -306,16 +303,31 @@ public class BeatboxWekinatorWrapper {
         WekinatorLearningManager.getInstance().setParams(d);
     }
 
-    //TODO
+    //X
     public boolean exampleIdExists(int id) {
-        return examples.containsKey(id);
+        LearningSystem ls = WekinatorInstance.getWekinatorInstance().getLearningSystem();
+        if (ls != null) {
+            SimpleDataset s = ls.getDataset();
+            if (s != null) {
+                return s.hasID(id);
+            }
+        }
+        return false;
     }
 
-    //TODO
+    //X
     public int numTrainingExamples() {
-        return examples.size();
+         LearningSystem ls = WekinatorInstance.getWekinatorInstance().getLearningSystem();
+        if (ls != null) {
+            SimpleDataset s = ls.getDataset();
+            if (s != null) {
+                return s.getNumDatapoints();
+            }
+        }
+        return 0;
     }
 
+    //X
     public void startTraining() {
         if (trainingState != TrainingState.TRAINING) {
             setTrainingState(TrainingState.TRAINING);
@@ -323,14 +335,15 @@ public class BeatboxWekinatorWrapper {
         }
     }
 
-    //TODO
+    //X (untested)
     public void cancelTraining() {
         if (trainingState == TrainingState.TRAINING) {
             setTrainingState(TrainingState.NOT_TRAINING);
-
+            WekinatorLearningManager.getInstance().stopTraining();
         }
     }
 
+    //X
     public void startRecordingExamples() throws Exception {
         if (recordingState == RecordingState.NOT_RECORDING) {
             WekinatorLearningManager.getInstance().startDatasetCreation();
@@ -338,6 +351,7 @@ public class BeatboxWekinatorWrapper {
         }
     }
 
+    //X
     public void stopRecordingExamples() {
         if (recordingState == RecordingState.RECORDING) {
             WekinatorLearningManager.getInstance().stopDatasetCreation();
@@ -345,14 +359,17 @@ public class BeatboxWekinatorWrapper {
         }
     }
 
+    //X
     public void startRunning() {
         if (runningState != RunningState.RUNNING) {
             setRunningState(RunningState.RUNNING);
             WekinatorLearningManager.getInstance().startRunning();
-            OscHandler.getOscHandler().startSound(); //TODO: perhaps remove depending on synth
+       //     Works for both chuck & osc synths: TODO might remove?
+            OscHandler.getOscHandler().startSound();
         }
     }
 
+    //X
     public void stopRunning() {
         if (runningState == RunningState.RUNNING) {
             WekinatorLearningManager.getInstance().stopRunning();
@@ -360,16 +377,26 @@ public class BeatboxWekinatorWrapper {
         }
     }
 
-    //TODO
+    //X
     public void deleteTrainingExample(int id) {
-        if (examples.containsKey(id)) {
-            examples.remove(id);
+         LearningSystem ls = WekinatorInstance.getWekinatorInstance().getLearningSystem();
+        if (ls != null) {
+            SimpleDataset s = ls.getDataset();
+            if (s != null) {
+                s.deleteInstanceWithID(id);
+            }
         }
     }
 
-    //TODO
+    //X
     public void deleteAllTrainingExamples() {
-        examples.clear();
+         LearningSystem ls = WekinatorInstance.getWekinatorInstance().getLearningSystem();
+        if (ls != null) {
+            SimpleDataset s = ls.getDataset();
+            if (s != null) {
+                s.deleteAll();
+            }
+        }
     }
 
     //TODO
@@ -378,10 +405,12 @@ public class BeatboxWekinatorWrapper {
         return 0;
     }
 
+    //X
     public RecordingState getRecordingState() {
         return recordingState;
     }
 
+    //X
     protected void setRecordingState(RecordingState recordingState) {
         RecordingState oldState = this.recordingState;
         this.recordingState = recordingState;
@@ -441,7 +470,7 @@ public class BeatboxWekinatorWrapper {
         return new double[0];
     }
 
-    //TODO
+    //X
     //This method will be initiated by wekinator receiving a new feature vector while in "run" mode
     protected void newClassificationResult(int id, int classValue) {
         // Guaranteed to return a non-null array
@@ -455,7 +484,7 @@ public class BeatboxWekinatorWrapper {
         }
     }
 
-    //TODO
+    //X
     //This method will be initiated by Wekinator receiving a new feature vector while in "record" mode
     protected void newTrainingExampleRecorded(int id) {
         Object[] listeners = trainingListenerList.getListenerList();

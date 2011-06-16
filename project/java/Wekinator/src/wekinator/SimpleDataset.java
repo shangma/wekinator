@@ -574,6 +574,16 @@ public class SimpleDataset {
         return allInstances.attributeToDoubleArray(idIndex);
     }
 
+    public boolean hasID(int id) {
+        double[] ids = getIDs();
+        for (int i = 0; i < ids.length; i++) {
+            if (id == (int)ids[i])
+                return true;
+        }
+        return false;
+
+    }
+
     public double getID(int index) {
         //   if (idMap.containsKey(index)) {
         if (index >= 0 && index < allInstances.numInstances()) {
@@ -752,7 +762,7 @@ public class SimpleDataset {
             if (allInstances.numInstances() == 0) {
                 setHasInstances(false);
             }
-    fireStateChanged();
+            fireStateChanged();
 
             return true;
 
@@ -760,6 +770,20 @@ public class SimpleDataset {
             return false;
         }
     }
+
+    public boolean deleteInstanceWithID(int id) {
+        return deleteInstance(getIndexForId(id));
+    }
+
+    protected int getIndexForId(int id) {
+        for (int i = 0; i < allInstances.numInstances(); i++) {
+            if (id == (int)getID(i)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
 
     /**
      * Delete all instances (doesn't reset data like #feats, #params, etc.)

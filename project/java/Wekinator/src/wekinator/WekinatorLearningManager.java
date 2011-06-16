@@ -287,7 +287,7 @@ public class WekinatorLearningManager {
     public void updateFeatures(Integer id, double[] features) {
         if (mode == Mode.RUNNING) {
             try {
-                double[] os = WekinatorInstance.getWekinatorInstance().getLearningSystem().classify(features);
+                double[] os = WekinatorInstance.getWekinatorInstance().getLearningSystem().classify(id, features);
                 setOutputs(os);
                 if (WekinatorRunner.isLogging()) {
                     Plog.runStep(features, os);
