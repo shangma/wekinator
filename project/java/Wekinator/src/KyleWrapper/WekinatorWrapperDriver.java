@@ -24,13 +24,12 @@ public class WekinatorWrapperDriver {
 
     BeatboxWekinatorWrapper w = null;
 
-    //Temp for this skeleton:
-    protected int currentSetToRecord = 0; // a set ID #
-
+    //For this driver:
+    protected int currentSetToRecord = 0; // a set ID #; when wekinator receives a new feature vector in RECORDING mode, it stores it with this set
+    //Note: Using synchronized version here -- matters if it's possible that 2 threads could be modifying example sets, ids, or selection simultaneously
     protected Map<Integer, Set<Integer>> exampleSets = Collections.synchronizedMap(new HashMap<Integer, Set<Integer>>()); //map from set ID to example IDs
     protected Map<Integer, Integer> exampleIDs = Collections.synchronizedMap(new HashMap<Integer, Integer>()); //map from example ID to set ID
     protected Map<Integer, Integer> selectedSetsAndClasses = Collections.synchronizedMap(new HashMap<Integer, Integer>()); //IDs of sets that are selected, and the class ID to be used for training examples of that set
-   // protected HashMap<Integer, Set<Integer>> classifierIDs = new HashMap<Integer, Set<Integer>>(); //map from classifier ID to set IDs
 
     public static void main(String[] args) {
         WekinatorWrapperDriver d = new WekinatorWrapperDriver();
@@ -43,10 +42,11 @@ public class WekinatorWrapperDriver {
 
     public void test() throws InterruptedException {
 
+        //Kyle: Change # features
         int numFeats = 1;
 
         try {
-            //Kyle: Change # features, max # classes
+            // max # classes
             w = new BeatboxWekinatorWrapper(numFeats, 100);
         } catch (Exception ex) {
             Logger.getLogger(WekinatorWrapperDriver.class.getName()).log(Level.SEVERE, null, ex);
@@ -85,28 +85,23 @@ public class WekinatorWrapperDriver {
     private void testControlStuff() {
         try {
 
-            currentSetToRecord = 0;
-            Thread.sleep(1000);
+            currentSetToRecord = 0; //Put new examples in set 0 from now on
+            System.out.println("RECORD IN 2 SECONDS");
+            Thread.sleep(2000);
             w.startRecordingExamples();
             System.out.println("*******RECORDING STARTED");
 
-            Thread.sleep(5000);
+            Thread.sleep(500);
             w.stopRecordingExamples();
             System.out.println("*******RECORDING STOPPED");
-           /* double ids[] = w.getExampleIds();
-            for (int i = 0; i < ids.length; i++) {
-                System.out.print(ids[i] + ", ");
-            }
-            System.out.println(""); */
-
 
             Thread.sleep(2000);
-            currentSetToRecord = 2;
+            currentSetToRecord = 2; //Put new examples in set 2
 
             System.out.println("*******RECORDING STARTED");
 
             w.startRecordingExamples();
-            Thread.sleep(2000);
+            Thread.sleep(500);
             System.out.println("*******RECORDING Stopped");
 
             w.stopRecordingExamples();
@@ -114,13 +109,13 @@ public class WekinatorWrapperDriver {
             System.out.println("***HAVE " + w.getExampleIds().length + " EXAMPLES");
 
 
-            int[] setIDs = {0, 2};
-            int[] classIDs = {0, 2};
+            int[] setIDs = {0, 2}; //Which training examples will be used?
+            int[] classIDs = {0, 1}; //What class values will be associated with them?
             setSelectedExampleSetsAndClasses(setIDs, classIDs);
+            
+            //Run and classify with current configuration
             w.startRunning();
-
-            Thread.sleep(2000);
-
+            Thread.sleep(8000);
             w.stopRunning();
         }  catch (Exception ex) {
             System.out.println("Exception encountered in driver");
@@ -129,8 +124,8 @@ public class WekinatorWrapperDriver {
 
     }
 
-    // Choose the example sets to use for classification, and specify the class value that should correspond to each
-    // requires setIDs and classIDs same length and ordering
+    // Choose the example sets to use for classification, and specify the class value that should correspond to each example ID
+    // requires setIDs and class values same length and ordering
     private void setSelectedExampleSetsAndClasses(int[] setIDs, int[] classes) {
         selectedSetsAndClasses = new HashMap<Integer, Integer>();
         if (setIDs == null || classes == null || setIDs.length != classes.length) {
@@ -142,16 +137,13 @@ public class WekinatorWrapperDriver {
         }
 
         //Could do this in fixed length array but must be synchronized w/ lock on sets
-
         updateWekinatorSelectedSetsAndClasses();
-
     }
 
     private void updateWekinatorSelectedSetsAndClasses() {
         List<Integer> exampleList = new LinkedList<Integer>();
         List<Integer> classList = new LinkedList<Integer>();
 
-        //for (int i= 0; i < setIDs.length; i++) {
         for (Integer setID : selectedSetsAndClasses.keySet()) {
             for (Integer ex : exampleSets.get(setID)) {
                 exampleList.add(ex);
@@ -170,8 +162,13 @@ public class WekinatorWrapperDriver {
             classArray[i] = c;
             i++;
         }
-
-        w.setSelectedExamplesAndClasses(exampleArray, classArray);
+        try {
+            w.setSelectedExamplesAndClasses(exampleArray, classArray); //This is what triggers new classifier to be built
+        } catch (Exception ex) {
+            System.out.println("Doh! Could not build a classifier for some reason.");
+            ex.printStackTrace();
+            return;
+        }
     }
 
 
@@ -189,8 +186,7 @@ public class WekinatorWrapperDriver {
         //Delete from sets
         exampleSets.remove(setId);
 
-        //Wekinator:
-        //TODO: inform Wekinator - might be part of active classifier!
+        //Must inform Wekinator - might be part of active classifier!
         if (isExampleSetSelected(setId)) {
             selectedSetsAndClasses.remove(setId);
             updateWekinatorSelectedSetsAndClasses();
@@ -205,8 +201,8 @@ public class WekinatorWrapperDriver {
             exampleSets.get(setID).remove(id); //get set containing this example, and remove reference to it
         }
 
-        //Wekinator:
-        w.deleteTrainingExample(id); //FOR NOW, this will by default look through current training set and delete and retrain, if necessary
+        //Inform wekinator
+        w.deleteTrainingExample(id); //FOR NOW, wekinator will by default look through current training set and delete and always retrain, if necessary
         //Alternatively, could explicitly trigger retraining here...
     }
 
@@ -220,7 +216,6 @@ public class WekinatorWrapperDriver {
             }
         }
         w.deleteTrainingExamples(ids); //Currently will look through active training set and delete and retrain, if necessary
-        //TODO: Rebecca: Wekinator should keep list of IDs in current training set to facilitate this process?
     }
 
     private void wekinatorTrainingExampleRecorded(int id) {
