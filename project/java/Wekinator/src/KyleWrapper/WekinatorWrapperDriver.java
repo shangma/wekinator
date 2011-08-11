@@ -96,21 +96,26 @@ public class WekinatorWrapperDriver {
             System.out.println("*******RECORDING STOPPED");
 
             Thread.sleep(2000);
-            currentSetToRecord = 2; //Put new examples in set 2
-
+            currentSetToRecord = 1; //Put new examples in set 1
             System.out.println("*******RECORDING STARTED");
-
             w.startRecordingExamples();
             Thread.sleep(500);
             System.out.println("*******RECORDING Stopped");
+            w.stopRecordingExamples();
 
+            Thread.sleep(2000);
+            currentSetToRecord = 2; //Put new examples in set 2
+            System.out.println("*******RECORDING STARTED");
+            w.startRecordingExamples();
+            Thread.sleep(500);
+            System.out.println("*******RECORDING Stopped");
             w.stopRecordingExamples();
 
             System.out.println("***HAVE " + w.getExampleIds().length + " EXAMPLES");
 
 
-            int[] setIDs = {0, 2}; //Which training examples will be used?
-            int[] classIDs = {0, 1}; //What class values will be associated with them?
+            int[] setIDs = {0, 1, 2}; //Which training examples will be used?
+            int[] classIDs = {0, 0, 1}; //What class values will be associated with them?
             setSelectedExampleSetsAndClasses(setIDs, classIDs);
             
             //Run and classify with current configuration
