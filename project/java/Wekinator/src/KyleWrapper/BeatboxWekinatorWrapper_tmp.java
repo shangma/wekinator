@@ -307,7 +307,7 @@ public class BeatboxWekinatorWrapper_tmp {
         // those that are interested in this event
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
             if (listeners[i] == TrainingExampleListener.class) {
-                ((TrainingExampleListener) listeners[i + 1]).fireTrainingExampleRecorded(id, trainingClassValue);
+            //TODO FIX    ((TrainingExampleListener) listeners[i + 1]).fireTrainingExampleRecorded(id, trainingClassValue);
             }
         }
     }

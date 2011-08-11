@@ -4,60 +4,65 @@
  */
 package KyleWrapper;
 
-import java.beans.PropertyChangeEvent;
+import com.illposed.osc.OSCListener;
+import com.illposed.osc.OSCMessage;
+import com.illposed.osc.OSCPortIn;
+import com.illposed.osc.OSCPortOut;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.IOException;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import java.util.List;
 import javax.swing.event.EventListenerList;
-import wekinator.ChuckConfiguration;
-import wekinator.ChuckRunner;
-import wekinator.FeatureConfiguration;
-import wekinator.LearningAlgorithms.IbkLearningAlgorithm;
-import wekinator.LearningAlgorithms.LearningAlgorithm;
-import wekinator.LearningSystem;
-import wekinator.LearningSystem.TrainingStatus;
-import wekinator.OscHandler;
-import wekinator.OscSynthConfiguration;
-import wekinator.SimpleDataset;
-import wekinator.WekinatorInstance;
-import wekinator.WekinatorLearningManager;
-import wekinator.WekinatorRunner;
+import weka.classifiers.lazy.IBk;
+import weka.core.Attribute;
+import weka.core.FastVector;
+import weka.core.Instance;
+import weka.core.Instances;
+import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.Remove;
+import wekinator.util.SerializedFileUtil;
+import wekinator.util.Util;
 
 /**
  *
  * @author fiebrink
  */
+//TODO: Run chuck FE from within here? Or elsewhere?
+//TODO: What about synthesis? Is it listening for OSC message from Wekinator, or from Kyle's code?
+//TODO: Set k to be sqrt(n) every time classifier is built or updated.
 public class BeatboxWekinatorWrapper {
 
     protected int numFeatures = 0;
-    protected int numClasses = 0;
-    protected int trainingClassValue = 0;
-    protected String[] featureNames = {};
+    protected int maxNumClasses = 100;
+    protected Remove instanceFilter;
+    protected IBk activeClassifier;
+    protected Instances allInstances;
+    protected HashMap<Integer, Instance> allInstancesHash; //get reference to Instance in allInstances by ID
+    protected Instances activeInstances;
+    protected HashMap<Integer, Instance> activeInstancesHash; //get reference to Instance is activeInstances by ID
+    protected Instances dummyInstances;
+    // protected HashSet<Integer> activeInstanceIDs = new HashSet<Integer>();
+    // protected HashMap<Integer, double[]> allInstances = new HashMap<Integer, double[]>(); //value includes id and 0-value class in double array
     protected RecordingState recordingState = RecordingState.NOT_RECORDING;
     protected RunningState runningState = RunningState.NOT_RUNNING;
-    protected TrainingState trainingState = TrainingState.NOT_TRAINING;
-    protected ClassifierState classifierState = ClassifierState.NOT_TRAINED;
-    protected EventListenerList classificationListenerList = new EventListenerList();
-    protected EventListenerList trainingListenerList = new EventListenerList();
-    protected EventListenerList setupCompleteListenerList = new EventListenerList();
-    protected ChangeEvent setupCompleteEvent = null;
+    protected EventListenerList classificationListenerList = new EventListenerList(); //listening for new classification result notification
+    protected EventListenerList trainingListenerList = new EventListenerList(); //listening for new training example notification
     public static String PROP_RECORDINGSTATE = "recordingState";
     public static String PROP_RUNNINGSTATE = "runningState";
-    public static String PROP_TRAININGSTATE = "trainingState";
-    public static String PROP_CLASSIFIERSTATE = "classifierState";
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-    //Temp for this skeleton:
-    protected HashMap<Integer, double[]> examples = new HashMap<Integer, double[]>();
-    private final String chuckConfigFilename;
-    private final boolean runChuckOnStart;
-    private final String chuckExecutableLocation;
 
+
+    public int receivePort = 6448;
+    public int sendPort = 6453;
+    OSCPortOut sender;
+    public OSCPortIn receiver;
+    String paramSendString = "/params";
+
+    //TODO: Do we want ability to undo the last delete?
     /**
      * Add PropertyChangeListener.
      *
@@ -92,26 +97,7 @@ public class BeatboxWekinatorWrapper {
         trainingListenerList.remove(TrainingExampleListener.class, l);
     }
 
-    public void addSetupCompleteListener(ChangeListener l) {
-        setupCompleteListenerList.add(ChangeListener.class, l);
-    }
 
-    public void removeSetupCompleteExampleListener(ChangeListener l) {
-        setupCompleteListenerList.remove(ChangeListener.class, l);
-    }
-
-    //X Fired when Chuck & Java components talking to each other as required
-    protected void fireSetupComplete() {
-        Object[] listeners = setupCompleteListenerList.getListenerList();
-        for (int i = listeners.length - 2; i >= 0; i -= 2) {
-            if (listeners[i] == ChangeListener.class) {
-                if (setupCompleteEvent == null) {
-                    setupCompleteEvent = new ChangeEvent(this);
-                }
-                ((ChangeListener) listeners[i + 1]).stateChanged(setupCompleteEvent);
-            }
-        }
-    }
 
     //Whether Wekinator should add incoming feature vectors to the training set
     public enum RecordingState {
@@ -127,290 +113,247 @@ public class BeatboxWekinatorWrapper {
         NOT_RUNNING
     };
 
-    //Whether the classifier is currently training
-    public enum TrainingState {
-
-        TRAINING,
-        NOT_TRAINING
-    };
-
-    //State of the most recent classifier
-    //Note: We might want it to be possible to use a trained classifier to classify incoming examples even while
-    //a newer classifier is training, if these actions are happening on different threads.
-    //That is why ClassifierState and TrainingState are separate things.
-    public enum ClassifierState {
-
-        NOT_TRAINED,
-        TRAINED,
-        ERROR
-    };
-
-    //Constructor
-    //Error will happen later (during recording possibly) if features mismatch those being extracted,
-    // or # classes does not match synth
-    public BeatboxWekinatorWrapper(int numFeatures, int numClasses, String[] featureNames, String chuckConfigFilename, boolean runChuckOnStart, String chuckExecutableLocation) throws Exception {
+    public BeatboxWekinatorWrapper(int numFeatures, int maxClasses) throws Exception {
         this.numFeatures = numFeatures;
-        this.numClasses = numClasses;
-        this.featureNames = new String[featureNames.length];
-        this.chuckConfigFilename = chuckConfigFilename;
-        this.runChuckOnStart = runChuckOnStart;
-        this.chuckExecutableLocation = chuckExecutableLocation;
-        
-        System.arraycopy(featureNames, 0, this.featureNames, 0, featureNames.length);
-        //TODO: check that all these values/lengths are valid
+        this.maxNumClasses = maxClasses;
 
-        WekinatorRunner.run(false);
+        addOscListeners(); //Listen for everything Wekinator needs to: incoming features/IDs, other?
 
-        setupChuckConfiguration();
-        try {
-            WekinatorInstance.getWekinatorInstance().addFeatureParameterSetupDoneListener(new ChangeListener() {
+        //build infrastructure for classifier
+        //A fastvector element for each feature
+        FastVector ff = new FastVector(numFeatures + 2); //Include ID, class
+        //Add ID
+        ff.addElement(new Attribute("ID"));
 
-                public void stateChanged(ChangeEvent ce) {
-                    System.out.println("********* FEAT PARAM SETUP DONE");
-                    buildLearningSystem();
-                }
-            });
-
-            WekinatorLearningManager.getInstance().addPropertyChangeListener(new PropertyChangeListener() {
-
-                public void propertyChange(PropertyChangeEvent pce) {
-                    learningManagerPropertyChanged(pce);
-                }
-            });
-
-            if (runChuckOnStart) {
-                ChuckRunner.runConfigFile(chuckConfigFilename);
-                Thread.sleep(5000); //TODO: Replace with callback, handle errors if possible
-            }
-
-            setupFeatureConfiguration();
-
-        } catch (IOException ex) {
-            System.out.println("Chuck runner failed");
-            Logger.getLogger(BeatboxWekinatorWrapper.class.getName()).log(Level.SEVERE, null, ex);
-            throw new Exception(ex);
-        } catch (Exception ex) {
-            System.out.println("some other exception happened");
-            ex.printStackTrace();
-            throw new Exception(ex);
+        //Add features
+        for (int i = 0; i < numFeatures; i++) {
+            ff.addElement(new Attribute("Feature_" + i));
         }
 
-    }
-
-    private void buildLearningSystem() {
-        LearningSystem ls = new LearningSystem(1); //TODO: CHange for non-beatbox problem
-
-        boolean[] isDiscreteArray = {true};
-        int[] numClassesArray = {numClasses};
-        String[] paramNamesArray = {"HitClass"};
-
-
-        SimpleDataset s = new SimpleDataset(
-                WekinatorInstance.getWekinatorInstance().getFeatureConfiguration().getNumFeaturesEnabled(),
-                1,
-                isDiscreteArray,
-                numClassesArray,
-                featureNames,
-                paramNamesArray);
-
-
-        s.addExampleAddedListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent ce) {
-                newTrainingExampleRecorded(((SimpleDataset.ExampleAddEvent)ce).id);
-            }
-        });
-
-        ls.setDataset(s);
-
-        LearningAlgorithm a = new IbkLearningAlgorithm();
-
-        ls.setLearners(0, a);
-
-        ls.addClassificationResultListener(new ChangeListener() {
-
-            public void stateChanged(ChangeEvent ce) {
-                LearningSystem.ClassificationEvent e = (LearningSystem.ClassificationEvent)ce;
-                newClassificationResult(e.id, (int)e.results[0]);
-              //  (LearningSystem.ClassificationEvent; ce)
-            }
-        });
-
-
-        /*  ls.addPropertyChangeListener(new PropertyChangeListener() {
-
-        public void propertyChange(PropertyChangeEvent pce) {
-        learningSystemPropertyChanged(pce);
+        //Add class
+        FastVector classes = new FastVector(maxNumClasses);
+        for (int val = 0; val < maxNumClasses; val++) {
+            classes.addElement((new Integer(val)).toString());
         }
-        }); */
+        ff.addElement(new Attribute("Class", classes));
 
-        WekinatorInstance.getWekinatorInstance().setLearningSystem(ls);
-        fireSetupComplete();
-        System.out.println("done setting up");
+        dummyInstances = new Instances("dataset", ff, 0);
+        dummyInstances.setClassIndex(dummyInstances.numAttributes() - 1);
+
+         //A filter to remove ID so it's not used in classification
+        instanceFilter = new Remove();
+        int[] indicesToRemove = new int[1]; //just ID
+        indicesToRemove[0] = 0; //id
+        instanceFilter.setAttributeIndicesArray(indicesToRemove);
+        instanceFilter.setInputFormat(dummyInstances);
+
+        //Set up dummy instances to reflect state of actual instances
+        activeInstances = new Instances(dummyInstances);
+        activeInstancesHash = new HashMap<Integer, Instance>();
+
+        allInstances = new Instances(dummyInstances);
+        allInstancesHash = new HashMap<Integer, Instance>();
+
+        activeClassifier = null;
     }
 
-    private void setupChuckConfiguration() {
-        ChuckConfiguration c = ChuckRunner.getConfiguration();
-        c.setChuckExecutable(chuckExecutableLocation);
-        c.setUseChuckSynthClass(false);
-        c.setUseOscSynth(true);
-
-        boolean[] isDiscreteArray = {true};
-        boolean[] isDistArray = {false};
-        int[] maxValueArray = {numClasses-1};
-        String[] paramNamesArray = {"HitClass"};
-        OscSynthConfiguration synthConfig = new OscSynthConfiguration(1, paramNamesArray, isDiscreteArray, isDistArray, maxValueArray);
-        c.setOscSynthConfiguration(synthConfig);
-    }
-
-    //X
-    private void setupFeatureConfiguration() throws Exception {
-        FeatureConfiguration fc = new FeatureConfiguration();
-        fc.setUseCustomOscFeatures(true);
-        fc.setNumCustomOscFeatures(numFeatures);
-        fc.validate();
-        WekinatorInstance.getWekinatorInstance().setFeatureConfiguration(fc);
-    }
-
-    //X
     public int getNumFeatures() {
         return numFeatures;
     }
 
-    //X
-    public String[] getFeatureNames() {
-        return featureNames;
-    }
-
-    //TODO
-    //Don't use this method unless you're simulating Chuck FE sending this info to Wekinator directly.
+    //
+    //Don't use this method from outside class unless you're simulating Chuck FE sending this info to Wekinator directly.
     public void addTrainingExample(int id, double[] features) {
-        double[] featuresCopy = new double[features.length];
-        System.arraycopy(features, 0, featuresCopy, 0, features.length);
-        examples.put(id, featuresCopy);
+        double[] featuresWithID = new double[2 + features.length];
+        featuresWithID[0] = (double) id;
+        System.arraycopy(features, 0, featuresWithID, 1, features.length);
+        featuresWithID[featuresWithID.length - 1] = 0;
+
+        Instance i = new Instance(1.0, featuresWithID);
+        i.setClassMissing();
+        allInstances.add(i);
+        Instance ref = allInstances.lastInstance();
+        allInstancesHash.put(id, ref);
         newTrainingExampleRecorded(id);
     }
 
-    //X
-    public int getTrainingClassValue() {
-        return trainingClassValue;
+    //example ID must already have been recorded here
+    public void addTrainingExampleToActiveClassifier(int exampleId, int classValue) {
+        if (!activeInstancesHash.containsKey(exampleId)) {
+            try {
+                Instance i = new Instance(allInstancesHash.get(exampleId));
+                i.setClassValue(classValue);
+                activeInstances.add(i);
+                Instance ref = activeInstances.lastInstance();
+                activeInstancesHash.put(exampleId, ref);
+
+                //kNN specific: (otherwise need to retrain)
+                activeClassifier.updateClassifier(i);
+
+            } catch (Exception ex) {
+                //TODO: something useful if classifier cannot be updated.
+            }
+        }
     }
 
-    //X
-    public void setTrainingClassValue(int trainingClassValue) {
-        this.trainingClassValue = trainingClassValue;
-        double[] d = new double[1];
-        d[0] = (double) trainingClassValue;
-        WekinatorLearningManager.getInstance().setParams(d);
-    }
-
-    //X
     public boolean exampleIdExists(int id) {
-        LearningSystem ls = WekinatorInstance.getWekinatorInstance().getLearningSystem();
-        if (ls != null) {
-            SimpleDataset s = ls.getDataset();
-            if (s != null) {
-                return s.hasID(id);
-            }
-        }
-        return false;
+        return allInstancesHash.containsKey(id);
     }
 
-    //X
     public int numTrainingExamples() {
-         LearningSystem ls = WekinatorInstance.getWekinatorInstance().getLearningSystem();
-        if (ls != null) {
-            SimpleDataset s = ls.getDataset();
-            if (s != null) {
-                return s.getNumDatapoints();
-            }
-        }
-        return 0;
+        return allInstancesHash.size();
     }
 
-    //X
-    public void startTraining() {
-        if (trainingState != TrainingState.TRAINING) {
-            setTrainingState(TrainingState.TRAINING);
-            WekinatorLearningManager.getInstance().startTraining();
-        }
-    }
-
-    //X (untested)
-    public void cancelTraining() {
-        if (trainingState == TrainingState.TRAINING) {
-            setTrainingState(TrainingState.NOT_TRAINING);
-            WekinatorLearningManager.getInstance().stopTraining();
-        }
-    }
-
-    //X
     public void startRecordingExamples() throws Exception {
         if (recordingState == RecordingState.NOT_RECORDING) {
-            WekinatorLearningManager.getInstance().startDatasetCreation();
             setRecordingState(RecordingState.RECORDING);
         }
     }
 
-    //X
     public void stopRecordingExamples() {
         if (recordingState == RecordingState.RECORDING) {
-            WekinatorLearningManager.getInstance().stopDatasetCreation();
             setRecordingState(RecordingState.NOT_RECORDING);
         }
     }
 
-    //X
     public void startRunning() {
         if (runningState != RunningState.RUNNING) {
+            //For now, this should be fine even if classifier is untrained / no data.
             setRunningState(RunningState.RUNNING);
-            WekinatorLearningManager.getInstance().startRunning();
-       //     Works for both chuck & osc synths: TODO might remove?
-            OscHandler.getOscHandler().startSound();
         }
     }
 
-    //X
     public void stopRunning() {
         if (runningState == RunningState.RUNNING) {
-            WekinatorLearningManager.getInstance().stopRunning();
             setRunningState(RunningState.NOT_RUNNING);
         }
     }
 
-    //X
     public void deleteTrainingExample(int id) {
-         LearningSystem ls = WekinatorInstance.getWekinatorInstance().getLearningSystem();
-        if (ls != null) {
-            SimpleDataset s = ls.getDataset();
-            if (s != null) {
-                s.deleteInstanceWithID(id);
+        Instance target = allInstancesHash.get(id);
+
+        if (target == null) {
+            //TODO: something useful
+            return;
+        }
+
+        //Wish there were some way to directly do this, but no...
+        for (int i = 0; i < allInstances.numInstances(); i++) {
+            Instance next = allInstances.instance(i);
+            if (target == next) {
+                System.out.println("FOund instance to delete at index " + i);
+                allInstances.delete(i);
+                allInstancesHash.remove(i);
+            }
+        }
+
+        //If it's active:
+        Instance activeTarget = activeInstancesHash.get(id);
+        if (activeTarget != null) {
+            //Wish there were some way to directly do this, but no...
+            for (int i = 0; i < activeInstances.numInstances(); i++) {
+                Instance next = activeInstances.instance(i);
+                if (activeTarget == next) {
+                    try {
+                        System.out.println("FOund active instance to delete at index " + i);
+                        activeInstances.delete(i);
+                        activeInstancesHash.remove(i);
+                        //Now retrain/rebuild
+                        activeClassifier.buildClassifier(Filter.useFilter(activeInstances, instanceFilter));
+                    } catch (Exception ex) {
+                        System.out.println("Error encountered in re-building classifier after delete example");
+                        //TODO: Something useful.
+                    }
+                }
             }
         }
     }
 
-    //X
+    public void deleteTrainingExamples(int[] ids) {
+        boolean activeExampleDeleted = false;
+        for (int j = 0; j < ids.length; j++) {
+            int id = ids[j];
+            Instance target = allInstancesHash.get(id);
+
+            if (target != null) {
+                for (int i = 0; i < allInstances.numInstances(); i++) {
+                    Instance next = allInstances.instance(i);
+                    if (target == next) {
+                        System.out.println("FOund instance to delete at index " + i);
+                        allInstances.delete(i);
+                        allInstancesHash.remove(i);
+                    }
+                }
+            } else {
+                //Target is null
+                //TODO: something useful? don't return.
+            }
+
+            //If it's active:
+            Instance activeTarget = activeInstancesHash.get(id);
+            if (activeTarget != null) {
+                //Wish there were some way to directly do this, but no...
+                for (int i = 0; i < activeInstances.numInstances(); i++) {
+                    Instance next = activeInstances.instance(i);
+                    if (activeTarget == next) {
+                        System.out.println("FOund active instance to delete at index " + i);
+                        activeInstances.delete(i);
+                        activeInstancesHash.remove(i);
+                        activeExampleDeleted = true;
+                    }
+                }
+            }
+        }
+
+        if (activeExampleDeleted) { //TODO: check actually deleted above
+            //rebuild classifier
+            try {
+                //TODO: check actually deleted above
+                //rebuild classifier
+                if (activeInstances.numInstances() > 0) {
+                    activeClassifier.buildClassifier(Filter.useFilter(activeInstances, instanceFilter));
+                } else {
+                    activeClassifier = null;
+                }
+            } catch (Exception ex) {
+                System.out.println("Error encountered in re-building classifier after delete examples");
+                //TODO: something more useful
+            }
+        }
+
+    }
+
     public void deleteAllTrainingExamples() {
-         LearningSystem ls = WekinatorInstance.getWekinatorInstance().getLearningSystem();
-        if (ls != null) {
-            SimpleDataset s = ls.getDataset();
-            if (s != null) {
-                s.deleteAll();
+       allInstancesHash = new HashMap<Integer, Instance>();
+       activeInstancesHash = new HashMap<Integer, Instance>();
+       allInstances = new Instances(dummyInstances);
+       activeInstances = new Instances(dummyInstances);
+       activeClassifier = null;
+    }
+
+    //assumes features lacks ID, class; if not the case, we can easily change this
+    public int classifyExample(double[] features) {
+        if (activeClassifier == null) {
+            return -1;
+        } else {
+            double[] featureVector = new double[features.length + 2];
+            featureVector[0] =0.0; // add dummy ID
+            featureVector[featureVector.length - 1] = 0.0;
+            System.arraycopy(features, 0, featureVector, 1, features.length);
+            instanceFilter.input(new Instance(1.0, featureVector));
+            try {
+                return (int) activeClassifier.classifyInstance(instanceFilter.output());
+            } catch (Exception ex) {
+                System.out.println("Error: Could not classify new instance");
+                return -2; //TODO throw exception instead.
             }
         }
     }
 
-    //TODO
-    public int classifyExample(double[] features) {
-        //TODO: For now, this will always return 0.
-        return 0;
-    }
-
-    //X
     public RecordingState getRecordingState() {
         return recordingState;
     }
 
-    //X
     protected void setRecordingState(RecordingState recordingState) {
         RecordingState oldState = this.recordingState;
         this.recordingState = recordingState;
@@ -427,51 +370,25 @@ public class BeatboxWekinatorWrapper {
         propertyChangeSupport.firePropertyChange(PROP_RUNNINGSTATE, oldState, runningState);
     }
 
-    public TrainingState getTrainingState() {
-        return trainingState;
+    public void saveWekinatorToFile(File f) throws Exception {
+        SerializedFileUtil.writeToFile(f, this);
     }
 
-    protected void setTrainingState(TrainingState trainingState) {
-        TrainingState oldState = this.trainingState;
-        this.trainingState = trainingState;
-        propertyChangeSupport.firePropertyChange(PROP_TRAININGSTATE, oldState, trainingState);
+    public static BeatboxWekinatorWrapper loadFromFile(File f) throws Exception {
+        BeatboxWekinatorWrapper w = (BeatboxWekinatorWrapper)SerializedFileUtil.readFromFile(f);
+        return w;
     }
 
-    public ClassifierState getClassifierState() {
-        return classifierState;
-    }
-
-    protected void setClassifierState(ClassifierState classifierState) {
-        ClassifierState oldState = this.classifierState;
-        this.classifierState = classifierState;
-        propertyChangeSupport.firePropertyChange(PROP_CLASSIFIERSTATE, oldState, classifierState);
-    }
-
-    //TODO
-    public void saveWekinatorToFile(File f) {
-    }
-
-    //TODO
-    public static BeatboxWekinatorWrapper loadFromFile(File f) {
-        //return new BeatboxWekinatorWrapper();
-        System.out.println("This method loadFromFile is not implemented yet.");
-        return null; //TODO
-    }
-
-    //X
-    public double[] getExampleIds() {
-        LearningSystem ls = WekinatorInstance.getWekinatorInstance().getLearningSystem();
-        if (ls != null) {
-            SimpleDataset d = ls.getDataset();
-            if (d != null) {
-                return d.getIDs();
-            }
+    public int[] getExampleIds() {
+        Integer[] tmp = new Integer[0];
+        Integer[] ids = allInstancesHash.keySet().toArray(tmp);
+        int[] intIds = new int[ids.length];
+        for (int i = 0; i < ids.length; i++) {
+            intIds[i] = ids[i].intValue();
         }
-        return new double[0];
+        return intIds;
     }
 
-    //X
-    //This method will be initiated by wekinator receiving a new feature vector while in "run" mode
     protected void newClassificationResult(int id, int classValue) {
         // Guaranteed to return a non-null array
         Object[] listeners = classificationListenerList.getListenerList();
@@ -484,35 +401,79 @@ public class BeatboxWekinatorWrapper {
         }
     }
 
-    //X
-    //This method will be initiated by Wekinator receiving a new feature vector while in "record" mode
+    //TODO: Call this when appropriate
     protected void newTrainingExampleRecorded(int id) {
         Object[] listeners = trainingListenerList.getListenerList();
         // Process the listeners last to first, notifying
         // those that are interested in this event
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
             if (listeners[i] == TrainingExampleListener.class) {
-                ((TrainingExampleListener) listeners[i + 1]).fireTrainingExampleRecorded(id, trainingClassValue);
+                ((TrainingExampleListener) listeners[i + 1]).fireTrainingExampleRecorded(id);
             }
         }
     }
 
-    private void learningManagerPropertyChanged(PropertyChangeEvent pce) {
-        if (pce.getPropertyName().equals(WekinatorLearningManager.PROP_MODE)) {
-            WekinatorLearningManager.Mode oldM = (WekinatorLearningManager.Mode) pce.getOldValue();
-            WekinatorLearningManager.Mode newM = (WekinatorLearningManager.Mode) pce.getNewValue();
+    //Example list and classList must be same length and ordering
+    void setSelectedExamplesAndClasses(int[] exampleList, int[] classList) {
+        activeInstances = new Instances(dummyInstances, exampleList.length);
+        activeInstancesHash = new HashMap<Integer, Instance>();
+        for (int i = 0; i < exampleList.length; i++) {
+            Instance activeInstance = new Instance(allInstancesHash.get(exampleList[i]));
+            activeInstance.setClassValue((double)classList[i]);
+            activeInstances.add(activeInstance); //todo: check that class always set properly when adding to activeInstances
+            Instance ref = activeInstances.lastInstance();
+            activeInstancesHash.put(exampleList[i], ref);
+        }
+    }
 
-            if (oldM == WekinatorLearningManager.Mode.TRAINING && newM == WekinatorLearningManager.Mode.NONE) {
-                setTrainingState(TrainingState.NOT_TRAINING);
-                TrainingStatus s = WekinatorInstance.getWekinatorInstance().getLearningSystem().getTrainingProgress();
+    private void addOscListeners() throws SocketException, UnknownHostException {
+        try {
+            receiver = new OSCPortIn(receivePort);
+        } catch (Exception ex) {
+            System.out.println("Could not bind to port " + receivePort + ". Please quit all other instances of Wekinator or change the receive port.");
+            //TODO: Throw exception
+            return;
+        }
+        //  System.out.println("Java listening on " + receivePort);
+        sender = new OSCPortOut(InetAddress.getLocalHost(), sendPort);
+        // System.out.println("Java sending on " + sendPort);
 
-                if (s.getNumErrorsEncountered() == 0) {
-                    setClassifierState(ClassifierState.TRAINED);
+
+        addOscFeatureListener();
+
+        receiver.startListening();
+    }
+
+    private void addOscFeatureListener() {
+        OSCListener listener = new OSCListener() {
+
+            public void acceptMessage(java.util.Date time, OSCMessage message) {
+               Object[] o = message.getArguments();
+                Integer id = new Integer(0);
+                if (o[0] instanceof Integer) {
+                    id = (Integer)o[0];
                 } else {
-                    setClassifierState(ClassifierState.ERROR);
+                    System.out.println("Warning: ID is not an integer");
                 }
+                double d[] = new double[o.length - 1];
+                for (int i = 0; i < o.length-1; i++) {
+                    if (o[i+1] instanceof Float) {
+                        d[i] = ((Float) o[i+1]).floatValue();
+                    } else {
+                        System.out.println("Warning: Received feature is not a float");
+                    }
+                }
+                // Use this feature vector!
+                if (getRecordingState() == RecordingState.RECORDING) {
+                    addTrainingExample(id, d);
+                    newTrainingExampleRecorded(id);
+                }
+                if (getRunningState() == RunningState.RUNNING) {
+                    newClassificationResult(id, classifyExample(d));
+                }
+
             }
-        }
+        };
+        receiver.addListener("/oscCustomFeaturesWithId", listener);
     }
-    //TODO: Ensure add, remove operations are atomic if using Collection underneath
 }

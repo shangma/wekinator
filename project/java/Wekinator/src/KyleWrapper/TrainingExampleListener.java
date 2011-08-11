@@ -13,5 +13,5 @@ import java.util.EventListener;
  */
 public interface TrainingExampleListener extends EventListener {
     //Fired when new example recorded
-    public void fireTrainingExampleRecorded(int id, int classValue);
+    public void fireTrainingExampleRecorded(int id);
 }
