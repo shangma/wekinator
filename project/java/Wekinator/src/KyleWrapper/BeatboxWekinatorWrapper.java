@@ -16,6 +16,8 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.EventListenerList;
 import weka.classifiers.lazy.IBk;
 import weka.core.Attribute;
@@ -60,7 +62,6 @@ public class BeatboxWekinatorWrapper {
     public int sendPort = 6453;
     OSCPortOut sender;
     public OSCPortIn receiver;
-    String paramSendString = "/params";
 
     //TODO: Do we want ability to undo the last delete?
     /**
@@ -170,9 +171,10 @@ public class BeatboxWekinatorWrapper {
         featuresWithID[featuresWithID.length - 1] = 0;
 
         Instance i = new Instance(1.0, featuresWithID);
-        i.setClassMissing();
         allInstances.add(i);
         Instance ref = allInstances.lastInstance();
+        ref.setClassMissing();
+
         allInstancesHash.put(id, ref);
         newTrainingExampleRecorded(id);
     }
@@ -259,6 +261,7 @@ public class BeatboxWekinatorWrapper {
                         activeInstances.delete(i);
                         activeInstancesHash.remove(i);
                         //Now retrain/rebuild
+                        //TODO: update k
                         activeClassifier.buildClassifier(Filter.useFilter(activeInstances, instanceFilter));
                     } catch (Exception ex) {
                         System.out.println("Error encountered in re-building classifier after delete example");
@@ -311,6 +314,7 @@ public class BeatboxWekinatorWrapper {
                 //TODO: check actually deleted above
                 //rebuild classifier
                 if (activeInstances.numInstances() > 0) {
+                    //TODO: update k?
                     activeClassifier.buildClassifier(Filter.useFilter(activeInstances, instanceFilter));
                 } else {
                     activeClassifier = null;
@@ -336,13 +340,20 @@ public class BeatboxWekinatorWrapper {
         if (activeClassifier == null) {
             return -1;
         } else {
+
+
             double[] featureVector = new double[features.length + 2];
             featureVector[0] =0.0; // add dummy ID
             featureVector[featureVector.length - 1] = 0.0;
             System.arraycopy(features, 0, featureVector, 1, features.length);
             instanceFilter.input(new Instance(1.0, featureVector));
+            Instance n = instanceFilter.output();
+                    //    System.out.println("clasisfying " + n);
+                    //    System.out.println("Using " + activeInstances.toString());
+
+
             try {
-                return (int) activeClassifier.classifyInstance(instanceFilter.output());
+                return (int) activeClassifier.classifyInstance(n);
             } catch (Exception ex) {
                 System.out.println("Error: Could not classify new instance");
                 return -2; //TODO throw exception instead.
@@ -415,15 +426,33 @@ public class BeatboxWekinatorWrapper {
 
     //Example list and classList must be same length and ordering
     void setSelectedExamplesAndClasses(int[] exampleList, int[] classList) {
+
         activeInstances = new Instances(dummyInstances, exampleList.length);
         activeInstancesHash = new HashMap<Integer, Instance>();
+
+        if (exampleList.length == 0) {
+            activeClassifier = null;
+            return;
+        }
+        
         for (int i = 0; i < exampleList.length; i++) {
             Instance activeInstance = new Instance(allInstancesHash.get(exampleList[i]));
-            activeInstance.setClassValue((double)classList[i]);
             activeInstances.add(activeInstance); //todo: check that class always set properly when adding to activeInstances
             Instance ref = activeInstances.lastInstance();
+            ref.setClassValue((double)classList[i]);
             activeInstancesHash.put(exampleList[i], ref);
         }
+
+        activeClassifier = new IBk();
+        //activeClassifier.setKNN((int)Math.sqrt(exampleList.length));
+        activeClassifier.setKNN(1);
+        try {
+            activeClassifier.buildClassifier(Filter.useFilter(activeInstances, instanceFilter));
+        } catch (Exception ex) {
+            //TODO: something useful
+            System.out.println("Could not build classifier -- error!");
+        }
+
     }
 
     private void addOscListeners() throws SocketException, UnknownHostException {

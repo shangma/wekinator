@@ -100,13 +100,13 @@ public class WekinatorWrapperDriver {
             System.out.println(""); */
 
 
-            Thread.sleep(5000);
+            Thread.sleep(2000);
             currentSetToRecord = 2;
 
             System.out.println("*******RECORDING STARTED");
 
             w.startRecordingExamples();
-            Thread.sleep(5000);
+            Thread.sleep(2000);
             System.out.println("*******RECORDING Stopped");
 
             w.stopRecordingExamples();
@@ -119,7 +119,7 @@ public class WekinatorWrapperDriver {
             setSelectedExampleSetsAndClasses(setIDs, classIDs);
             w.startRunning();
 
-            Thread.sleep(5000);
+            Thread.sleep(2000);
 
             w.stopRunning();
         }  catch (Exception ex) {
@@ -143,6 +143,7 @@ public class WekinatorWrapperDriver {
 
         //Could do this in fixed length array but must be synchronized w/ lock on sets
 
+        updateWekinatorSelectedSetsAndClasses();
 
     }
 
