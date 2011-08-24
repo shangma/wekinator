@@ -15,6 +15,8 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.EventListenerList;
 import weka.classifiers.lazy.IBk;
 import weka.core.Attribute;
@@ -37,6 +39,7 @@ public class BeatboxWekinatorWrapper {
 
     protected int numFeatures = 0;
     protected int maxNumClasses = 100;
+    int k = 1; //# nearest neighbors
 
     protected Remove instanceFilter; //We take out ID feature in training & executing the classifier
     protected IBk activeClassifier;
@@ -159,6 +162,9 @@ public class BeatboxWekinatorWrapper {
         return numFeatures;
     }
 
+    //public get
+
+
     //Don't use this method from outside class unless you're simulating Chuck FE sending this info to Wekinator directly.
     //This is called when OSC listener recevies a new feature vector, and Wekinator is in recording mode
     public void addTrainingExample(int id, double[] features) {
@@ -201,7 +207,8 @@ public class BeatboxWekinatorWrapper {
 
               
               activeClassifier = new IBk();
-              activeClassifier.setKNN(1);
+              k = 1;
+              activeClassifier.setKNN(k);
             try {
                 activeClassifier.buildClassifier(Filter.useFilter(activeInstances, instanceFilter));
             } catch (Exception ex) {
@@ -301,7 +308,9 @@ public class BeatboxWekinatorWrapper {
                         activeInstancesHash.remove(i);
                         //Now retrain/rebuild
                         if (activeInstances.numInstances() > 0) {
-                            activeClassifier.setKNN(activeInstances.numInstances());
+                            k = (int)Math.sqrt(activeInstances.numInstances());
+                           // activeClassifier.setKNN(activeInstances.numInstances());
+                            activeClassifier.setKNN(k);
                             activeClassifier.buildClassifier(Filter.useFilter(activeInstances, instanceFilter));
                             break;
                         } else {
@@ -355,7 +364,9 @@ public class BeatboxWekinatorWrapper {
             //rebuild classifier
             try {
                 if (activeInstances.numInstances() > 0) {
-                    activeClassifier.setKNN(activeInstances.numInstances());
+                    k = (int)Math.sqrt(activeInstances.numInstances());
+
+                    activeClassifier.setKNN(k);
                     activeClassifier.buildClassifier(Filter.useFilter(activeInstances, instanceFilter));
                 } else {
                     activeClassifier = null;
@@ -400,7 +411,49 @@ public class BeatboxWekinatorWrapper {
         }
     }
 
-   // public
+
+    //Classifies example with given id using entire training set (including itself)
+    //Returns -1 if no active classifier or id is bad
+    public int classifyExampleWithoutHoldout(int id) {
+        try {
+            if (activeClassifier == null || !allInstancesHash.containsKey(id)) {
+                return -1;
+            }
+            Instance i = allInstancesHash.get(id);
+            instanceFilter.input(i);
+            return  (int)activeClassifier.classifyInstance(instanceFilter.output());
+            //return c;
+        } catch (Exception ex) {
+            System.out.println("Error: Could not classify instance:" + ex.getMessage());
+            ex.printStackTrace();
+            return -1;
+        }
+    }
+
+    //Returns new int[0] if no active classifier, or id is not in instances, or some other error happens
+    // If id is in training set, it will be one of the nearest neighbors (i.e., you get one correct class for free)
+   public int[] getNearestNeighborClassesForInstance(int id) {
+       if (activeClassifier == null || !allInstancesHash.containsKey(id)) {
+           return new int[0];
+       }
+       instanceFilter.input(allInstancesHash.get(id));
+       Instance i = instanceFilter.output();
+        try {
+            System.out.println("k is " + k + "/" + activeClassifier.getKNN() + "; numInst=" + activeInstances.numInstances());
+            Instances nns = activeClassifier.getNearestNeighbourSearchAlgorithm().kNearestNeighbours(i, k);
+            int[] cs = new int[nns.numInstances()];
+            for (int j = 0; j < cs.length; j++) {
+                cs[j] = (int)nns.instance(j).classValue();
+            }
+            return cs;
+            //activeClassifier.getNearestNeighbourSearchAlgorithm().getDistanceFunction()
+        } catch (Exception ex) {
+            System.out.println("ERROR: couldn't get nearest neighbors for id=" + id);
+            System.out.println(ex);
+            ex.printStackTrace();
+            return new int[0];
+        }
+   }
 
     public RecordingState getRecordingState() {
         return recordingState;
@@ -490,7 +543,8 @@ public class BeatboxWekinatorWrapper {
         }
 
         activeClassifier = new IBk();
-        activeClassifier.setKNN((int)Math.sqrt(exampleList.length));
+        k = (int)Math.sqrt(exampleList.length);
+        activeClassifier.setKNN(k);
         try {
             activeClassifier.buildClassifier(Filter.useFilter(activeInstances, instanceFilter));
         } catch (Exception ex) {

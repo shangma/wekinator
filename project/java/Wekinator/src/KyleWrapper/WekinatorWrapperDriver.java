@@ -115,8 +115,10 @@ public class WekinatorWrapperDriver {
 
 
             int[] setIDs = {0, 1, 2}; //Which training examples will be used?
-            int[] classIDs = {0, 0, 1}; //What class values will be associated with them?
-            //setSelectedExampleSetsAndClasses(setIDs, classIDs);
+            int[] classIDs = {0, 1, 2}; //What class values will be associated with them?
+
+            //Comment if only adding incrementally:
+            setSelectedExampleSetsAndClasses(setIDs, classIDs);
 
             Set<Integer> keys = exampleIDs.keySet();
             int id1 = 0;
@@ -130,8 +132,28 @@ public class WekinatorWrapperDriver {
                 }
             }
             System.out.println("Using ids " + id1 + "," + id2);
-            w.addTrainingExampleToActiveClassifier(id1, 2);
-            w.addTrainingExampleToActiveClassifier(id1+1, 1);
+         //   w.addTrainingExampleToActiveClassifier(id1, 2);
+         //   w.addTrainingExampleToActiveClassifier(id2, 1);
+
+            System.out.println("Classify without holdout: ");
+            System.out.println(id1 + ": " + w.classifyExampleWithoutHoldout(id1));
+            System.out.println(id2 + ": " + w.classifyExampleWithoutHoldout(id2));
+
+            System.out.println("Neighbor list:");
+            int[] tmp1 = w.getNearestNeighborClassesForInstance(id1);
+            System.out.print(id1 + ": ");
+            for (int i = 0; i < tmp1.length; i++) {
+                System.out.print(tmp1[i] + " ");
+            }
+            System.out.println("");
+
+                        int[] tmp2 = w.getNearestNeighborClassesForInstance(id2);
+            System.out.print(id2 + ": ");
+            for (int i = 0; i < tmp2.length; i++) {
+                System.out.print(tmp2[i] + " ");
+            }
+            System.out.println("");
+
             //Run and classify with current configuration
             w.startRunning();
             Thread.sleep(8000);
