@@ -116,8 +116,22 @@ public class WekinatorWrapperDriver {
 
             int[] setIDs = {0, 1, 2}; //Which training examples will be used?
             int[] classIDs = {0, 0, 1}; //What class values will be associated with them?
-            setSelectedExampleSetsAndClasses(setIDs, classIDs);
-            
+            //setSelectedExampleSetsAndClasses(setIDs, classIDs);
+
+            Set<Integer> keys = exampleIDs.keySet();
+            int id1 = 0;
+            int id2 = 0;
+            for (Integer k : keys) {
+                if (id1 == 0)
+                    id1 = k;
+                else if (id2 == 0) {
+                    id2 = k;
+                    break;
+                }
+            }
+            System.out.println("Using ids " + id1 + "," + id2);
+            w.addTrainingExampleToActiveClassifier(id1, 2);
+            w.addTrainingExampleToActiveClassifier(id1+1, 1);
             //Run and classify with current configuration
             w.startRunning();
             Thread.sleep(8000);

@@ -178,21 +178,60 @@ public class BeatboxWekinatorWrapper {
 
     //Must all when new example is recorded into an "active" training set
     //(example ID should already have been recorded when the new feature vector was received; this call makes it part of active classifier)
-    public void addTrainingExampleToActiveClassifier(int exampleId, int classValue) {
-        if (!activeInstancesHash.containsKey(exampleId)) {
+    public void addTrainingExampleToActiveClassifier(int exampleId, int classValue) throws Exception {
+        if (activeInstancesHash == null || activeInstancesHash.isEmpty()) {
+            //This is the first example we're adding
+              activeInstances = new Instances(dummyInstances, 10);
+              activeInstancesHash = new HashMap<Integer, Instance>();
+
+
+            Instance activeInstance = new Instance(allInstancesHash.get(exampleId));
+            activeInstances.add(activeInstance);
+            Instance ref = activeInstances.lastInstance();
+            ref.setClassValue(classValue);
+            activeInstancesHash.put(exampleId, ref);
+
+
+              //OLD:
+            //  Instance i = new Instance(allInstancesHash.get(exampleId));
+            //  i.setClassValue(classValue);
+            //  activeInstances.add(i);
+             // Instance ref = activeInstances.lastInstance();
+              //activeInstancesHash.put(exampleId, ref);
+
+              
+              activeClassifier = new IBk();
+              activeClassifier.setKNN(1);
+            try {
+                activeClassifier.buildClassifier(Filter.useFilter(activeInstances, instanceFilter));
+            } catch (Exception ex) {
+                System.out.println("Error: Could not build classifier from examples!");
+                throw ex;
+            }
+              
+        } else if(!activeInstancesHash.containsKey(exampleId)) {
+            if (!allInstancesHash.containsKey(exampleId)) {
+                System.out.println("ERROR: example " + exampleId + " is not in allInstancesHash");
+                return;
+            }
             try {
                 Instance i = new Instance(allInstancesHash.get(exampleId));
-                i.setClassValue(classValue);
                 activeInstances.add(i);
                 Instance ref = activeInstances.lastInstance();
+                ref.setClassValue(classValue);
+
                 activeInstancesHash.put(exampleId, ref);
 
                 //kNN specific: (otherwise need to retrain)
-                activeClassifier.updateClassifier(i);
+                    //ref.eq
+                instanceFilter.input(ref);
+            Instance n = instanceFilter.output();
+                activeClassifier.updateClassifier(n);
 
             } catch (Exception ex) {
                 System.out.println("Error adding training example to active classifier: Perhaps no classifier is active?");
                 System.out.println(ex);
+                ex.printStackTrace();
                 return;
             }
         }
@@ -360,6 +399,8 @@ public class BeatboxWekinatorWrapper {
             }
         }
     }
+
+   // public
 
     public RecordingState getRecordingState() {
         return recordingState;
