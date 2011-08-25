@@ -11,6 +11,12 @@ import com.illposed.osc.OSCPortOut;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -99,6 +105,22 @@ public class BeatboxWekinatorWrapper {
         trainingListenerList.remove(TrainingExampleListener.class, l);
     }
 
+    private void writeToOutputStream(ObjectOutputStream o) throws IOException {
+        o.writeInt(1);
+        o.writeObject(activeClassifier);
+        o.writeObject(activeInstances);
+        o.writeObject(activeInstancesHash);
+        o.writeObject(allInstances);
+        o.writeObject(allInstancesHash);
+        o.writeObject(dummyInstances);
+        o.writeObject(instanceFilter);
+        o.writeInt(k);
+        o.writeInt(maxNumClasses);
+        o.writeInt(numFeatures);
+        o.writeInt(receivePort);
+        o.writeInt(sendPort);
+    }
+
 
     //Whether Wekinator should add incoming feature vectors to the training set
     public enum RecordingState {
@@ -114,6 +136,10 @@ public class BeatboxWekinatorWrapper {
         NOT_RUNNING
     };
 
+    protected BeatboxWekinatorWrapper() {
+
+    }
+    
     public BeatboxWekinatorWrapper(int numFeatures, int maxClasses) throws Exception {
         this.numFeatures = numFeatures;
         this.maxNumClasses = maxClasses;
@@ -476,15 +502,49 @@ public class BeatboxWekinatorWrapper {
     }
 
     public void saveWekinatorToFile(File f) throws Exception {
-        SerializedFileUtil.writeToFile(f, this);
+       // SerializedFileUtil.writeToFile(f, this);
+
+        FileOutputStream fout = new FileOutputStream(f);
+        ObjectOutputStream o = new ObjectOutputStream(fout);
+        writeToOutputStream(o);
+        o.close();
+        fout.close();
     }
 
     // Kyle: IMPORTANT: Does not save listeners in serialized object!
     // if you load from file, you code will have to re-add itself as a listener (property change, training add, classification result, etc.)
     public static BeatboxWekinatorWrapper loadFromFile(File f) throws Exception {
-        BeatboxWekinatorWrapper w = (BeatboxWekinatorWrapper)SerializedFileUtil.readFromFile(f);
+       // BeatboxWekinatorWrapper w = (BeatboxWekinatorWrapper)SerializedFileUtil.readFromFile(f);
+        FileInputStream fin = new FileInputStream(f);
+        ObjectInputStream i = new ObjectInputStream(fin);
+        BeatboxWekinatorWrapper w = loadFromInputStream(i);
+        i.close();
+        fin.close();
         return w;
     }
+
+    public static BeatboxWekinatorWrapper loadFromInputStream(ObjectInputStream i) throws IOException, ClassNotFoundException, Exception {
+        BeatboxWekinatorWrapper w = new BeatboxWekinatorWrapper();
+        i.readInt(); //use for ID if necessary
+        w.activeClassifier = (IBk) i.readObject();
+        w.activeInstances = (Instances) i.readObject();
+        w.activeInstancesHash = (HashMap<Integer, Instance>) i.readObject();
+        w.allInstances = (Instances) i.readObject();
+        w.allInstancesHash = (HashMap<Integer, Instance>) i.readObject();
+        w.dummyInstances = (Instances) i.readObject();
+        w.instanceFilter = (Remove) i.readObject();
+        w.k = (int)i.readInt();
+        w.maxNumClasses = i.readInt();
+        w.numFeatures = i.readInt();
+        w.receivePort = i.readInt();
+        w.sendPort = i.readInt();
+
+       //OSC
+        w.addOscListeners();
+        return w;
+    }
+
+
 
     public int[] getExampleIds() {
         Integer[] tmp = new Integer[0];

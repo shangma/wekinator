@@ -6,6 +6,7 @@ package KyleWrapper;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,7 +48,8 @@ public class WekinatorWrapperDriver {
 
         try {
             // max # classes
-            w = new BeatboxWekinatorWrapper(numFeats, 100);
+           // w = new BeatboxWekinatorWrapper(numFeats, 100);
+            w = BeatboxWekinatorWrapper.loadFromFile(new File("/Users/rebecca/tmp.wek"));
         } catch (Exception ex) {
             Logger.getLogger(WekinatorWrapperDriver.class.getName()).log(Level.SEVERE, null, ex);
             return;
@@ -85,7 +87,7 @@ public class WekinatorWrapperDriver {
     private void testControlStuff() {
         try {
 
-            currentSetToRecord = 0; //Put new examples in set 0 from now on
+          /*  currentSetToRecord = 0; //Put new examples in set 0 from now on
             System.out.println("RECORD IN 2 SECONDS");
             Thread.sleep(2000);
             w.startRecordingExamples();
@@ -152,12 +154,18 @@ public class WekinatorWrapperDriver {
             for (int i = 0; i < tmp2.length; i++) {
                 System.out.print(tmp2[i] + " ");
             }
-            System.out.println("");
+            System.out.println(""); */
 
             //Run and classify with current configuration
             w.startRunning();
             Thread.sleep(8000);
             w.stopRunning();
+          //  w.saveWekinatorToFile(new File("/Users/rebecca/tmp.wek"));
+           // System.out.println("Saved");
+           // 
+            
+
+
         }  catch (Exception ex) {
             System.out.println("Exception encountered in driver");
             Logger.getLogger(WekinatorWrapperDriver.class.getName()).log(Level.SEVERE, null, ex);
@@ -182,13 +190,18 @@ public class WekinatorWrapperDriver {
     }
 
     private void updateWekinatorSelectedSetsAndClasses() {
+        if (selectedSetsAndClasses == null || exampleSets == null) {
+            return;
+        }
         List<Integer> exampleList = new LinkedList<Integer>();
         List<Integer> classList = new LinkedList<Integer>();
 
         for (Integer setID : selectedSetsAndClasses.keySet()) {
+            if (exampleSets.containsKey(setID)) {
             for (Integer ex : exampleSets.get(setID)) {
                 exampleList.add(ex);
                 classList.add(selectedSetsAndClasses.get(setID));
+            }
             }
         }
         int[] exampleArray = new int[exampleList.size()];
