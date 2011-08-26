@@ -211,7 +211,19 @@ public class BeatboxWekinatorWrapper {
     //Must all when new example is recorded into an "active" training set
     //(example ID should already have been recorded when the new feature vector was received; this call makes it part of active classifier)
     public void addTrainingExampleToActiveClassifier(int exampleId, int classValue) throws Exception {
+        System.out.println("1: active null? " + (activeInstancesHash == null));
+                System.out.println("2: active empty? " + (activeInstancesHash.isEmpty()));
+
+
+        if (activeInstancesHash != null) {
+
+            System.out.println("3: Contains key " + exampleId + "?" + (activeInstancesHash.containsKey(exampleId)));
+        }
+       
+
         if (activeInstancesHash == null || activeInstancesHash.isEmpty()) {
+            
+
             //This is the first example we're adding
               activeInstances = new Instances(dummyInstances, 10);
               activeInstancesHash = new HashMap<Integer, Instance>();
@@ -316,7 +328,7 @@ public class BeatboxWekinatorWrapper {
             if (target == next) {
                 System.out.println("Found instance to delete at index " + i);
                 allInstances.delete(i);
-                allInstancesHash.remove(i);
+                allInstancesHash.remove(id);
                 break;
             }
         }
@@ -331,7 +343,8 @@ public class BeatboxWekinatorWrapper {
                     try {
                         System.out.println("Found active instance to delete at index " + i);
                         activeInstances.delete(i);
-                        activeInstancesHash.remove(i);
+                        activeInstancesHash.remove(id);
+                       // activeInstancesHash.
                         //Now retrain/rebuild
                         if (activeInstances.numInstances() > 0) {
                             k = (int)Math.sqrt(activeInstances.numInstances());
@@ -363,7 +376,7 @@ public class BeatboxWekinatorWrapper {
                     if (target == next) {
                         System.out.println("Found instance to delete at index " + i);
                         allInstances.delete(i);
-                        allInstancesHash.remove(i);
+                        allInstancesHash.remove(id);
                     }
                 }
             } else {
@@ -379,7 +392,7 @@ public class BeatboxWekinatorWrapper {
                     if (activeTarget == next) {
                         System.out.println("Found active instance to delete at index " + i);
                         activeInstances.delete(i);
-                        activeInstancesHash.remove(i);
+                        activeInstancesHash.remove(id);
                         activeExampleDeleted = true;
                     }
                 }
@@ -443,6 +456,10 @@ public class BeatboxWekinatorWrapper {
     public int classifyExampleWithoutHoldout(int id) {
         try {
             if (activeClassifier == null || !allInstancesHash.containsKey(id)) {
+                if (activeClassifier == null )
+                    System.out.println("Active null");
+                else
+                    System.out.println("No id " + id);
                 return -1;
             }
             Instance i = allInstancesHash.get(id);

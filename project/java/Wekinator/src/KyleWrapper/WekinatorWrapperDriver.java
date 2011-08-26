@@ -48,8 +48,8 @@ public class WekinatorWrapperDriver {
 
         try {
             // max # classes
-           // w = new BeatboxWekinatorWrapper(numFeats, 100);
-            w = BeatboxWekinatorWrapper.loadFromFile(new File("/Users/rebecca/tmp.wek"));
+            w = new BeatboxWekinatorWrapper(numFeats, 100);
+            //w = BeatboxWekinatorWrapper.loadFromFile(new File("/Users/rebecca/tmp.wek"));
         } catch (Exception ex) {
             Logger.getLogger(WekinatorWrapperDriver.class.getName()).log(Level.SEVERE, null, ex);
             return;
@@ -87,7 +87,7 @@ public class WekinatorWrapperDriver {
     private void testControlStuff() {
         try {
 
-          /*  currentSetToRecord = 0; //Put new examples in set 0 from now on
+            currentSetToRecord = 0; //Put new examples in set 0 from now on
             System.out.println("RECORD IN 2 SECONDS");
             Thread.sleep(2000);
             w.startRecordingExamples();
@@ -97,6 +97,32 @@ public class WekinatorWrapperDriver {
             w.stopRecordingExamples();
             System.out.println("*******RECORDING STOPPED");
 
+            Set<Integer> keys = exampleIDs.keySet();
+            int id1 = 0;
+            int id2 = 0;
+            for (Integer k : keys) {
+                if (id1 == 0)
+                    id1 = k;
+                else if (id2 == 0) {
+                    id2 = k;
+                    break;
+                }
+            }
+            System.out.println("Using ids " + id1 + "," + id2);
+            w.addTrainingExampleToActiveClassifier(id1, 0);
+            w.addTrainingExampleToActiveClassifier(id2, 0);
+
+            //Now delete:
+            System.out.println("Deleting id" + id1);
+            w.deleteTrainingExample(id1);
+            System.out.println("Deleting id " + id2);
+            w.deleteTrainingExample(id2);
+            System.out.println("ANything?");
+
+            exampleIDs.clear(); //TAKE THIS OUT LATER
+            id1 = 0;
+            id2 = 0;
+
             Thread.sleep(2000);
             currentSetToRecord = 1; //Put new examples in set 1
             System.out.println("*******RECORDING STARTED");
@@ -104,6 +130,21 @@ public class WekinatorWrapperDriver {
             Thread.sleep(500);
             System.out.println("*******RECORDING Stopped");
             w.stopRecordingExamples();
+
+            keys = exampleIDs.keySet();
+            for (Integer k : keys) {
+                if (id1 == 0)
+                    id1 = k;
+                else if (id2 == 0) {
+                    id2 = k;
+                    break;
+                }
+            }
+            System.out.println("Adding ids " + id1 + "," + id2);
+            w.addTrainingExampleToActiveClassifier(id1, 2);
+            w.addTrainingExampleToActiveClassifier(id2, 2);
+
+
 
             Thread.sleep(2000);
             currentSetToRecord = 2; //Put new examples in set 2
@@ -120,22 +161,9 @@ public class WekinatorWrapperDriver {
             int[] classIDs = {0, 1, 2}; //What class values will be associated with them?
 
             //Comment if only adding incrementally:
-            setSelectedExampleSetsAndClasses(setIDs, classIDs);
+         //   setSelectedExampleSetsAndClasses(setIDs, classIDs);
 
-            Set<Integer> keys = exampleIDs.keySet();
-            int id1 = 0;
-            int id2 = 0;
-            for (Integer k : keys) {
-                if (id1 == 0)
-                    id1 = k;
-                else if (id2 == 0) {
-                    id2 = k;
-                    break;
-                }
-            }
-            System.out.println("Using ids " + id1 + "," + id2);
-         //   w.addTrainingExampleToActiveClassifier(id1, 2);
-         //   w.addTrainingExampleToActiveClassifier(id2, 1);
+
 
             System.out.println("Classify without holdout: ");
             System.out.println(id1 + ": " + w.classifyExampleWithoutHoldout(id1));
@@ -149,12 +177,12 @@ public class WekinatorWrapperDriver {
             }
             System.out.println("");
 
-                        int[] tmp2 = w.getNearestNeighborClassesForInstance(id2);
+            int[] tmp2 = w.getNearestNeighborClassesForInstance(id2);
             System.out.print(id2 + ": ");
             for (int i = 0; i < tmp2.length; i++) {
                 System.out.print(tmp2[i] + " ");
             }
-            System.out.println(""); */
+            System.out.println(""); 
 
             //Run and classify with current configuration
             w.startRunning();
