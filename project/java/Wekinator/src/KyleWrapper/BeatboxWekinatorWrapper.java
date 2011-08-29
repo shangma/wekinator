@@ -273,6 +273,9 @@ public class BeatboxWekinatorWrapper {
             Instance n = instanceFilter.output();
                 activeClassifier.updateClassifier(n);
 
+              k = (int)Math.sqrt(activeInstances.numInstances());
+              activeClassifier.setKNN(k);
+
             } catch (Exception ex) {
                 System.out.println("Error adding training example to active classifier: Perhaps no classifier is active?");
                 System.out.println(ex);
