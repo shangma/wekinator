@@ -191,7 +191,7 @@ public class WekinatorWrapperDriver {
           //  w.saveWekinatorToFile(new File("/Users/rebecca/tmp.wek"));
            // System.out.println("Saved");
            // 
-            
+            w.disconnectOSC();
 
 
         }  catch (Exception ex) {

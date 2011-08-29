@@ -70,6 +70,17 @@ public class BeatboxWekinatorWrapper {
     OSCPortOut sender;
     public OSCPortIn receiver;
 
+
+    public void disconnectOSC() {
+        if (receiver != null) {
+            receiver.stopListening();
+            receiver.close(); //this line causes errors!!
+        }
+
+        if (sender != null) {
+            sender.close();
+        }
+    }
     
     /**
      * Add PropertyChangeListener.
