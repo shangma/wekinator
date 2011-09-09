@@ -256,11 +256,10 @@ public class BeatboxWekinatorWrapper {
 
               
               activeClassifier = new IBk();
+              activeClassifier.setDebug(true);
               activeClassifier.setCrossValidate(true);
 
-              k = 1;
-
-              //activeClassifier.setKNN(k);
+              activeClassifier.setKNN(1);
             try {
                 activeClassifier.buildClassifier(Filter.useFilter(activeInstances, instanceFilter));
             } catch (Exception ex) {
@@ -285,10 +284,10 @@ public class BeatboxWekinatorWrapper {
                     //ref.eq
                 instanceFilter.input(ref);
             Instance n = instanceFilter.output();
-                activeClassifier.updateClassifier(n);
+              activeClassifier.updateClassifier(n);
 
               k = (int)Math.sqrt(activeInstances.numInstances());
-             // activeClassifier.setKNN(k);
+              activeClassifier.setKNN(k);
 
             } catch (Exception ex) {
                 System.out.println("Error adding training example to active classifier: Perhaps no classifier is active?");
@@ -365,8 +364,7 @@ public class BeatboxWekinatorWrapper {
                         //Now retrain/rebuild
                         if (activeInstances.numInstances() > 0) {
                             k = (int)Math.sqrt(activeInstances.numInstances());
-                           // activeClassifier.setKNN(activeInstances.numInstances());
-                            //activeClassifier.setKNN(k);
+                            activeClassifier.setKNN(k);
                             activeClassifier.buildClassifier(Filter.useFilter(activeInstances, instanceFilter));
                             break;
                         } else {
@@ -421,8 +419,7 @@ public class BeatboxWekinatorWrapper {
             try {
                 if (activeInstances.numInstances() > 0) {
                     k = (int)Math.sqrt(activeInstances.numInstances());
-
-                   // activeClassifier.setKNN(k);
+                    activeClassifier.setKNN(k);
                     activeClassifier.buildClassifier(Filter.useFilter(activeInstances, instanceFilter));
                 } else {
                     activeClassifier = null;
@@ -450,6 +447,7 @@ public class BeatboxWekinatorWrapper {
         if (activeClassifier == null) {
             return -1;
         } else {
+            System.out.println("Num inst k is " + activeClassifier.getNumTraining());
             double[] featureVector = new double[features.length + 2];
             featureVector[0] = 0.0; // add dummy ID; will filter out later
             featureVector[featureVector.length - 1] = 0.0;
@@ -643,10 +641,10 @@ public class BeatboxWekinatorWrapper {
         }
 
         activeClassifier = new IBk();
+        activeClassifier.setDebug(true);
         k = (int)Math.sqrt(exampleList.length);
+        activeClassifier.setKNN(k);
         activeClassifier.setCrossValidate(true);
-
-       // activeClassifier.setKNN(k);
         try {
             activeClassifier.buildClassifier(Filter.useFilter(activeInstances, instanceFilter));
         } catch (Exception ex) {
