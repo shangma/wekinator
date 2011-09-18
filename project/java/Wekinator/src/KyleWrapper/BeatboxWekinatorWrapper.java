@@ -16,7 +16,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -31,7 +30,7 @@ import weka.core.Instance;
 import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Remove;
-import wekinator.util.SerializedFileUtil;
+import KyleWrapper.WekinatorBeatboxLogger.Msg;
 
 /**
  *
@@ -39,23 +38,20 @@ import wekinator.util.SerializedFileUtil;
  */
 //TODO: Run chuck FE from within here? Or elsewhere?
 //TODO: Do we want ability to undo the last delete? or past deletes?
-    // This would involve keeping a "trash" list of deleted examples, by ID, with features and order deleted. (and info about whether they were active)
+// This would involve keeping a "trash" list of deleted examples, by ID, with features and order deleted. (and info about whether they were active)
 //Assuming that nothing is listening for OSC parameter outputs -- only Kyle's code cares about current classification value
 public class BeatboxWekinatorWrapper {
 
     protected int numFeatures = 0;
     protected int maxNumClasses = 100;
     int k = 1; //# nearest neighbors
-
     protected Remove instanceFilter; //We take out ID feature in training & executing the classifier
     protected IBk activeClassifier;
-
     protected Instances allInstances; //the set of all examples, with ID and features; blank class values
     protected HashMap<Integer, Instance> allInstancesHash; //get reference to each Instance in allInstances by ID
     protected Instances activeInstances; //the set of active training examples used in the curret classifier; valid class values
     protected HashMap<Integer, Instance> activeInstancesHash; //get reference to Instance is activeInstances by ID
     protected Instances dummyInstances; //used for header information, to create new compatible Instances objects.
-
     protected RecordingState recordingState = RecordingState.NOT_RECORDING;
     protected RunningState runningState = RunningState.NOT_RUNNING;
     protected transient EventListenerList classificationListenerList = new EventListenerList(); //listening for new classification result notification
@@ -63,25 +59,29 @@ public class BeatboxWekinatorWrapper {
     public static String PROP_RECORDINGSTATE = "recordingState";
     public static String PROP_RUNNINGSTATE = "runningState";
     private transient PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-
-
     public int receivePort = 6448;
     public int sendPort = 6453;
     OSCPortOut sender;
     public OSCPortIn receiver;
 
-
+    //TODO: Kyle: Make sure you are calling this, because this also flushes & closes logger.
+    //If not, make sure to call WekinatorBeatboxLogger.close() somewhere else.
     public void disconnectOSC() {
-        if (receiver != null) {
-            receiver.stopListening();
-            receiver.close(); //this line causes errors!!
-        }
-
-        if (sender != null) {
-            sender.close();
+        try {
+            if (receiver != null) {
+                receiver.stopListening();
+                receiver.close(); //this line causes errors!!
+            }
+            if (sender != null) {
+                sender.close();
+            }
+            WekinatorBeatboxLogger.close();
+        } catch (IOException ex) {
+            System.out.println("Error: encountered exception trying to close log files");
+            Logger.getLogger(BeatboxWekinatorWrapper.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     /**
      * Add PropertyChangeListener.
      *
@@ -132,7 +132,6 @@ public class BeatboxWekinatorWrapper {
         o.writeInt(sendPort);
     }
 
-
     //Whether Wekinator should add incoming feature vectors to the training set
     public enum RecordingState {
 
@@ -148,9 +147,8 @@ public class BeatboxWekinatorWrapper {
     };
 
     protected BeatboxWekinatorWrapper() {
-
     }
-    
+
     public BeatboxWekinatorWrapper(int numFeatures, int maxClasses) throws Exception {
         this.numFeatures = numFeatures;
         this.maxNumClasses = maxClasses;
@@ -178,7 +176,7 @@ public class BeatboxWekinatorWrapper {
         dummyInstances = new Instances("dataset", ff, 0);
         dummyInstances.setClassIndex(dummyInstances.numAttributes() - 1);
 
-         //A filter to remove ID so it's not used in classification
+        //A filter to remove ID so it's not used in classification
         instanceFilter = new Remove();
         int[] indicesToRemove = new int[1];
         indicesToRemove[0] = 0; //id
@@ -193,14 +191,25 @@ public class BeatboxWekinatorWrapper {
         allInstancesHash = new HashMap<Integer, Instance>();
 
         activeClassifier = null; //null means "not trained," "not valid"
+
+        setupLogging();
+    }
+
+    //This method is called in BeatboxWekinatorWrapper public constructor and in loadFromFile. (Kyle, you don't need to call it)
+    //TODO: Kyle: Please test out logging when loading from a saved file, and make sure it works.
+    private void setupLogging() {
+        try {
+            WekinatorBeatboxLogger.setup("./", this);
+        } catch (IOException ex) {
+            Logger.getLogger(BeatboxWekinatorWrapper.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        WekinatorBeatboxLogger.startLogging();
+       // WekinatorBeatboxLogger.log(WekinatorBeatboxLogger.Msg.LOAD_FROM_FILE);
     }
 
     public int getNumFeatures() {
         return numFeatures;
     }
-
-    //public get
-
 
     //Don't use this method from outside class unless you're simulating Chuck FE sending this info to Wekinator directly.
     //This is called when OSC listener recevies a new feature vector, and Wekinator is in recording mode
@@ -217,27 +226,24 @@ public class BeatboxWekinatorWrapper {
 
         allInstancesHash.put(id, ref);
         newTrainingExampleRecorded(id);
+
+        WekinatorBeatboxLogger.logNewExampleWithFeatures(id, features);
     }
 
-    //Must all when new example is recorded into an "active" training set
+    //Must call when new example is recorded into an "active" training set
     //(example ID should already have been recorded when the new feature vector was received; this call makes it part of active classifier)
     public void addTrainingExampleToActiveClassifier(int exampleId, int classValue) throws Exception {
-        System.out.println("1: active null? " + (activeInstancesHash == null));
-                System.out.println("2: active empty? " + (activeInstancesHash.isEmpty()));
-
+        //System.out.println("1: active null? " + (activeInstancesHash == null));
+        //System.out.println("2: active empty? " + (activeInstancesHash.isEmpty()));
 
         if (activeInstancesHash != null) {
-
-            System.out.println("3: Contains key " + exampleId + "?" + (activeInstancesHash.containsKey(exampleId)));
+            // System.out.println("3: Contains key " + exampleId + "?" + (activeInstancesHash.containsKey(exampleId)));
         }
-       
 
         if (activeInstancesHash == null || activeInstancesHash.isEmpty()) {
-            
-
             //This is the first example we're adding
-              activeInstances = new Instances(dummyInstances, 10);
-              activeInstancesHash = new HashMap<Integer, Instance>();
+            activeInstances = new Instances(dummyInstances, 10);
+            activeInstancesHash = new HashMap<Integer, Instance>();
 
 
             Instance activeInstance = new Instance(allInstancesHash.get(exampleId));
@@ -247,27 +253,25 @@ public class BeatboxWekinatorWrapper {
             activeInstancesHash.put(exampleId, ref);
 
 
-              //OLD:
+            //OLD:
             //  Instance i = new Instance(allInstancesHash.get(exampleId));
             //  i.setClassValue(classValue);
             //  activeInstances.add(i);
-             // Instance ref = activeInstances.lastInstance();
-              //activeInstancesHash.put(exampleId, ref);
+            // Instance ref = activeInstances.lastInstance();
+            //activeInstancesHash.put(exampleId, ref);
 
-              
-              activeClassifier = new IBk();
-              activeClassifier.setDebug(true);
-              activeClassifier.setCrossValidate(true);
-
-              activeClassifier.setKNN(1);
+            activeClassifier = new IBk();
+            activeClassifier.setDebug(true);
+            activeClassifier.setCrossValidate(true);
+            activeClassifier.setKNN(1);
             try {
                 activeClassifier.buildClassifier(Filter.useFilter(activeInstances, instanceFilter));
             } catch (Exception ex) {
                 System.out.println("Error: Could not build classifier from examples!");
                 throw ex;
             }
-              
-        } else if(!activeInstancesHash.containsKey(exampleId)) {
+
+        } else if (!activeInstancesHash.containsKey(exampleId)) {
             if (!allInstancesHash.containsKey(exampleId)) {
                 System.out.println("ERROR: example " + exampleId + " is not in allInstancesHash");
                 return;
@@ -281,13 +285,13 @@ public class BeatboxWekinatorWrapper {
                 activeInstancesHash.put(exampleId, ref);
 
                 //kNN specific: (otherwise need to retrain)
-                    //ref.eq
+                //ref.eq
                 instanceFilter.input(ref);
-            Instance n = instanceFilter.output();
-              activeClassifier.updateClassifier(n);
+                Instance n = instanceFilter.output();
+                activeClassifier.updateClassifier(n);
 
-              k = (int)Math.sqrt(activeInstances.numInstances());
-              activeClassifier.setKNN(k);
+                k = (int) Math.sqrt(activeInstances.numInstances());
+                activeClassifier.setKNN(k);
 
             } catch (Exception ex) {
                 System.out.println("Error adding training example to active classifier: Perhaps no classifier is active?");
@@ -307,18 +311,21 @@ public class BeatboxWekinatorWrapper {
     }
 
     public void startRecordingExamples() throws Exception {
+        WekinatorBeatboxLogger.log(Msg.START_RECORDING_EXAMPLES_CALLED);
         if (recordingState == RecordingState.NOT_RECORDING) {
             setRecordingState(RecordingState.RECORDING);
         }
     }
 
     public void stopRecordingExamples() {
+        WekinatorBeatboxLogger.log(Msg.STOP_RECORDING_EXAMPLES_CALLED);
         if (recordingState == RecordingState.RECORDING) {
             setRecordingState(RecordingState.NOT_RECORDING);
         }
     }
 
     public void startRunning() {
+        WekinatorBeatboxLogger.log(Msg.START_RUNNING_CALLED);
         if (runningState != RunningState.RUNNING) {
             //Note: For now, this should be fine even if classifier is untrained / no data.
             setRunningState(RunningState.RUNNING);
@@ -326,17 +333,21 @@ public class BeatboxWekinatorWrapper {
     }
 
     public void stopRunning() {
+        WekinatorBeatboxLogger.log(Msg.STOP_RUNNING_CALLED);
         if (runningState == RunningState.RUNNING) {
             setRunningState(RunningState.NOT_RUNNING);
         }
     }
 
     public void deleteTrainingExample(int id) {
+        
         Instance target = allInstancesHash.get(id);
 
         if (target == null) {
             throw new IllegalArgumentException("Could not delete example with id=" + id + ": No such example exists.");
         }
+
+        WekinatorBeatboxLogger.log(Msg.DELETE_TRAINING_EXAMPLE_CALLED, "" + id);
 
         //Wish there were some way to directly do this, but no...
         for (int i = 0; i < allInstances.numInstances(); i++) {
@@ -360,11 +371,12 @@ public class BeatboxWekinatorWrapper {
                         System.out.println("Found active instance to delete at index " + i);
                         activeInstances.delete(i);
                         activeInstancesHash.remove(id);
-                       // activeInstancesHash.
+                        // activeInstancesHash.
                         //Now retrain/rebuild
                         if (activeInstances.numInstances() > 0) {
-                            k = (int)Math.sqrt(activeInstances.numInstances());
+                            k = (int) Math.sqrt(activeInstances.numInstances());
                             activeClassifier.setKNN(k);
+
                             activeClassifier.buildClassifier(Filter.useFilter(activeInstances, instanceFilter));
                             break;
                         } else {
@@ -380,6 +392,13 @@ public class BeatboxWekinatorWrapper {
     }
 
     public void deleteTrainingExamples(int[] ids) {
+        String s = "";
+        for (int i = 0; i < ids.length; i++) {
+            s += ids[i] + ",";
+        }
+        WekinatorBeatboxLogger.log(Msg.DELETE_TRAINING_EXAMPLES_CALLED, "" + s); // Might get rid of this, if summary printed properly after all deletion, called from Kyle's code
+
+
         boolean activeExampleDeleted = false;
         for (int j = 0; j < ids.length; j++) {
             int id = ids[j];
@@ -418,8 +437,9 @@ public class BeatboxWekinatorWrapper {
             //rebuild classifier
             try {
                 if (activeInstances.numInstances() > 0) {
-                    k = (int)Math.sqrt(activeInstances.numInstances());
+                    k = (int) Math.sqrt(activeInstances.numInstances());
                     activeClassifier.setKNN(k);
+
                     activeClassifier.buildClassifier(Filter.useFilter(activeInstances, instanceFilter));
                 } else {
                     activeClassifier = null;
@@ -433,18 +453,22 @@ public class BeatboxWekinatorWrapper {
     }
 
     public void deleteAllTrainingExamples() {
-       allInstancesHash = new HashMap<Integer, Instance>();
-       activeInstancesHash = new HashMap<Integer, Instance>();
-       allInstances = new Instances(dummyInstances);
-       activeInstances = new Instances(dummyInstances);
-       activeClassifier = null;
+        allInstancesHash = new HashMap<Integer, Instance>();
+        activeInstancesHash = new HashMap<Integer, Instance>();
+        allInstances = new Instances(dummyInstances);
+        activeInstances = new Instances(dummyInstances);
+        activeClassifier = null;
+        WekinatorBeatboxLogger.log(Msg.DELETE_ALL_EXAMPLES_CALLED);
     }
 
     // Returns class value based on how setSelectedExamplesAndClasses was last called, accomodating any add/delete examples in active sets
     // Returns -1 if there is no active classifier (e.g., because there are no training examples)
     //assumes features lacks ID, class; if not the case, we can easily change this
-    public int classifyExample(double[] features) {
+    //id only used here for logging
+    public int classifyExample(int id, double[] features) {
         if (activeClassifier == null) {
+            WekinatorBeatboxLogger.logExampleClassified(id, features, -1, -1);
+
             return -1;
         } else {
             System.out.println("Num inst k is " + activeClassifier.getNumTraining());
@@ -457,35 +481,37 @@ public class BeatboxWekinatorWrapper {
 
             try {
                 int r = (int) activeClassifier.classifyInstance(n);
-                System.out.println("Using k=" + activeClassifier.getKNN());
-
+                // System.out.println("Using k=" + activeClassifier.getKNN());
+                WekinatorBeatboxLogger.logExampleClassified(id, features, r, activeClassifier.getKNN());
                 return r;
             } catch (Exception ex) {
                 System.out.println("Error: Could not classify new instance");
                 System.out.println(ex);
+                WekinatorBeatboxLogger.logExampleClassified(id, features, -2, activeClassifier.getKNN());
                 return -2; //I can't think of why this would ever happen
             }
         }
     }
 
-
     //Classifies example with given id using entire training set (including itself)
     //Returns -1 if no active classifier or id is bad
+    //TODO: Kyle: This method isn't being logged right now. If it should be, let me know, or add logging yourself
     public int classifyExampleWithoutHoldout(int id) {
         try {
             if (activeClassifier == null || !allInstancesHash.containsKey(id)) {
-                if (activeClassifier == null )
+                if (activeClassifier == null) {
                     System.out.println("Active null");
-                else
+                } else {
                     System.out.println("No id " + id);
+                }
                 return -1;
             }
             Instance i = allInstancesHash.get(id);
             instanceFilter.input(i);
-            int r = (int)activeClassifier.classifyInstance(instanceFilter.output());
-            System.out.println("Using k=" + activeClassifier.getKNN());
+            int r = (int) activeClassifier.classifyInstance(instanceFilter.output());
+            //System.out.println("Using k=" + activeClassifier.getKNN());
 
-            return  r;
+            return r;
             //return c;
         } catch (Exception ex) {
             System.out.println("Error: Could not classify instance:" + ex.getMessage());
@@ -496,18 +522,19 @@ public class BeatboxWekinatorWrapper {
 
     //Returns new int[0] if no active classifier, or id is not in instances, or some other error happens
     // If id is in training set, it will be one of the nearest neighbors (i.e., you get one correct class for free)
-   public int[] getNearestNeighborClassesForInstance(int id) {
-       if (activeClassifier == null || !allInstancesHash.containsKey(id)) {
-           return new int[0];
-       }
-       instanceFilter.input(allInstancesHash.get(id));
-       Instance i = instanceFilter.output();
+    //TODO: Kyle: This method isn't being logged right now. If it should be, let me know, or add logging yourself
+    public int[] getNearestNeighborClassesForInstance(int id) {
+        if (activeClassifier == null || !allInstancesHash.containsKey(id)) {
+            return new int[0];
+        }
+        instanceFilter.input(allInstancesHash.get(id));
+        Instance i = instanceFilter.output();
         try {
             System.out.println("k is " + k + "/" + activeClassifier.getKNN() + "; numInst=" + activeInstances.numInstances());
             Instances nns = activeClassifier.getNearestNeighbourSearchAlgorithm().kNearestNeighbours(i, k);
             int[] cs = new int[nns.numInstances()];
             for (int j = 0; j < cs.length; j++) {
-                cs[j] = (int)nns.instance(j).classValue();
+                cs[j] = (int) nns.instance(j).classValue();
             }
             return cs;
             //activeClassifier.getNearestNeighbourSearchAlgorithm().getDistanceFunction()
@@ -517,7 +544,7 @@ public class BeatboxWekinatorWrapper {
             ex.printStackTrace();
             return new int[0];
         }
-   }
+    }
 
     public RecordingState getRecordingState() {
         return recordingState;
@@ -536,23 +563,32 @@ public class BeatboxWekinatorWrapper {
     protected void setRunningState(RunningState runningState) {
         RunningState oldState = this.runningState;
         this.runningState = runningState;
+
+        //TODO: Check that this prints reasonably
+        //We probably don't want this: DO want GUI actions of user (e.g. click on record button)
+        // WekinatorBeatboxLogger.log(WekinatorBeatboxLogger.Msg.RUNNING_STATE_CHANGE, runningState);
+
         propertyChangeSupport.firePropertyChange(PROP_RUNNINGSTATE, oldState, runningState);
+
     }
 
     public void saveWekinatorToFile(File f) throws Exception {
-       // SerializedFileUtil.writeToFile(f, this);
+        // SerializedFileUtil.writeToFile(f, this);
 
         FileOutputStream fout = new FileOutputStream(f);
         ObjectOutputStream o = new ObjectOutputStream(fout);
         writeToOutputStream(o);
         o.close();
         fout.close();
+
+        WekinatorBeatboxLogger.log(Msg.SAVED_TO_FILE);
+        WekinatorBeatboxLogger.close();
     }
 
     // Kyle: IMPORTANT: Does not save listeners in serialized object!
     // if you load from file, you code will have to re-add itself as a listener (property change, training add, classification result, etc.)
     public static BeatboxWekinatorWrapper loadFromFile(File f) throws Exception {
-       // BeatboxWekinatorWrapper w = (BeatboxWekinatorWrapper)SerializedFileUtil.readFromFile(f);
+        // BeatboxWekinatorWrapper w = (BeatboxWekinatorWrapper)SerializedFileUtil.readFromFile(f);
         FileInputStream fin = new FileInputStream(f);
         ObjectInputStream i = new ObjectInputStream(fin);
         BeatboxWekinatorWrapper w = loadFromInputStream(i);
@@ -571,18 +607,21 @@ public class BeatboxWekinatorWrapper {
         w.allInstancesHash = (HashMap<Integer, Instance>) i.readObject();
         w.dummyInstances = (Instances) i.readObject();
         w.instanceFilter = (Remove) i.readObject();
-        w.k = (int)i.readInt();
+        w.k = (int) i.readInt();
         w.maxNumClasses = i.readInt();
         w.numFeatures = i.readInt();
         w.receivePort = i.readInt();
         w.sendPort = i.readInt();
 
-       //OSC
+        //OSC
         w.addOscListeners();
+
+        //Add logging
+        w.setupLogging();
+        WekinatorBeatboxLogger.log(Msg.LOAD_FROM_FILE);
+
         return w;
     }
-
-
 
     public int[] getExampleIds() {
         Integer[] tmp = new Integer[0];
@@ -631,18 +670,18 @@ public class BeatboxWekinatorWrapper {
             activeClassifier = null;
             return;
         }
-        
+
         for (int i = 0; i < exampleList.length; i++) {
             Instance activeInstance = new Instance(allInstancesHash.get(exampleList[i]));
             activeInstances.add(activeInstance);
             Instance ref = activeInstances.lastInstance();
-            ref.setClassValue((double)classList[i]);
+            ref.setClassValue((double) classList[i]);
             activeInstancesHash.put(exampleList[i], ref);
         }
 
         activeClassifier = new IBk();
         activeClassifier.setDebug(true);
-        k = (int)Math.sqrt(exampleList.length);
+        k = (int) Math.sqrt(exampleList.length);
         activeClassifier.setKNN(k);
         activeClassifier.setCrossValidate(true);
         try {
@@ -651,6 +690,9 @@ public class BeatboxWekinatorWrapper {
             System.out.println("Error: Could not build classifier from examples!");
             throw ex;
         }
+
+        //TODO: Do we need this? Not if using logging summary function logPadSummary
+       // WekinatorBeatboxLogger.logSelectedExamplesAndClasses(exampleList, classList);
 
     }
 
@@ -670,17 +712,17 @@ public class BeatboxWekinatorWrapper {
         OSCListener listener = new OSCListener() {
 
             public void acceptMessage(java.util.Date time, OSCMessage message) {
-               Object[] o = message.getArguments();
+                Object[] o = message.getArguments();
                 Integer id = new Integer(0);
                 if (o[0] instanceof Integer) {
-                    id = (Integer)o[0];
+                    id = (Integer) o[0];
                 } else {
                     System.out.println("Warning: feature vector ID is not an integer");
                 }
                 double d[] = new double[o.length - 1];
-                for (int i = 0; i < o.length-1; i++) {
-                    if (o[i+1] instanceof Float) {
-                        d[i] = ((Float) o[i+1]).floatValue();
+                for (int i = 0; i < o.length - 1; i++) {
+                    if (o[i + 1] instanceof Float) {
+                        d[i] = ((Float) o[i + 1]).floatValue();
                     } else {
                         System.out.println("Warning: Received feature value is not a float");
                     }
@@ -691,7 +733,7 @@ public class BeatboxWekinatorWrapper {
                     //newTrainingExampleRecorded(id);
                 }
                 if (getRunningState() == RunningState.RUNNING) {
-                    newClassificationResult(id, classifyExample(d));
+                    newClassificationResult(id, classifyExample(id, d));
                 }
 
             }
