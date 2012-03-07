@@ -248,7 +248,7 @@ public class SimpleDataset {
                     throw new IllegalArgumentException("Invalid isParamDiscrete argument: Must be valid length when using discrete parameters");
                 }
                 //Create fastVector w/ possible
-                FastVector classes = new FastVector(numParams);
+                FastVector classes = new FastVector(numParamValues[i]);
                 for (int val = 0; val < numParamValues[i]; val++) {
                     classes.addElement((new Integer(val)).toString());
                 }
@@ -1084,7 +1084,7 @@ public class SimpleDataset {
     }
 
     void writeToFile(File file) throws Exception {
-                FileOutputStream fout = new FileOutputStream(file);
+        FileOutputStream fout = new FileOutputStream(file);
         ObjectOutputStream o = new ObjectOutputStream(fout);
         writeToOutputStreamNew(o);
         o.close();
