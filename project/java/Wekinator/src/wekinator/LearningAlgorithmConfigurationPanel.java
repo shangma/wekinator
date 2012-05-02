@@ -389,7 +389,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
         }
         if (l != null) {
             //Make sure it's the type we need
-            if (l instanceof ClassifierLearningAlgorithm || l instanceof HmmLearningAlgorithm) {
+            if ((!(l instanceof NNLearningAlgorithm)) && (l instanceof ClassifierLearningAlgorithm || l instanceof HmmLearningAlgorithm)) {
                 if (discrete) {
                     fileToLoadFrom = f;
 
@@ -399,6 +399,8 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
 
                 } else {
                     JOptionPane.showMessageDialog(this, "A discrete learning algorithm may only be loaded for a discrete parameter", "Could not load algorithm from file", JOptionPane.ERROR_MESSAGE);
+                    Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, "A discrete learning algorithm may only be loaded for a discrete parameter");
+
                 }
             } else if (l instanceof NNLearningAlgorithm) {
                 if (!discrete) {
@@ -409,9 +411,13 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
                     Util.setLastFile(LearningAlgorithm.getFileExtension(), f);
                 } else {
                     JOptionPane.showMessageDialog(this, "A real-valued learning algorithm may only be loaded for a real-valued parameter", "Could not load algorithm from file", JOptionPane.ERROR_MESSAGE);
+                    Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, "A real-valued learning algorithm may only be loaded for a real-valued parameter");
+
                 }
             } else {
                 JOptionPane.showMessageDialog(this, "The file does not contain a valid learning algorithm", "Could not load algorithm from file", JOptionPane.ERROR_MESSAGE);
+                Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, "The file does not contain a valid learning algorithm");
+
             }
         }
     }
