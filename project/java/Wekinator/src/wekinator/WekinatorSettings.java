@@ -25,8 +25,8 @@ import wekinator.util.Util;
  * @author Rebecca Fiebrink
  */
 public class WekinatorSettings {
-    protected HashMap<String, String> storedKeyValuePairs = null; //
 
+    protected HashMap<String, String> storedKeyValuePairs = null; //
     protected String defaultSettingsDirectory; //should be project/mySavedSettings
     protected String logFile = "wekinator.log";
     protected Level logLevel = Level.WARNING;
@@ -41,24 +41,34 @@ public class WekinatorSettings {
         if (t != null && t.getParentFile() != null && t.getParentFile().getParentFile() != null) {
 
 
-        File projectDir = (new File(currentDir)).getParentFile().getParentFile();
-       // String projectDirString[] = splitDirectorString(projectDir.getAbsolutePath());
+            File projectDir = (new File(currentDir)).getParentFile().getParentFile();
+            // String projectDirString[] = splitDirectorString(projectDir.getAbsolutePath());
 
-        //String projectDirString[] = projectDir.getAbsolutePath().split(File.);
-        if (projectDir.getName().equals("java")) {
+            //String projectDirString[] = projectDir.getAbsolutePath().split(File.);
+            if (projectDir.getName().equals("java")) {
 
-            //    projectDirString.length > 0 && projectDirString[projectDirString.length - 1].equals("java")) {
-            projectDir = projectDir.getParentFile();
-        }
-        defaultSettingsDirectory = Util.getCanonicalPath(projectDir) + File.separator + "mySavedSettings";
-        System.out.println("default dir is " + defaultSettingsDirectory);
+                //    projectDirString.length > 0 && projectDirString[projectDirString.length - 1].equals("java")) {
+                projectDir = projectDir.getParentFile();
+            }
+            defaultSettingsDirectory = Util.getCanonicalPath(projectDir) + File.separator + "mySavedSettings";
+            System.out.println("default dir is " + defaultSettingsDirectory);
 
-        
+            File f = new File(defaultSettingsDirectory);
+            if (! f.exists()) {
+                String s = "/Applications/Wekinator/mySavedSettings";
+                File f2 = new File(s);
+                if (f2.exists()) {
+                    defaultSettingsDirectory = s;
+                }
+                
+            }
+            
+            
         } else {
             defaultSettingsDirectory = Util.getCanonicalPath(new File(""));
         }
-        
-  }
+
+    }
 
     public String getDefaultSettingsDirectory() {
         return defaultSettingsDirectory;
@@ -91,7 +101,6 @@ public class WekinatorSettings {
         this.logLevel = logLevel;
         propertyChangeSupport.firePropertyChange(PROP_LOGLEVEL, oldLogLevel, logLevel);
     }
-
 
     /**
      * Add PropertyChangeListener.
@@ -129,7 +138,7 @@ public class WekinatorSettings {
         this.logFile = logFile;
     }
 
-     public void writeToFile(File f) throws IOException {
+    public void writeToFile(File f) throws IOException {
         FileOutputStream fout = new FileOutputStream(f);
         ObjectOutputStream out = new ObjectOutputStream(fout);
         this.writeToOutputStream(out);
@@ -154,9 +163,9 @@ public class WekinatorSettings {
 
     private static WekinatorSettings readFromIntputStream(ObjectInputStream in) throws IOException, ClassNotFoundException {
         WekinatorSettings ws = new WekinatorSettings();
-        ws.storedKeyValuePairs = (HashMap<String, String>)in.readObject();
-        ws.defaultSettingsDirectory = (String)in.readObject();
-        ws.setLogFile((String)in.readObject());
+        ws.storedKeyValuePairs = (HashMap<String, String>) in.readObject();
+        ws.defaultSettingsDirectory = (String) in.readObject();
+        ws.setLogFile((String) in.readObject());
         return ws;
     }
 }
