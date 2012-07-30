@@ -46,6 +46,8 @@ public class Plog {
     protected static boolean performanceMode = false;
     protected static long sessionID = 0;
     protected static String lastRunStartTime = "0";
+    protected static SimpleDateFormat dateFormatReadable = new SimpleDateFormat("MM/dd/yyyy-HH:mm:ss");
+
 
     private Plog() {
     }
@@ -240,6 +242,7 @@ public class Plog {
         }
         Date d = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+
         sessionID = Long.parseLong(dateFormat.format(d));
         filename = parentDir + File.separator + "log.txt";
         rfilename = parentDir + File.separator + "run.txt";
@@ -309,6 +312,11 @@ public class Plog {
 
     protected static String ts() {
         return Long.toString((new Date()).getTime());
+    }
+    
+    protected static String tsRead() {
+        return dateFormatReadable.format(new Date());
+    
     }
 
    public static void log(String ts, Msg which, String m) {
@@ -667,7 +675,8 @@ public class Plog {
         if (!performanceMode) {
 
             //Really want to log this in a file; 1 file per run round.
-            r.print(ts() + "," + runRound + "," + features.length + "," + params.length);
+            //used to be print ts()
+            r.print(tsRead() + "," + runRound + "," + features.length + "," + params.length);
             for (int j = 0; j < features.length; j++) {
                 r.print("," + features[j]);
             }
