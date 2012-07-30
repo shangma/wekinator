@@ -101,6 +101,15 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="menuItemViewParamClipboardActionPerformed"/>
               </Events>
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="menuItemViewLearningSystem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Learning system inspector"/>
+                <Property name="enabled" type="boolean" value="false"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="menuItemViewLearningSystemActionPerformed"/>
+              </Events>
+            </MenuItem>
           </SubComponents>
         </Menu>
         <Menu class="javax.swing.JMenu" name="actionMenu">
@@ -306,7 +315,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="1" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jTabbedPane1" min="-2" pref="818" max="32767" attributes="0"/>
+                              <Component id="jTabbedPane1" min="-2" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -404,7 +413,7 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" alignment="1" attributes="0">
                                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace pref="181" max="32767" attributes="0"/>
+                                      <EmptySpace pref="204" max="32767" attributes="0"/>
                                       <Group type="103" groupAlignment="3" attributes="0">
                                           <Component id="buttonOscConnect" alignment="3" min="-2" max="-2" attributes="0"/>
                                           <Component id="buttonOscDisconnect" alignment="3" min="-2" max="-2" attributes="0"/>

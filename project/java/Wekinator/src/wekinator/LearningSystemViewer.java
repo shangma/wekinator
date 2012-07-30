@@ -56,16 +56,17 @@ public class LearningSystemViewer extends javax.swing.JPanel {
             };
             listFeatures.setModel(m);
             int numInstances = d.getNumDatapoints();
-            double dtime = d.getTimestamp(numInstances -1);
+          /*  double dtime = d.getTimestamp(numInstances -1);
 
             String ds = "" + (int)dtime;
 
             while (ds.length() < 9) {
                 ds = "0" + ds;
-            }
-            Date date = SimpleDataset.dateFormat.parse(ds);
+            } 
+            Date date = SimpleDataset.dateFormat.parse(ds); */
             SimpleDateFormat prettyDateFormat = new SimpleDateFormat("MM/dd/yyyy 'at' HH:mm:ss");
-            labelSummary.setText("Dataset contains " + numInstances + " examples. Modified " + prettyDateFormat.format(date));
+            labelSummary.setText("Dataset contains " + numInstances + " examples.");
+            //took out Modified " + prettyDateFormat.format(date)
 
 
         } else {
@@ -91,7 +92,7 @@ public class LearningSystemViewer extends javax.swing.JPanel {
         JFrame frame = new JFrame();
         //frame.setPreferredSize(new Dimension(478, 532));
         frame.setSize(new Dimension(478, 532));
-                FileChooserWithExtension fc = new FileChooserWithExtension("wlsys", "Learning system", null, new File("/Users/rebecca/work/projects/wekinator/project/mySavedSettings/learningSystems"), false);
+                FileChooserWithExtension fc = new FileChooserWithExtension("wlsys", "Learning system", null, new File("/Users/fiebrink/work/projects/wekinator/project/mySavedSettings/learningSystems"), false);
         int returnVal = fc.showOpenDialog(frame);
         File file = null;
         if (returnVal == FileChooserWithExtension.APPROVE_OPTION) {

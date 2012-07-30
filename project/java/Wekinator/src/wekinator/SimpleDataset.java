@@ -788,7 +788,6 @@ public class SimpleDataset {
          * */
     }
 
-    //Deprecated! TODO: remove
     public boolean isFeatureActiveForParameter(int featNum, int paramNum) {
         /* if (featNum < 0 || featNum >= numFeatures || paramNum < 0 || paramNum >= numParams) {
         System.out.println("Error: invalid featNum / paramNum");
@@ -796,7 +795,14 @@ public class SimpleDataset {
         }
 
         return featureParamMask[featNum][paramNum]; */
-        return true;
+        int[] map = featureLearnerConfiguration.getFeatureMappingForLearner(paramNum);
+        for (int i = 0; i < map.length; i++) {
+            if (map[i] == featNum)
+                return true;
+        }
+        return false;
+        
+        //return true;
     }
 
     public void setFeatureName(int featureNum, String name) {
