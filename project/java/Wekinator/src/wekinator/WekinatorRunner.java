@@ -29,7 +29,7 @@ public class WekinatorRunner {
     protected static boolean connectAutomatically = false;
     protected static boolean minimizeOnRun = false;
     
-    protected static boolean isLogging = false; //Can change default here and recompile
+    protected static boolean isLogging = false; //Can change default here and recompile //Set true for winnie
     protected static boolean isPlork = false;
     protected static boolean isKbow = false;
 
@@ -302,7 +302,7 @@ public class WekinatorRunner {
             java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 MainGUI b = new MainGUI();
-                b.setVisible(true);
+                b.setVisible(true); //set false for Winnie
             }
         });
 
