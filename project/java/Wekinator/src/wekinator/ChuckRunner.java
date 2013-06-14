@@ -11,6 +11,9 @@
  *  Ultimately display in console.
  *
  * */
+
+//This is a change.
+
 package wekinator;
 
 import java.beans.PropertyChangeListener;
@@ -54,7 +57,7 @@ public class ChuckRunner {
     private ChuckRunner() {
         //  isWindows = ;
     }
-
+    
     public enum ChuckRunnerState {
 
         NOT_RUNNING,
