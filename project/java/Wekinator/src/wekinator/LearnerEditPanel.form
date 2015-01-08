@@ -128,24 +128,18 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="labelLearnerDescription">
                   <Properties>
-                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <PlainString value="Using kNN, 3 features"/>
-                    </Property>
+                    <Property name="text" type="java.lang.String" value="Using kNN, 3 features" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JButton" name="jButton15">
                   <Properties>
-                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <PlainString value="Change model type or load..."/>
-                    </Property>
+                    <Property name="text" type="java.lang.String" value="Change model type or load..." noResource="true"/>
                     <Property name="enabled" type="boolean" value="false"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JButton" name="buttonRetrain">
                   <Properties>
-                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <PlainString value="Apply these settings"/>
-                    </Property>
+                    <Property name="text" type="java.lang.String" value="Apply these settings" noResource="true"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonRetrainActionPerformed"/>
@@ -153,9 +147,7 @@
                 </Component>
                 <Component class="javax.swing.JButton" name="buttonSaveLearner">
                   <Properties>
-                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <PlainString value="Save learner..."/>
-                    </Property>
+                    <Property name="text" type="java.lang.String" value="Save learner..." noResource="true"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonSaveLearnerActionPerformed"/>
@@ -163,9 +155,7 @@
                 </Component>
                 <Component class="javax.swing.JButton" name="jButton1">
                   <Properties>
-                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <PlainString value="Undo changes"/>
-                    </Property>
+                    <Property name="text" type="java.lang.String" value="Undo changes" noResource="true"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
@@ -173,9 +163,7 @@
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="checkNNGui">
                   <Properties>
-                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <PlainString value="View NN GUIs"/>
-                    </Property>
+                    <Property name="text" type="java.lang.String" value="View NN GUIs" noResource="true"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="checkNNGuiActionPerformed"/>
@@ -191,16 +179,12 @@
                 </Container>
                 <Component class="javax.swing.JLabel" name="labelTrainingStatus">
                   <Properties>
-                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <PlainString value="jLabel1"/>
-                    </Property>
+                    <Property name="text" type="java.lang.String" value="jLabel1" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JButton" name="buttonSaveLearner1">
                   <Properties>
-                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <PlainString value="Export classifier..."/>
-                    </Property>
+                    <Property name="text" type="java.lang.String" value="Export classifier..." noResource="true"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonSaveLearner1ActionPerformed"/>

@@ -517,13 +517,9 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="radioUseCurrent" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="labelLearnerStatus" min="-2" max="-2" attributes="1"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="27" pref="27" max="27" attributes="0"/>
-                      <Component id="buttonLoadFile" min="-2" max="-2" attributes="0"/>
+                      <Component id="labelLearnerStatus" min="-2" pref="143" max="-2" attributes="1"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="buttonLoadedFeatures" min="-2" max="-2" attributes="0"/>
+                      <Component id="jButton1" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="radioUseFile" min="-2" max="-2" attributes="0"/>
@@ -535,14 +531,23 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="comboSelectClassifier" min="-2" pref="164" max="-2" attributes="1"/>
                   </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="27" pref="27" max="27" attributes="0"/>
-                      <Component id="labelFeatures" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="buttonFeatures" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <EmptySpace min="27" pref="27" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="buttonLoadFile" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="buttonLoadedFeatures" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="labelFeatures" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="buttonFeatures" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
                   </Group>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace pref="53" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -556,8 +561,9 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="radioUseCurrent" alignment="3" min="-2" max="-2" attributes="1"/>
                   <Component id="labelLearnerStatus" alignment="3" max="32767" attributes="1"/>
+                  <Component id="jButton1" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="radioUseFile" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="labelFile" alignment="3" min="-2" pref="24" max="-2" attributes="0"/>
@@ -673,7 +679,7 @@
     </Component>
     <Component class="javax.swing.JButton" name="buttonFeatures">
       <Properties>
-        <Property name="text" type="java.lang.String" value="View &amp; choose features..."/>
+        <Property name="text" type="java.lang.String" value="Choose features..."/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonFeaturesActionPerformed"/>
@@ -695,6 +701,14 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonLoadedFeaturesActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="jButton1">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="View features"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

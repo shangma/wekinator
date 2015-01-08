@@ -357,17 +357,21 @@ public class LearnerEditPanel extends javax.swing.JPanel {
         //TODO: display warning popup
         Logger.getLogger(LearnerEditPanel.class.getName()).log(Level.SEVERE, null, ex);
         } */
-        File file = Util.findSaveFile(LearningAlgorithm.getFileExtension(),
-                LearningAlgorithm.getFileTypeDescription(),
-                LearningAlgorithm.getDefaultLocation(),
+        File file = Util.findSaveFile(Util.getModelFileExtension(),
+                Util.getModelFileTypeDescription(),
+                Util.getModelDefaultLocation(),
                 this);
         if (file != null) {
             try {
-                al.writeToFile(file); //TODOTODOTODO: update last path on this.
+               /* al.writeToFile(file); //TODOTODOTODO: update last path on this.
                 Util.setLastFile(LearningAlgorithm.getFileExtension(), file);
                 if (WekinatorRunner.isLogging()) {
                     Plog.log(Msg.LEARNING_ALGORITHM_SAVED, file.getAbsolutePath() + "/" + file.getName());
-                }
+                } */
+                Util.setLastFile(Util.getModelFileExtension(), file);
+                ls.saveSingleModel(paramNum, file);
+                
+                
             } catch (Exception ex) {
                 Logger.getLogger(LearnerEditPanel.class.getName()).log(Level.INFO, null, ex);
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Could not save to file", JOptionPane.ERROR_MESSAGE);

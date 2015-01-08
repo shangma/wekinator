@@ -12,8 +12,11 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,7 +27,9 @@ import javax.swing.event.EventListenerList;
 import org.jdesktop.swingworker.SwingWorker;
 import weka.core.Instance;
 import weka.core.Instances;
+import weka.core.converters.ArffSaver;
 import wekinator.Plog.Msg;
+import static wekinator.Plog.sessionID;
 import wekinator.util.SerializedFileUtil;
 
 /**
@@ -368,6 +373,67 @@ public class LearningSystem {
         this.isTrainable = isTrainable;
         propertyChangeSupport.firePropertyChange(PROP_ISTRAINABLE, oldIsTrainable, isTrainable);
     }
+
+    void saveSingleModel(int paramNum, File file) {
+        /* WRITE TO FILE:
+        Param name
+        Date
+        Type
+        NumFeatures
+        Feature names
+        All data rows w/ relevant features: As arff
+        TODO: Learning algorithm as serialized
+        */
+        
+        Date d = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy-HH:mm:ss");
+
+        String date = dateFormat.format(d);
+        FileWriter fw;
+        try {
+            fw = new FileWriter(file);
+            PrintWriter pw = new PrintWriter(fw);
+            pw.println(dataset.getParameterName(paramNum));
+            pw.println(date);
+            pw.println(dataset.isParameterDiscrete(paramNum));
+            if (dataset.isParameterDiscrete(paramNum)) {
+                pw.println(dataset.numParamValues[paramNum]);
+            }
+            FeatureLearnerConfiguration flc = dataset.getFeatureLearnerConfiguration();
+            int[] feats = flc.getFeatureMappingForLearner(paramNum);
+            pw.println(feats.length);
+            for (int i = 0; i < feats.length; i++) {
+                pw.println(dataset.getFeatureName(feats[i]));
+            }
+            
+            pw.flush();
+            pw.close();
+            fw.close();
+            
+            
+            //Save all relevant data as ARFF
+            //Possibly might want to hang onto time stamp for each of these...
+            String arffFile = file.getAbsolutePath() + ".arff";
+            Instances iis = dataset.getClassifiableInstances(paramNum);
+            ArffSaver saver = new ArffSaver();
+            saver.setInstances(iis);
+            saver.setFile(new File(arffFile));
+            saver.writeBatch();
+            
+            //Save learner as serialized
+            learners[paramNum].writeToFile(new File(file.getAbsolutePath()+".wla"));
+        } catch (IOException ex) {
+            Logger.getLogger(LearningSystem.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            Logger.getLogger(LearningSystem.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+        
+    
+    }
+
+
 
 
     /*   public enum LearningAlgorithmsInitializationState {

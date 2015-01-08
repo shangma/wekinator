@@ -31,6 +31,8 @@ import wekinator.util.*;
  * @author rebecca
  */
 public class WekinatorInstance {
+
+
     protected EventListenerList listenerList = new EventListenerList();
     protected ChuckConfiguration configuration = null;
     private WekinatorSettings settings = null;

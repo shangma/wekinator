@@ -12,6 +12,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import wekinator.util.*;
 
 /**
@@ -278,15 +280,31 @@ public class ChuckConfiguration {
         String coreString = wekDir + File.separator + "chuck" + File.separator + "core_chuck" + File.separator; //TODO: make work for windows
         File f2 = new File(coreString);
 
+        
+        Logger.getLogger(ChuckConfiguration.class.getName()).log(Level.SEVERE, "Project directory is " + f.getAbsolutePath());
+
         // if (!s.equals("wekinator") && !s.equals("project"))
         //File wekDirFile = new File(wekDir);
         if (!f.exists() || !f.isDirectory()) {
-            errorString += "Wekinator project directory does not exist or is not a directory\n";
+            
+            f2 = new File(File.separator + "Applications" + File.separator + "Wekinator" + File.separator);
+            Logger.getLogger(ChuckConfiguration.class.getName()).log(Level.SEVERE, "Trying new project directory " + f2.getAbsolutePath());
+
+            if (!f2.exists() || !f2.isDirectory()) {
+                errorString += "Wekinator project directory " + f.getAbsolutePath() + " does not exist or is not a directory\n";
+                errorString += "backup project directory " + f2.getAbsolutePath() + " does not exist or is not a directory\n";
+
+            } else {
+                f = new File(File.separator + "Applications" + File.separator + "Wekinator" + File.separator);
+            }   
         } else if (! WekinatorRunner.isLaunchedOsxApp() && (!f.exists() || !f.getName().equals("project"))) {
             errorString += "Wekinator project directory must refer to a directory called \"project/\"\n";
         } else if (! WekinatorRunner.isLaunchedOsxApp() && (!f2.exists() || !f2.isDirectory())) {
             errorString += "Wekinator project directory must be inside the wekinator directory that you downloaded, containing subdirectories chuck, java, etc.\n";
         }
+        
+        
+        
 
         //Check for legal chuck executable
         f = new File(chuckExecutable);

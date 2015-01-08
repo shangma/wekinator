@@ -10,18 +10,15 @@
  */
 package wekinator;
 
-import javax.swing.event.ChangeEvent;
-import wekinator.LearningAlgorithms.NNLearningAlgorithm;
-import wekinator.LearningAlgorithms.ClassifierLearningAlgorithm;
-import wekinator.LearningAlgorithms.AdaboostM1LearningAlgorithm;
-import wekinator.LearningAlgorithms.J48LearningAlgorithm;
-import wekinator.LearningAlgorithms.IbkLearningAlgorithm;
-import wekinator.LearningAlgorithms.LearningAlgorithm;
-import wekinator.LearningAlgorithms.SMOLearningAlgorithm;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.OptionalDataException;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ButtonModel;
@@ -30,8 +27,19 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import weka.core.Instance;
+import weka.core.Instances;
+import weka.core.converters.ArffLoader.ArffReader;
+import wekinator.LearningAlgorithms.AdaboostM1LearningAlgorithm;
+import wekinator.LearningAlgorithms.ClassifierLearningAlgorithm;
 import wekinator.LearningAlgorithms.HmmLearningAlgorithm;
+import wekinator.LearningAlgorithms.IbkLearningAlgorithm;
+import wekinator.LearningAlgorithms.J48LearningAlgorithm;
+import wekinator.LearningAlgorithms.LearningAlgorithm;
+import wekinator.LearningAlgorithms.NNLearningAlgorithm;
+import wekinator.LearningAlgorithms.SMOLearningAlgorithm;
 import wekinator.Plog.Msg;
 import wekinator.util.Util;
 
@@ -53,8 +61,13 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
     protected File fileToLoadFrom = null;
     protected boolean hasUsableLoadedFile = false;
     protected int[] myFeatureMapping = null;
+    protected int[] featureIndices = null;
+    protected LearningAlgorithm laFromModelFile = null;
+    protected Instances dataFromModelFile = null;
+    protected boolean hasValidModelFileSetup = false;
+    
     protected ChangeListener featureNamesListener = new ChangeListener() {
-
+        
         public void stateChanged(ChangeEvent e) {
             featureNamesChanged();
         }
@@ -66,7 +79,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
 
     public void setHasUsableLoadedFile(boolean hasUsableLoadedFile) {
         if (!this.hasUsableLoadedFile && hasUsableLoadedFile) {
-            checkDisabled.setSelected(true);
+           // checkDisabled.setSelected(true);
         }
 
         this.hasUsableLoadedFile = hasUsableLoadedFile;
@@ -115,34 +128,34 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
     public int[] getFeatureMapping() {
         return myFeatureMapping;
 
-    /* ButtonModel bb = buttonGroup1.getSelection();
-    if (radioUseNew.isSelected()) { //false here??
+        /* ButtonModel bb = buttonGroup1.getSelection();
+         if (radioUseNew.isSelected()) { //false here??
 
-    if (featureSelected == null) {
-    System.out.println("Should not be null here - fix this");
-    return null;
-    } else {
-    int numSelected = 0;
-    for (int i = 0; i < featureSelected.length; i++) {
-    if (featureSelected[i]) {
-    numSelected++;
-    }
-    }
-    int mapping[] = new int[numSelected];
-    int n = 0;
-    for (int i = 0; i < featureSelected.length; i++) {
-    if (featureSelected[i]) {
-    mapping[n++] = i;
-    }
-    }
-    return mapping;
-    }
+         if (featureSelected == null) {
+         System.out.println("Should not be null here - fix this");
+         return null;
+         } else {
+         int numSelected = 0;
+         for (int i = 0; i < featureSelected.length; i++) {
+         if (featureSelected[i]) {
+         numSelected++;
+         }
+         }
+         int mapping[] = new int[numSelected];
+         int n = 0;
+         for (int i = 0; i < featureSelected.length; i++) {
+         if (featureSelected[i]) {
+         mapping[n++] = i;
+         }
+         }
+         return mapping;
+         }
 
-    } else if (radioUseFile.isSelected()) {
-    return loadedFeatureMapping;
-    } else {
-    return null; //TODO: Handle more gracefully.
-    } */
+         } else if (radioUseFile.isSelected()) {
+         return loadedFeatureMapping;
+         } else {
+         return null; //TODO: Handle more gracefully.
+         } */
     }
 
     /**
@@ -238,17 +251,19 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
         setParamNameLabel();
     }
 
-    /** Creates new form LearningAlgorithmConfigurationPanel */
+    /**
+     * Creates new form LearningAlgorithmConfigurationPanel
+     */
     public LearningAlgorithmConfigurationPanel() {
         initComponents();
-    /*
-    setLoadedAlgorithmInfo();
-    setParamName(paramName);
-    setDiscrete(discrete);
-    setLoadedAlgorithmInfo();
-    setCurrentLearningAlgorithm(currentLearningAlgorithm); */
+        /*
+         setLoadedAlgorithmInfo();
+         setParamName(paramName);
+         setDiscrete(discrete);
+         setLoadedAlgorithmInfo();
+         setCurrentLearningAlgorithm(currentLearningAlgorithm); */
     //Construct w/ some defaults:
-    // this(0, "Param_0", true, null);
+        // this(0, "Param_0", true, null);
     }
 
     public LearningAlgorithmConfigurationPanel(int paramNum,
@@ -296,7 +311,6 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
         if (newfc != null) {
             featureConfiguration.addFeatureNamesChangeListener(featureNamesListener);
         }
-
 
     }
 
@@ -359,67 +373,289 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
     }
 
     private void loadLearnerFromNewFile() {
-        /* File f = chooseLoadFile();
-        if (f != null) {
-        loadLearnerFromFile(f);
-        } */
-        File file = Util.findLoadFile(LearningAlgorithm.getFileExtension(),
-                LearningAlgorithm.getFileTypeDescription(),
-                LearningAlgorithm.getDefaultLocation(),
+        /* Old verson htat worked for l.a. only:
+         File file = Util.findLoadFile(LearningAlgorithm.getFileExtension(),
+         LearningAlgorithm.getFileTypeDescription(),
+         LearningAlgorithm.getDefaultLocation(),
+         this);
+         if (file != null) {
+         loadLearnerFromFile(file);
+         }*/
+        File file = Util.findLoadFile(Util.getModelFileExtension(),
+                Util.getModelFileTypeDescription(),
+                Util.getModelDefaultLocation(),
                 this);
         if (file != null) {
             loadLearnerFromFile(file);
         }
+
     }
 
+    public void setFeatureIndices(int[] indices) {
+        //hasValidModelFileSetup = true;
+        setHasUsableLoadedFile(true);
+        buttonGroup1.setSelected(radioUseFile.getModel(), true);
+        featureIndices = new int[indices.length];
+        System.arraycopy(indices, 0, featureIndices, 0, indices.length);
+    }
+    
+    private void finishLoadingModel() {
+        SimpleDataset dataset = WekinatorInstance.getWekinatorInstance().getLearningSystem().getDataset();
+        //TODO: Call this AFTER simpleDataset is loaded -- i.e., after OK button is hit.
+        dataset.startNewTrainingRound();
+
+        //Remove all previous examples for this parameter
+        //TODO: Should we prompt the user for this?
+        for (int i = 0; i < dataset.getNumDatapoints(); i++) {
+            dataset.setParameterMissing(i, paramNum);
+        }
+
+        //Now add the new data
+        //TODO: Adjust new feature parameter mask based on loaded file!
+        for (int i = 0; i < dataFromModelFile.numInstances(); i++) {
+            double[] features = new double[dataset.numFeatures];
+            for (int j = 0; j < dataFromModelFile.numAttributes() - 1; j++) {
+                //features[j] = newData.instance(i).value(j);
+                features[featureIndices[j]] = dataFromModelFile.instance(i).value(j);
+            }
+            double[] params = new double[dataset.numParams];
+            params[paramNum] = dataFromModelFile.instance(i).value(dataFromModelFile.numAttributes() - 1);
+            boolean[] paramMask = new boolean[dataset.numParams];
+            paramMask[paramNum] = true;
+            dataset.addInstance(features, params, paramMask, new Date());
+        }
+        
+        //Set feature mapping
+        loadedFeatureMapping = new int[featureIndices.length];
+        System.arraycopy(featureIndices, 0, loadedFeatureMapping, 0, featureIndices.length); //TODO: CHECK
+
+        if (laFromModelFile != null) {
+            //Make sure it's the type we need
+            //TODO: DO this check before prompting for feature matching
+            if ((!(laFromModelFile instanceof NNLearningAlgorithm)) && (laFromModelFile instanceof ClassifierLearningAlgorithm || laFromModelFile instanceof HmmLearningAlgorithm)) {
+                if (discrete) {
+                    //fileToLoadFrom = laFile;
+                    setLoadedLearningAlgorithm(laFromModelFile);
+                    setHasUsableLoadedFile(true);
+                    // Util.setLastFile(LearningAlgorithm.getFileExtension(), f);
+
+                } else {
+                    JOptionPane.showMessageDialog(this, "A discrete learning algorithm may only be loaded for a discrete parameter", "Could not load algorithm from file", JOptionPane.ERROR_MESSAGE);
+                    Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, "A discrete learning algorithm may only be loaded for a discrete parameter");
+                }
+            } else if (laFromModelFile instanceof NNLearningAlgorithm) {
+                if (!discrete) {
+                    //fileToLoadFrom = laFile;
+                    setLoadedLearningAlgorithm(laFromModelFile);
+                    setHasUsableLoadedFile(true);
+                    //Util.setLastFile(LearningAlgorithm.getFileExtension(), f);
+                } else {
+                    JOptionPane.showMessageDialog(this, "A real-valued learning algorithm may only be loaded for a real-valued parameter", "Could not load algorithm from file", JOptionPane.ERROR_MESSAGE);
+                    Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, "A real-valued learning algorithm may only be loaded for a real-valued parameter");
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "The file does not contain a valid learning algorithm", "Could not load algorithm from file", JOptionPane.ERROR_MESSAGE);
+                Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, "The file does not contain a valid learning algorithm");
+            }
+        }
+    }
+    
     private void loadLearnerFromFile(File f) {
-        LearningAlgorithm l = null;
+        hasValidModelFileSetup = false;
+        FileReader fileReader;
+
+        //TODO: Put this all in LearningAlgorithm java, not here!
+        boolean isDiscrete = false;
+        int numClasses = 0;
+        BufferedReader br;
+        boolean isErr = false;
+        int numFeatures = 0;
+        String[] featNames = null;
         try {
-            l = LearningAlgorithm.readFromFile(f);
-        //   l = (LearningAlgorithm) SerializedFileUtil.readFromFile(f);
+            fileReader = new FileReader(f);
+            br = new BufferedReader(fileReader);
+            String line;
+            String modelName = br.readLine();
+            String dateStamp = br.readLine();
+            String isDiscreteStr = br.readLine();
+            isDiscrete = isDiscreteStr.equals("true");
+            if (isDiscrete) {
+                numClasses = Integer.parseInt(br.readLine());
+            }
+            numFeatures = Integer.parseInt(br.readLine());
+            featNames = new String[numFeatures];
+            for (int i = 0; i < numFeatures; i++) {
+                featNames[i] = br.readLine();
+            }
+            fileReader.close();
+        } catch (FileNotFoundException ex) {
+            isErr = true;
+            //TODO: alert box
+            Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Could not load model from file", JOptionPane.ERROR_MESSAGE);
+
+        } catch (IOException ex) {
+            //TODO: alert box
+            isErr = true;
+            Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Could not load model from file", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            isErr = true;
+            Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Could not load model from file", JOptionPane.ERROR_MESSAGE);
+        
+        }
+
+        //Check that we're OK:
+        //TODO: Error alert boxes, and graceful exit
+        if (isDiscrete != discrete) {
+            if (isDiscrete) {
+                System.out.println("Error: Cannot load discrete model into continuous parameter");
+                isErr = true;
+                JOptionPane.showMessageDialog(this, "Cannot load discrete model into continuous parameter", "Error", JOptionPane.ERROR_MESSAGE);
+
+                //TODO: Check that this doesn't make UI look weird
+            } else {
+                System.out.println("Error: Cannot load continuous model into discrete parameter");
+                isErr = true;
+                JOptionPane.showMessageDialog(this, "Cannot load continuous model into discrete parameter", "Error", JOptionPane.ERROR_MESSAGE);
+
+            }
+        }
+        if (discrete && !isErr) {
+            if (numClasses != (SynthProxy.paramMaxValues()[paramNum] + 1)) {
+                String errString = "Error: Expected model with "
+                        + (SynthProxy.paramMaxValues()[paramNum] + 1) + " classes, "
+                        + "attempting to load model with " + numClasses + " classes.";
+                isErr = true;
+                JOptionPane.showMessageDialog(this, errString, "Error", JOptionPane.ERROR_MESSAGE);
+
+            }
+        }
+        if (numFeatures > WekinatorInstance.getWekinatorInstance().getFeatureConfiguration().getNumFeaturesEnabled()) {
+            String errString = "Error: The model in this file has " + numFeatures + " features, so Wekinator needs to"
+                    + " have at least that many";
+            isErr = true;
+            JOptionPane.showMessageDialog(this, errString, "Error", JOptionPane.ERROR_MESSAGE);
+
+        }
+
+        if (isErr) {
+            return;
+        }
+
+        String arffName = f.getAbsolutePath() + ".arff";
+        String wlaName = f.getAbsolutePath() + ".wla";
+        Instances newData = null;
+
+        try {
+
+            BufferedReader reader = new BufferedReader(new FileReader(arffName));
+            ArffReader arff = new ArffReader(reader);
+            newData = arff.getData();
+
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "File " + arffName + " not found", "Error", JOptionPane.ERROR_MESSAGE);
+            isErr = true;
+        } catch (IOException ex) {
+            Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "Could not load instances from " + arffName, "Error", JOptionPane.ERROR_MESSAGE);
+            isErr = true;
+        }
+        
+        if (isErr) {
+            return;
+        }
+
+        LearningAlgorithm l = null;
+        File laFile = new File(wlaName);
+        try {
+            l = LearningAlgorithm.readFromFile(laFile);
+            if (l == null) {
+                isErr = true;
+                System.out.println("Error: Learning system cannot be read from file " + laFile.getAbsolutePath());
+                JOptionPane.showMessageDialog(this, "Learning system cannot be read from file " + laFile.getAbsolutePath(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            //   l = (LearningAlgorithm) SerializedFileUtil.readFromFile(f);
         } catch (OptionalDataException ex) {
             Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
             JOptionPane.showMessageDialog(this, "Invalid learning algorithm file", "Could not load algorithm from file", JOptionPane.ERROR_MESSAGE);
+            isErr = true;
 
         } catch (Exception ex) {
             //Show warning box.
             Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Could not load algorithm from file", JOptionPane.ERROR_MESSAGE);
-
+            isErr = true;
         }
-        if (l != null) {
-            //Make sure it's the type we need
-            if ((!(l instanceof NNLearningAlgorithm)) && (l instanceof ClassifierLearningAlgorithm || l instanceof HmmLearningAlgorithm)) {
-                if (discrete) {
-                    fileToLoadFrom = f;
 
-                    setLoadedLearningAlgorithm(l);
-                    setHasUsableLoadedFile(true);
-                    Util.setLastFile(LearningAlgorithm.getFileExtension(), f);
-
-                } else {
-                    JOptionPane.showMessageDialog(this, "A discrete learning algorithm may only be loaded for a discrete parameter", "Could not load algorithm from file", JOptionPane.ERROR_MESSAGE);
-                    Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, "A discrete learning algorithm may only be loaded for a discrete parameter");
-
-                }
-            } else if (l instanceof NNLearningAlgorithm) {
-                if (!discrete) {
-                    fileToLoadFrom = f;
-
-                    setLoadedLearningAlgorithm(l);
-                    setHasUsableLoadedFile(true);
-                    Util.setLastFile(LearningAlgorithm.getFileExtension(), f);
-                } else {
-                    JOptionPane.showMessageDialog(this, "A real-valued learning algorithm may only be loaded for a real-valued parameter", "Could not load algorithm from file", JOptionPane.ERROR_MESSAGE);
-                    Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, "A real-valued learning algorithm may only be loaded for a real-valued parameter");
-
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "The file does not contain a valid learning algorithm", "Could not load algorithm from file", JOptionPane.ERROR_MESSAGE);
-                Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, "The file does not contain a valid learning algorithm");
-
-            }
+        if (isErr) {
+            return;
         }
+        fileToLoadFrom = laFile;
+        laFromModelFile = l;
+        dataFromModelFile = newData;
+        
+        //TODO: Show dialogue box here!!!
+        String[] currNames = WekinatorInstance.getWekinatorInstance().getFeatureConfiguration().getAllEnabledFeatureNames();
+        new ModelLoadingConfigurationForm(currNames, featNames, this).setVisible(true);
+
+        
+
+        /* } catch (FileNotFoundException ex) {
+         Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
+         } catch (IOException ex) {
+         Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
+         } */
+        /* Old version that worked for la only:
+         LearningAlgorithm l = null;
+         try {
+         l = LearningAlgorithm.readFromFile(f);
+         //   l = (LearningAlgorithm) SerializedFileUtil.readFromFile(f);
+         } catch (OptionalDataException ex) {
+         Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
+         JOptionPane.showMessageDialog(this, "Invalid learning algorithm file", "Could not load algorithm from file", JOptionPane.ERROR_MESSAGE);
+
+         } catch (Exception ex) {
+         //Show warning box.
+         Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
+         JOptionPane.showMessageDialog(this, ex.getMessage(), "Could not load algorithm from file", JOptionPane.ERROR_MESSAGE);
+
+         }
+         if (l != null) {
+         //Make sure it's the type we need
+         if ((!(l instanceof NNLearningAlgorithm)) && (l instanceof ClassifierLearningAlgorithm || l instanceof HmmLearningAlgorithm)) {
+         if (discrete) {
+         fileToLoadFrom = f;
+
+         setLoadedLearningAlgorithm(l);
+         setHasUsableLoadedFile(true);
+         Util.setLastFile(LearningAlgorithm.getFileExtension(), f);
+
+         } else {
+         JOptionPane.showMessageDialog(this, "A discrete learning algorithm may only be loaded for a discrete parameter", "Could not load algorithm from file", JOptionPane.ERROR_MESSAGE);
+         Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, "A discrete learning algorithm may only be loaded for a discrete parameter");
+
+         }
+         } else if (l instanceof NNLearningAlgorithm) {
+         if (!discrete) {
+         fileToLoadFrom = f;
+
+         setLoadedLearningAlgorithm(l);
+         setHasUsableLoadedFile(true);
+         Util.setLastFile(LearningAlgorithm.getFileExtension(), f);
+         } else {
+         JOptionPane.showMessageDialog(this, "A real-valued learning algorithm may only be loaded for a real-valued parameter", "Could not load algorithm from file", JOptionPane.ERROR_MESSAGE);
+         Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, "A real-valued learning algorithm may only be loaded for a real-valued parameter");
+
+         }
+         } else {
+         JOptionPane.showMessageDialog(this, "The file does not contain a valid learning algorithm", "Could not load algorithm from file", JOptionPane.ERROR_MESSAGE);
+         Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, "The file does not contain a valid learning algorithm");
+
+         }
+         } */
     }
 
     protected void setLoadedLearningAlgorithm(LearningAlgorithm l) {
@@ -427,10 +663,10 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
 
     }
 
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -482,6 +718,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
         buttonFeatures = new javax.swing.JButton();
         checkDisabled = new javax.swing.JCheckBox();
         buttonLoadedFeatures = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
 
         featureMapFrame.setTitle("Select features to use for this parameter");
 
@@ -863,7 +1100,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
                     .add(buttonOK)))
         );
 
-        labelParamName.setFont(new java.awt.Font("Lucida Grande", 1, 13));
+        labelParamName.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
         labelParamName.setText("Parameter 0 - discrete");
 
         labelLearnerStatus.setText("Adaboost.M1, not yet trained, using 6 features");
@@ -927,7 +1164,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
 
         labelFeatures.setText("Using all features");
 
-        buttonFeatures.setText("View & choose features...");
+        buttonFeatures.setText("Choose features...");
         buttonFeatures.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonFeaturesActionPerformed(evt);
@@ -950,6 +1187,13 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
             }
         });
 
+        jButton1.setText("View features");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -961,12 +1205,9 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(radioUseCurrent)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(labelLearnerStatus))
-                    .add(layout.createSequentialGroup()
-                        .add(27, 27, 27)
-                        .add(buttonLoadFile)
+                        .add(labelLearnerStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 143, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(buttonLoadedFeatures))
+                        .add(jButton1))
                     .add(layout.createSequentialGroup()
                         .add(radioUseFile)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -977,10 +1218,16 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
                         .add(comboSelectClassifier, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 164, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(layout.createSequentialGroup()
                         .add(27, 27, 27)
-                        .add(labelFeatures)
-                        .add(18, 18, 18)
-                        .add(buttonFeatures)))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(buttonLoadFile)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(buttonLoadedFeatures))
+                            .add(layout.createSequentialGroup()
+                                .add(labelFeatures)
+                                .add(18, 18, 18)
+                                .add(buttonFeatures)))))
+                .addContainerGap(53, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -991,8 +1238,9 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(radioUseCurrent)
-                    .add(labelLearnerStatus, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .add(7, 7, 7)
+                    .add(labelLearnerStatus, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jButton1))
+                .add(2, 2, 2)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(radioUseFile)
                     .add(labelFile, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -1017,6 +1265,20 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_buttonLoadFileActionPerformed
 
     private void buttonFeaturesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonFeaturesActionPerformed
+        //Added 1/8/2015:
+        if (WekinatorInstance.getWekinatorInstance().getLearningSystem() != null) {
+            if (WekinatorInstance.getWekinatorInstance().getLearningSystem().getDataset() != null) {
+                SimpleDataset d = WekinatorInstance.getWekinatorInstance().getLearningSystem().getDataset();
+                //d.getFeatureLearnerConfiguration().getFeatureMappingForLearner(paramNum);
+                boolean[] checks = new boolean[d.getNumFeatures()];
+                for (int i = 0; i < checks.length; i++) {
+                    checks[i] = d.isFeatureActiveForParameter(i, paramNum);
+                    featureBoxes[i].setSelected(checks[i]);
+                }
+            }      
+        }
+         buttonOK.setEnabled(true);
+
         featureMapFrame.setVisible(true);
         featureMapFrame.toFront();
         if (WekinatorRunner.isLogging()) {
@@ -1196,6 +1458,27 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_comboSelectClassifierActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+ if (WekinatorInstance.getWekinatorInstance().getLearningSystem() != null) {
+            if (WekinatorInstance.getWekinatorInstance().getLearningSystem().getDataset() != null) {
+                SimpleDataset d = WekinatorInstance.getWekinatorInstance().getLearningSystem().getDataset();
+                //d.getFeatureLearnerConfiguration().getFeatureMappingForLearner(paramNum);
+                boolean[] checks = new boolean[d.getNumFeatures()];
+                for (int i = 0; i < checks.length; i++) {
+                    checks[i] = d.isFeatureActiveForParameter(i, paramNum);
+                    featureBoxes[i].setSelected(checks[i]);
+                }
+            }      
+        }
+        buttonOK.setEnabled(false);
+        featureMapFrame.setVisible(true);
+        featureMapFrame.toFront();
+        if (WekinatorRunner.isLogging()) {
+            Plog.log(Msg.FEATURE_CHOOSER_OPENED);
+        }
+
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonCancel;
     private javax.swing.JButton buttonFeatures;
@@ -1206,6 +1489,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox checkDisabled;
     private javax.swing.JComboBox comboSelectClassifier;
     private javax.swing.JFrame featureMapFrame;
+    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
     private javax.swing.JCheckBox jCheckBox10;
@@ -1263,19 +1547,19 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
             String s = currentLearningAlgorithm.getName(); //TODO: add ability to view selected features
             //Ultimately might want to encode (lA, DB) pairs outside either class - a moderator for getting data...
            /* switch (currentLearningAlgorithm.getTrainingState()) {
-            case NOT_TRAINED:
-            s += ", not trained";
-            break;
-            case TRAINED:
-            s += ", trained";
-            break;
-            case TRAINING:
-            s += ", training in process";
-            break;
-            default:
-            logger.log(Level.SEVERE, "Unknown learning algorithm state: " + currentLearningAlgorithm.getTrainingState());
+             case NOT_TRAINED:
+             s += ", not trained";
+             break;
+             case TRAINED:
+             s += ", trained";
+             break;
+             case TRAINING:
+             s += ", training in process";
+             break;
+             default:
+             logger.log(Level.SEVERE, "Unknown learning algorithm state: " + currentLearningAlgorithm.getTrainingState());
 
-            }*/
+             }*/
             labelLearnerStatus.setText(s);
             radioUseCurrent.setEnabled(true);
             labelLearnerStatus.setEnabled(true);
@@ -1323,6 +1607,8 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
             selected = currentLearningAlgorithm;
         } else if (radioUseFile.isSelected()) {
             if (hasUsableLoadedFile) {
+                finishLoadingModel();
+                
                 if (loadedLearningAlgorithm != null) {
                     selected = loadedLearningAlgorithm;
                 } else {
@@ -1443,11 +1729,10 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
 
             }
 
-
         }
         //if (featureM.isVisible()) {
         featureMapFrame.setSize(500, 300);
         featureMapFrame.repaint();
-    //}
+        //}
     }
 }

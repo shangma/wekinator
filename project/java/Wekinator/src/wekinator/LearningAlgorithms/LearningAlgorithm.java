@@ -26,7 +26,7 @@ import weka.core.Instances;
  */
 public abstract class LearningAlgorithm {
     public static String getFileExtension() {
-        return "wmodel";
+        return "wla";
     }
 
     public static String getFileTypeDescription() {

@@ -102,6 +102,17 @@ public class Util {
         WekinatorInstance.getWekinatorInstance().getSettings().setLastKeyValue(fileExtension, getCanonicalPath(file));
     }
 
+    public static String getModelFileExtension() {
+        return "wmodel";
+    }
+
+    public static String getModelFileTypeDescription() {
+        return "single learning model";
+    }
+    
+    public static String getModelDefaultLocation() {
+        return "individualModels";
+    }
 
     
 
