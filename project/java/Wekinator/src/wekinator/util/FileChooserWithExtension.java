@@ -47,8 +47,8 @@ public class FileChooserWithExtension extends JFileChooser {
         } else {
             setDialogType(JFileChooser.OPEN_DIALOG);
         }
-
-        addChoosableFileFilter(new FileFilter() {
+        
+        FileFilter filt = new FileFilter() {
 
             @Override
             public boolean accept(File f) {
@@ -72,7 +72,10 @@ public class FileChooserWithExtension extends JFileChooser {
                     return "Supported types";
                 }
             }
-        });
+        };
+
+        addChoosableFileFilter(filt);
+        setFileFilter(filt);
     }
 
     private static String rebuildName(String[] parts, int lastIndex, String newExt) {
