@@ -26,6 +26,7 @@ public class OscController {
     private static final String OSCtrainMessage = "/control/OSCtrain";
     private static final String OSCrunMessage = "/control/OSCstartrun";
     private static final String OSCloadLearningSystemMessage = "/control/OSCLoadLearningSystem";
+    private static final String OSCparameterMaskMessage = "/control/OSCparameterMask";
     protected boolean oscControllable = true;
     public static final String PROP_OSCCONTROLLABLE = "oscControllable";
 
@@ -39,8 +40,41 @@ public class OscController {
         addTrainListener(receiver);
         addRunListener(receiver);
         addLoadLearningSystemListener(receiver);
+        addParameterMaskListener(receiver);
     }
 
+    private static void addParameterMaskListener(OSCPortIn receiver) {
+        OSCListener l = new OSCListener() {
+
+            public void acceptMessage(Date arg0, OSCMessage message) {
+                Object[] o = message.getArguments();
+                if (o.length > 0 ) {
+                    parameterMaskReceived(o);
+                }
+            }
+        };
+        receiver.addListener(OSCparameterMaskMessage, l);
+    }
+    
+    private static void parameterMaskReceived(Object[] o) {
+        if (isOscControllable()) {
+            LearningSystem ls = WekinatorInstance.getWekinatorInstance().getLearningSystem();
+            //WekinatorLearningManager lm = WekinatorLearningManager.getInstance();
+            if (ls != null && o.length == ls.getNumParams()) {
+                boolean[] mask = new boolean[o.length];
+                for (int i= 0; i < mask.length; i++) {
+                    mask[i] = ((Integer)o[i] == 1);
+                }
+                //BuildPanel bp = OscHandler.getOscHandler().getBuildPanel();
+                BuildPanel bp = WekinatorInstance.getMainGUI().getBuildPanel();
+                bp.setMask(mask);
+            } else {
+                Logger.getLogger(OscController.class.getName()).log(Level.WARNING, null, "Received OSC parameter mask but it was not correct length and/or learning system not yet instantiated.");
+            }
+                
+        }
+    }
+    
     private static void addRecordListener(OSCPortIn receiver) {
         OSCListener l = new OSCListener() {
 

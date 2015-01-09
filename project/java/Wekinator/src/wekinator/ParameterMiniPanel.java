@@ -211,6 +211,10 @@ public class ParameterMiniPanel extends javax.swing.JPanel {
     public boolean getUse() {
         return checkUse.isSelected();
     }
+    
+    public void setUse(boolean b) {
+        checkUse.setSelected(b);
+    }
 
     public double getVal() {
         //Try parsing:

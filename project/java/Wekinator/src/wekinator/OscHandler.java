@@ -856,4 +856,8 @@ public class OscHandler {
     public void setBuildPanel(BuildPanel aThis) {
         bp = aThis;
     }
+    
+    public BuildPanel getBuildPanel() {
+        return bp;
+    }
 }

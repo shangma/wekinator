@@ -878,6 +878,10 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
 
     }//GEN-LAST:event_menuItemViewLearningSystemActionPerformed
 
+    public BuildPanel getBuildPanel() {
+        return trainRunPanel1.getBuildPanel();
+    }
+    
     private void menuSaveModelsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuSaveModelsActionPerformed
 //Save learning system
         if (WekinatorInstance.getWekinatorInstance().getLearningSystem() == null) {

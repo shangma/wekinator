@@ -609,6 +609,13 @@ public class BuildPanel extends javax.swing.JPanel {
         }
         return m;
     }
+    
+    public void setMask(boolean[] mask) {
+        for (int i = 0; i < paramPanels.length; i++) {
+             paramPanels[i].setUse(mask[i]);
+           // System.out.println(m[i]);
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonAddClipboard;

@@ -184,6 +184,10 @@ public class TrainRunPanel extends javax.swing.JPanel {
         setButtonsEnabled();
     }
 
+    public BuildPanel getBuildPanel() {
+        return buildPanel;
+    }
+            
     public boolean canRun() {
         /* return  (ls.getSystemTrainingState() == LearningSystemTrainingState.TRAINED
         && ls.getEvaluationState() != EvaluationState.EVALUTATING
