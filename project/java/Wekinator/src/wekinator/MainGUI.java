@@ -16,16 +16,20 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import wekinator.ChuckRunner.ChuckRunnerState;
+import wekinator.LearningAlgorithms.LearningAlgorithm;
 import wekinator.Plog.Msg;
 import wekinator.util.Util;
 
 /**
  *
- * @author  rebecca
+ * @author rebecca
  */
 public class MainGUI extends javax.swing.JFrame {
 
@@ -33,7 +37,7 @@ public class MainGUI extends javax.swing.JFrame {
     boolean isConnected = false;
     public static boolean MAC_OS_X = (System.getProperty("os.name").toLowerCase().startsWith("mac os x"));
     protected JDialog aboutBox, prefs;
-    
+
     PropertyChangeListener hidSetupChangeListener = new PropertyChangeListener() {
 
         public void propertyChange(PropertyChangeEvent evt) {
@@ -41,7 +45,9 @@ public class MainGUI extends javax.swing.JFrame {
         }
     };
 
-    /** Creates new form Bigger1 */
+    /**
+     * Creates new form Bigger1
+     */
     public MainGUI() {
         initComponents();
 
@@ -127,11 +133,11 @@ public class MainGUI extends javax.swing.JFrame {
         updatePanels();
         updateMenus();
         if (WekinatorRunner.isLogging()) {
-                    Plog.log(Msg.PANEL_CHUCK_VIEW);
-         }
+            Plog.log(Msg.PANEL_CHUCK_VIEW);
+        }
     }
 
-     // Generic registration with the Mac OS X application menu
+    // Generic registration with the Mac OS X application menu
     // Checks the platform, then attempts to register with the Apple EAWT
     // See OSXAdapter.java to see how this is done without directly referencing any Apple APIs
     public void registerForMacOSXEvents() {
@@ -139,10 +145,10 @@ public class MainGUI extends javax.swing.JFrame {
             try {
                 // Generate and register the OSXAdapter, passing it a hash of all the methods we wish to
                 // use as delegates for various com.apple.eawt.ApplicationListener methods
-                OSXAdapter.setQuitHandler(this, getClass().getDeclaredMethod("quit", (Class[])null));
-                OSXAdapter.setAboutHandler(this, getClass().getDeclaredMethod("about", (Class[])null));
-                OSXAdapter.setPreferencesHandler(this, getClass().getDeclaredMethod("preferences", (Class[])null));
-              //  OSXAdapter.setFileHandler(this, getClass().getDeclaredMethod("loadImageFile", new Class[] { String.class }));
+                OSXAdapter.setQuitHandler(this, getClass().getDeclaredMethod("quit", (Class[]) null));
+                OSXAdapter.setAboutHandler(this, getClass().getDeclaredMethod("about", (Class[]) null));
+                OSXAdapter.setPreferencesHandler(this, getClass().getDeclaredMethod("preferences", (Class[]) null));
+                //  OSXAdapter.setFileHandler(this, getClass().getDeclaredMethod("loadImageFile", new Class[] { String.class }));
             } catch (Exception e) {
                 System.err.println("Error while loading the OSXAdapter:");
                 e.printStackTrace();
@@ -153,18 +159,18 @@ public class MainGUI extends javax.swing.JFrame {
     // General info dialog; fed to the OSXAdapter as the method to call when
     // "About OSXAdapter" is selected from the application menu
     public void about() {
-        aboutBox.setLocation((int)this.getLocation().getX() + 22, (int)this.getLocation().getY() + 22);
+        aboutBox.setLocation((int) this.getLocation().getX() + 22, (int) this.getLocation().getY() + 22);
         aboutBox.setVisible(true);
     }
 
     // General preferences dialog; fed to the OSXAdapter as the method to call when
     // "Preferences..." is selected from the application menu
     public void preferences() {
-        prefs.setLocation((int)this.getLocation().getX() + 22, (int)this.getLocation().getY() + 22);
+        prefs.setLocation((int) this.getLocation().getX() + 22, (int) this.getLocation().getY() + 22);
         prefs.setVisible(true);
     }
 
-     // General quit handler; fed to the OSXAdapter as the method to call when a system quit event occurs
+    // General quit handler; fed to the OSXAdapter as the method to call when a system quit event occurs
     // A quit event is triggered by Cmd-Q, selecting Quit from the application or Dock menu, or logging out
     public boolean quit() {
         int option = JOptionPane.showConfirmDialog(this, "Are you sure you want to quit?", "Quit?", JOptionPane.YES_NO_OPTION);
@@ -174,21 +180,20 @@ public class MainGUI extends javax.swing.JFrame {
         return (option == JOptionPane.YES_OPTION);
     }
 
-
     private void runOscIfNeeded() {
-        if (WekinatorRunner.chuckFile == null &&
-                WekinatorRunner.connectAutomatically &&
-                OscHandler.getOscHandler().getConnectionState() == OscHandler.ConnectionState.NOT_CONNECTED) {
+        if (WekinatorRunner.chuckFile == null
+                && WekinatorRunner.connectAutomatically
+                && OscHandler.getOscHandler().getConnectionState() == OscHandler.ConnectionState.NOT_CONNECTED) {
 
             connectOSC();
         }
     }
 
     private void runChuckIfNeeded() {
-        if (WekinatorRunner.chuckFile != null &&
-                ChuckRunner.getConfiguration() != null &&
-                ChuckRunner.getConfiguration().isUsable() &&
-                ChuckRunner.getRunnerState() == ChuckRunnerState.NOT_RUNNING) {
+        if (WekinatorRunner.chuckFile != null
+                && ChuckRunner.getConfiguration() != null
+                && ChuckRunner.getConfiguration().isUsable()
+                && ChuckRunner.getRunnerState() == ChuckRunnerState.NOT_RUNNING) {
             try {
                 ChuckRunner.run();
             } catch (IOException ex) {
@@ -209,8 +214,8 @@ public class MainGUI extends javax.swing.JFrame {
     private void updateRunnerState(ChuckRunner.ChuckRunnerState state) {
         if (state == ChuckRunnerState.RUNNING) {
             wek.useConfigurationNextSession();
-        //also connect!
-        //connectOSC(); //changed: We'll wait to hear from chuck.
+            //also connect!
+            //connectOSC(); //changed: We'll wait to hear from chuck.
 
         } else {
             try {
@@ -223,10 +228,10 @@ public class MainGUI extends javax.swing.JFrame {
         }
     }
 
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -255,7 +260,7 @@ public class MainGUI extends javax.swing.JFrame {
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         menuSaveLearningSystem = new javax.swing.JMenuItem();
-        jMenuItem2 = new javax.swing.JMenuItem();
+        menuSaveModels = new javax.swing.JMenuItem();
         menuSaveDataset = new javax.swing.JMenuItem();
         jMenuItem4 = new javax.swing.JMenuItem();
         jMenuItem1 = new javax.swing.JMenuItem();
@@ -458,9 +463,14 @@ public class MainGUI extends javax.swing.JFrame {
         });
         fileMenu.add(menuSaveLearningSystem);
 
-        jMenuItem2.setText("Save model(s)");
-        jMenuItem2.setEnabled(false);
-        fileMenu.add(jMenuItem2);
+        menuSaveModels.setText("Save all models");
+        menuSaveModels.setEnabled(false);
+        menuSaveModels.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuSaveModelsActionPerformed(evt);
+            }
+        });
+        fileMenu.add(menuSaveModels);
 
         menuSaveDataset.setText("Save dataset");
         menuSaveDataset.addActionListener(new java.awt.event.ActionListener() {
@@ -658,7 +668,7 @@ private void panelMainTabsComponentShown(java.awt.event.ComponentEvent evt) {//G
 }//GEN-LAST:event_panelMainTabsComponentShown
 
 private void panelMainTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_panelMainTabsStateChanged
-   if (WekinatorRunner.isLogging()) {
+    if (WekinatorRunner.isLogging()) {
         Component c = panelMainTabs.getSelectedComponent();
         if (c == panelOSC) {
             Plog.log(Msg.PANEL_CHUCK_VIEW);
@@ -673,34 +683,33 @@ private void panelMainTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN
 
 }//GEN-LAST:event_panelMainTabsStateChanged
 
-private void exit() {
-     if (FeatureExtractionController.isExtracting()) {
-        FeatureExtractionController.stopExtracting();
-    }
-
-
-    OscHandler.getOscHandler().end();
-
-    if (ChuckRunner.getRunnerState() == ChuckRunner.ChuckRunnerState.RUNNING) {
-        try {
-            ChuckRunner.stop();
-        } catch (IOException ex) {
+    private void exit() {
+        if (FeatureExtractionController.isExtracting()) {
+            FeatureExtractionController.stopExtracting();
         }
-    }
-    //Want to save settings here!
-    wek.saveCurrentSettings();
+
+        OscHandler.getOscHandler().end();
+
+        if (ChuckRunner.getRunnerState() == ChuckRunner.ChuckRunnerState.RUNNING) {
+            try {
+                ChuckRunner.stop();
+            } catch (IOException ex) {
+            }
+        }
+        //Want to save settings here!
+        wek.saveCurrentSettings();
         try {
-          if (WekinatorRunner.isLogging()) {
-              Plog.log(Msg.CLOSE);
-            Plog.close();
-          }
+            if (WekinatorRunner.isLogging()) {
+                Plog.log(Msg.CLOSE);
+                Plog.close();
+            }
         } catch (IOException ex) {
             Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-    System.exit(0);
+        System.exit(0);
 
-}
+    }
 
 
 private void menuItemViewConsoleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemViewConsoleActionPerformed
@@ -717,14 +726,14 @@ private void aboutMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GE
 }//GEN-LAST:event_aboutMenuItem1ActionPerformed
 
 private void menuItemViewDatasetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemViewDatasetActionPerformed
-    if ( WekinatorInstance.getWekinatorInstance().getLearningSystem() != null
+    if (WekinatorInstance.getWekinatorInstance().getLearningSystem() != null
             && WekinatorInstance.getWekinatorInstance().getLearningSystem().getDataset() != null) {
         WekinatorInstance.getWekinatorInstance().getLearningSystem().getDataset().showViewer();
     }
 }//GEN-LAST:event_menuItemViewDatasetActionPerformed
 
 private void menuItemViewParamClipboardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemViewParamClipboardActionPerformed
-   // LearningSystem learningSystem = WekinatorInstance.getWekinatorInstance().getLearningSystem();
+    // LearningSystem learningSystem = WekinatorInstance.getWekinatorInstance().getLearningSystem();
     if (WekinatorInstance.getWekinatorInstance().getPlayalongScore() != null) {
         WekinatorInstance.getWekinatorInstance().getPlayalongScore().view();
     }
@@ -769,8 +778,8 @@ private void menuSaveDatasetActionPerformed(java.awt.event.ActionEvent evt) {//G
                 if (WekinatorRunner.isLogging()) {
                     Plog.log(Msg.MENU_SAVE_ARFF, file.getAbsolutePath() + "/" + file.getName());
                 }
-            // ls.writeToFile(file); //TODOTODOTODO: update last path on this.
-             Util.setLastFile(SimpleDataset.getFileExtension(), file);
+                // ls.writeToFile(file); //TODOTODOTODO: update last path on this.
+                Util.setLastFile(SimpleDataset.getFileExtension(), file);
             } catch (Exception ex) {
                 Logger.getLogger(TrainRunPanel.class.getName()).log(Level.INFO, null, ex);
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Could not save to file", JOptionPane.ERROR_MESSAGE);
@@ -782,22 +791,23 @@ private void menuSaveDatasetActionPerformed(java.awt.event.ActionEvent evt) {//G
 
 private void menuSaveLearningSystemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuSaveLearningSystemActionPerformed
     //Save learning system
-    if (WekinatorInstance.getWekinatorInstance().getLearningSystem() == null)
+    if (WekinatorInstance.getWekinatorInstance().getLearningSystem() == null) {
         return;
+    }
 
     File file = Util.findSaveFile(LearningSystem.getFileExtension(),
-                LearningSystem.getFileTypeDescription(),
-                LearningSystem.getDefaultLocation(),
-                this);
-        if (file != null) {
-            try {
-                WekinatorInstance.getWekinatorInstance().getLearningSystem().writeToFile(file); //TODOTODOTODO: update last path on this.
-                Util.setLastFile(LearningSystem.getFileExtension(), file);
-            } catch (Exception ex) {
-                Logger.getLogger(TrainRunPanel.class.getName()).log(Level.INFO, null, ex);
-                JOptionPane.showMessageDialog(this, ex.getMessage(), "Could not save to file", JOptionPane.ERROR_MESSAGE);
-            }
+            LearningSystem.getFileTypeDescription(),
+            LearningSystem.getDefaultLocation(),
+            this);
+    if (file != null) {
+        try {
+            WekinatorInstance.getWekinatorInstance().getLearningSystem().writeToFile(file); //TODOTODOTODO: update last path on this.
+            Util.setLastFile(LearningSystem.getFileExtension(), file);
+        } catch (Exception ex) {
+            Logger.getLogger(TrainRunPanel.class.getName()).log(Level.INFO, null, ex);
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Could not save to file", JOptionPane.ERROR_MESSAGE);
         }
+    }
 
 }//GEN-LAST:event_menuSaveLearningSystemActionPerformed
 
@@ -808,15 +818,15 @@ private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:even
 
 private void menuResetLogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuResetLogActionPerformed
     int lResponse = JOptionPane.showConfirmDialog(this, "Are you sure you want to reset the log?\n"
-            + "Please do this ONLY at the very beginning of Part A / Part B of your PLOrk assignment.\n" 
+            + "Please do this ONLY at the very beginning of Part A / Part B of your PLOrk assignment.\n"
             + "If you do it later, it will erase needed logging info.", "", JOptionPane.YES_NO_OPTION);
-                if (lResponse == JOptionPane.YES_OPTION) {
-                    if (WekinatorRunner.isLogging()) {
-                        Plog.startPlog();
-                    }
-                }
+    if (lResponse == JOptionPane.YES_OPTION) {
+        if (WekinatorRunner.isLogging()) {
+            Plog.startPlog();
+        }
+    }
 
-    
+
 }//GEN-LAST:event_menuResetLogActionPerformed
 
 private void menuFlushLogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuFlushLogActionPerformed
@@ -828,12 +838,12 @@ private void menuFlushLogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 private void menuPerformanceModeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuPerformanceModeActionPerformed
     if (menuPerformanceMode.isSelected()) {
         int lResponse = JOptionPane.showConfirmDialog(this, "Are you sure you want set to performance mode?\n"
-            + "This will turn off some logging, so please don't do this while working on your plork assignment.\n", "", JOptionPane.YES_NO_OPTION);
-                if (lResponse == JOptionPane.YES_OPTION) {
-                    if (WekinatorRunner.isLogging()) {
-                        Plog.performanceMode = true;
-                    }
-                }
+                + "This will turn off some logging, so please don't do this while working on your plork assignment.\n", "", JOptionPane.YES_NO_OPTION);
+        if (lResponse == JOptionPane.YES_OPTION) {
+            if (WekinatorRunner.isLogging()) {
+                Plog.performanceMode = true;
+            }
+        }
 
     } else {
         if (WekinatorRunner.isLogging()) {
@@ -850,8 +860,8 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
         LearningSystem ls = WekinatorInstance.getWekinatorInstance().getLearningSystem();
         if (ls != null) {
             JFrame frame = new JFrame();
-        //frame.setPreferredSize(new Dimension(478, 532));
-        frame.setSize(new Dimension(478, 532));
+            //frame.setPreferredSize(new Dimension(478, 532));
+            frame.setSize(new Dimension(478, 532));
             try {
                 LearningSystemViewer viewer = new LearningSystemViewer(ls);
                 frame.add(viewer);
@@ -863,8 +873,55 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
         } else {
             System.out.println("Error: Can't load learning system");
         }
-        
+
     }//GEN-LAST:event_menuItemViewLearningSystemActionPerformed
+
+    private void menuSaveModelsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuSaveModelsActionPerformed
+//Save learning system
+        if (WekinatorInstance.getWekinatorInstance().getLearningSystem() == null) {
+            return;
+        }
+
+        File saveDir = Util.findSaveDirectory(
+                Util.getModelFileExtension(),
+                Util.getModelDefaultLocation(),
+                "savedModels",
+                this);
+        if (saveDir != null) {
+            LearningSystem ls = WekinatorInstance.getWekinatorInstance().getLearningSystem();
+            SimpleDateFormat prettyDateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+            String dateString = prettyDateFormat.format(new Date());
+            try {
+                for (int i = 0; i < ls.getNumParams(); i++) {
+
+                    if (!saveDir.exists()) {
+
+                        saveDir.mkdirs();
+
+                    }
+                    if (!(saveDir.exists() && saveDir.isDirectory())) {
+                       JOptionPane.showMessageDialog(this, "Could not save to location " + saveDir, "Could not save to file ", JOptionPane.ERROR_MESSAGE);
+
+                    }
+                    File f = new File(saveDir.getAbsolutePath() + File.separator + SynthProxy.paramName(i) + "-" + dateString + "." + Util.getModelFileExtension());
+
+                    Util.setLastFile(Util.getModelFileExtension(), f);
+                    ls.saveSingleModel(i, f);
+
+                }
+           /* } catch (IOException ex) {
+                Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Could not save to file ", JOptionPane.ERROR_MESSAGE);
+                */
+            } catch (Exception ex) {
+                Logger.getLogger(LearnerEditPanel.class.getName()).log(Level.INFO, null, ex);
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Could not save to file ", JOptionPane.ERROR_MESSAGE);
+            }
+
+        }
+
+
+    }//GEN-LAST:event_menuSaveModelsActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aboutMenuItem1;
@@ -881,7 +938,6 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
     private javax.swing.JMenu helpMenu1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel5;
@@ -905,6 +961,7 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
     private javax.swing.JMenuItem menuResetLog;
     private javax.swing.JMenuItem menuSaveDataset;
     private javax.swing.JMenuItem menuSaveLearningSystem;
+    private javax.swing.JMenuItem menuSaveModels;
     private javax.swing.JTabbedPane panelMainTabs;
     private javax.swing.JPanel panelOSC;
     private javax.swing.JPanel panelTabFeatureConfiguration;
@@ -920,7 +977,7 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
             OscHandler.ConnectionState n = (OscHandler.ConnectionState) evt.getNewValue();
 
             if (n == OscHandler.ConnectionState.CONNECTED) {
-               // panelMainTabs.setSelectedComponent(panelTabFeatureConfiguration);
+                // panelMainTabs.setSelectedComponent(panelTabFeatureConfiguration);
                 showFeatureConfigurationPanel();
                 if (WekinatorRunner.getFeatureFile() != null) {
                     try {
@@ -936,9 +993,8 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
                         Logger.getLogger(MainGUI.class.getName()).log(Level.WARNING, null, ex);
                     }
 
-                //configuration = ChuckConfiguration.readFromFile(new File(cLoc));
-                //WekinatorInstance.getWekinatorInstance().setFeatureConfiguration(featureConfiguration);
-
+                    //configuration = ChuckConfiguration.readFromFile(new File(cLoc));
+                    //WekinatorInstance.getWekinatorInstance().setFeatureConfiguration(featureConfiguration);
                 }
 
             }
@@ -949,29 +1005,29 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
     public void showOscPanel() {
         panelMainTabs.setSelectedComponent(panelOSC);
         if (WekinatorRunner.isLogging()) {
-                    Plog.log(Msg.PANEL_CHUCK_VIEW);
-         }
+            Plog.log(Msg.PANEL_CHUCK_VIEW);
+        }
     }
 
     public void showTrainRunPanel() {
         panelMainTabs.setSelectedComponent(trainRunPanel1);
         if (WekinatorRunner.isLogging()) {
-                    Plog.log(Msg.PANEL_USE_VIEW);
-         }
+            Plog.log(Msg.PANEL_USE_VIEW);
+        }
     }
 
     public void showFeatureConfigurationPanel() {
         panelMainTabs.setSelectedComponent(panelTabFeatureConfiguration);
         if (WekinatorRunner.isLogging()) {
-                    Plog.log(Msg.PANEL_FEATURES_VIEW);
-         }
+            Plog.log(Msg.PANEL_FEATURES_VIEW);
+        }
     }
 
     public void showLearningSystemPanel() {
         panelMainTabs.setSelectedComponent(panelTabLearningSystemConfiguration);
         if (WekinatorRunner.isLogging()) {
-                    Plog.log(Msg.PANEL_LEARNING_VIEW);
-         }
+            Plog.log(Msg.PANEL_LEARNING_VIEW);
+        }
     }
 
     protected void updatePanels() {
@@ -996,24 +1052,25 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
         boolean featValid = WekinatorInstance.getWekinatorInstance().getFeatureConfiguration() != null && (ChuckSystem.getChuckSystem().state == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID);
         boolean learnValid = WekinatorInstance.getWekinatorInstance().getLearningSystem() != null && (ChuckSystem.getChuckSystem().state == ChuckSystem.ChuckSystemState.CONNECTED_AND_VALID);
         menuSaveLearningSystem.setEnabled(WekinatorInstance.getWekinatorInstance().getLearningSystem() != null);
+        menuSaveModels.setEnabled(WekinatorInstance.getWekinatorInstance().getLearningSystem() != null);
         menuSaveDataset.setEnabled(WekinatorInstance.getWekinatorInstance().getLearningSystem() != null && WekinatorInstance.getWekinatorInstance().getLearningSystem().getDataset() != null);
         menuItemViewFeatureViewer.setEnabled(featValid);
         menuItemViewDataset.setEnabled(WekinatorInstance.getWekinatorInstance().getLearningSystem() != null && WekinatorInstance.getWekinatorInstance().getLearningSystem().getDataset() != null);
         menuItemViewLearningSystem.setEnabled(WekinatorInstance.getWekinatorInstance().getLearningSystem() != null);
         menuItemViewParamClipboard.setEnabled(learnValid);
-        
+
         if (!WekinatorRunner.isPlork()) {
             menuEndGesture.setEnabled(WekinatorInstance.getWekinatorInstance().getLearningSystem() != null && WekinatorInstance.getWekinatorInstance().getLearningSystem().getDataset() != null);
             menuAllGesture.setEnabled(WekinatorInstance.getWekinatorInstance().getLearningSystem() != null && WekinatorInstance.getWekinatorInstance().getLearningSystem().getDataset() != null);
         } else {
-             menuEndGesture.setEnabled(false);
-             menuAllGesture.setEnabled(false);
+            menuEndGesture.setEnabled(false);
+            menuAllGesture.setEnabled(false);
         }
 
-        if (! WekinatorRunner.isPlork) {
+        if (!WekinatorRunner.isPlork) {
             menuItemViewGraphDataset.setEnabled(WekinatorInstance.getWekinatorInstance().getLearningSystem() != null && WekinatorInstance.getWekinatorInstance().getLearningSystem().getDataset() != null);
         } else {
-           menuItemViewGraphDataset.setEnabled(false);
+            menuItemViewGraphDataset.setEnabled(false);
         }
 
         setFeatureConfigurationPanelEnabled(connected);
@@ -1023,11 +1080,10 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
 
     protected void updateGUIforOscStatus() {
 
-
         OscHandler h = OscHandler.getOscHandler();
         labelOscStatus.setText("OSC status: " + h.getStatusMessage());
-        if (h.getConnectionState() == OscHandler.ConnectionState.CONNECTED ||
-                h.getConnectionState() == OscHandler.ConnectionState.CONNECTING) {
+        if (h.getConnectionState() == OscHandler.ConnectionState.CONNECTED
+                || h.getConnectionState() == OscHandler.ConnectionState.CONNECTING) {
             buttonOscDisconnect.setEnabled(true);
             buttonOscConnect.setEnabled(false);
             if (h.getConnectionState() == OscHandler.ConnectionState.CONNECTED) {
@@ -1042,13 +1098,12 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
         }
 
         /*  setFeatureConfigurationPanelEnabled(isConnected);
-        if (!isConnected) {
-        //  setLearningSystemConfigurationPanelEnabled(false);
-        //   setTrainRunPanelEnabled(false);
-        } */
+         if (!isConnected) {
+         //  setLearningSystemConfigurationPanelEnabled(false);
+         //   setTrainRunPanelEnabled(false);
+         } */
         updatePanels();
         updateMenus();
-
 
     }
 
@@ -1094,8 +1149,8 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
 
                 //This was causing problem when feature config changed but learning system became invalid!
                 if (WekinatorInstance.getWekinatorInstance().getLearningSystem() == null) {
-                   // panelMainTabs.setSelectedComponent(panelTabLearningSystemConfiguration);
-                   showLearningSystemPanel();
+                    // panelMainTabs.setSelectedComponent(panelTabLearningSystemConfiguration);
+                    showLearningSystemPanel();
                     if (WekinatorRunner.getLearningSystemFile() != null) {
                         try {
                             LearningSystem ls = LearningSystem.readFromFile(WekinatorRunner.getLearningSystemFile());
@@ -1174,17 +1229,17 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
      */
     public static void main(String args[]) {
         /*    System.setProperty("apple.laf.useScreenMenuBar", "true");
-        try {
-        UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-        } catch (ClassNotFoundException ex) {
-        Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-        Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-        Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (UnsupportedLookAndFeelException ex) {
-        Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-        } */
+         try {
+         UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+         } catch (ClassNotFoundException ex) {
+         Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+         } catch (InstantiationException ex) {
+         Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+         } catch (IllegalAccessException ex) {
+         Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+         } catch (UnsupportedLookAndFeelException ex) {
+         Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+         } */
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
@@ -1194,5 +1249,3 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
         });
     }
 }
-
-

@@ -329,7 +329,16 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
     }
 
     private void buttonGoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonGoActionPerformed
-
+        //Zeroth, check if all "load model from file" selections are valid
+        for (int i = 0; i < myAlgorithmPanels.length; i++) {
+            if (myAlgorithmPanels[i].isFileSelected() && !myAlgorithmPanels[i].hasUsableLoadedFile) {
+               JOptionPane.showMessageDialog(this, "File option selected for parameter " + i + " but no valid file", "Invalid option", JOptionPane.ERROR_MESSAGE);
+               return;
+            }
+        }
+            
+        
+        
         //First, prompt the user to overwrite
         if (WekinatorInstance.getWekinatorInstance().getLearningSystem() != null) {
             int lResponse = JOptionPane.showConfirmDialog(this, "Are you sure you want to change your model configurations?\n" + "This could destroy your existing trained models...", "", JOptionPane.YES_NO_OPTION);
@@ -521,7 +530,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
         }
 
         for (int i = 0; i < myAlgorithmPanels.length; i++) {
-            LearningAlgorithm a = myAlgorithmPanels[i].commitAndGetSelectedAlgorithm();
+            LearningAlgorithm a = myAlgorithmPanels[i].commitAndGetSelectedAlgorithm(learningSystem);
             learningSystem.setLearners(i, a);
             // learningSystem.setLearnerEnabled(i, !disabled);
             int[] mapping = myAlgorithmPanels[i].getFeatureMapping();
@@ -543,7 +552,7 @@ public class LearningSystemConfigurationPanel extends javax.swing.JPanel {
         ls.setDataset(s);
 
         for (int i = 0; i < myAlgorithmPanels.length; i++) {
-            LearningAlgorithm a = myAlgorithmPanels[i].getProposedLearningAlgorithmNoncommittal();
+            LearningAlgorithm a = myAlgorithmPanels[i].getProposedLearningAlgorithmNoncommittal(ls);
             ls.setLearners(i, a);
             boolean disabled = myAlgorithmPanels[i].getDisabled();
             // ls.setLearnerEnabled(i, !disabled);

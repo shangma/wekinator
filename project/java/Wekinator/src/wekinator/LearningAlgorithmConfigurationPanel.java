@@ -83,6 +83,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
         }
 
         this.hasUsableLoadedFile = hasUsableLoadedFile;
+        this.buttonLoadedFeatures.setEnabled(hasUsableLoadedFile);
         setLoadedAlgorithmInfo();
     }
     //TODO Problem here!! What if learner loaded from file, then selected & used, then user wants to reload?!
@@ -105,7 +106,8 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
     }
 
     public boolean getDisabled() {
-        return checkDisabled.isSelected();
+       // return checkDisabled.isSelected();
+        return false;
     }
 
     //MappingToCommit should never be null
@@ -287,7 +289,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
         } else {
             setNewLearningAlgorithmSelected();
         }
-        checkDisabled.setSelected(!learnerEnabled);
+        //checkDisabled.setSelected(!learnerEnabled);
         //   this.featureConfiguration = fc;
         WekinatorInstance.getWekinatorInstance().addPropertyChangeListener(new PropertyChangeListener() {
 
@@ -399,36 +401,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
         System.arraycopy(indices, 0, featureIndices, 0, indices.length);
     }
     
-    private void finishLoadingModel() {
-        SimpleDataset dataset = WekinatorInstance.getWekinatorInstance().getLearningSystem().getDataset();
-        //TODO: Call this AFTER simpleDataset is loaded -- i.e., after OK button is hit.
-        dataset.startNewTrainingRound();
-
-        //Remove all previous examples for this parameter
-        //TODO: Should we prompt the user for this?
-        for (int i = 0; i < dataset.getNumDatapoints(); i++) {
-            dataset.setParameterMissing(i, paramNum);
-        }
-
-        //Now add the new data
-        //TODO: Adjust new feature parameter mask based on loaded file!
-        for (int i = 0; i < dataFromModelFile.numInstances(); i++) {
-            double[] features = new double[dataset.numFeatures];
-            for (int j = 0; j < dataFromModelFile.numAttributes() - 1; j++) {
-                //features[j] = newData.instance(i).value(j);
-                features[featureIndices[j]] = dataFromModelFile.instance(i).value(j);
-            }
-            double[] params = new double[dataset.numParams];
-            params[paramNum] = dataFromModelFile.instance(i).value(dataFromModelFile.numAttributes() - 1);
-            boolean[] paramMask = new boolean[dataset.numParams];
-            paramMask[paramNum] = true;
-            dataset.addInstance(features, params, paramMask, new Date());
-        }
-        
-        //Set feature mapping
-        loadedFeatureMapping = new int[featureIndices.length];
-        System.arraycopy(featureIndices, 0, loadedFeatureMapping, 0, featureIndices.length); //TODO: CHECK
-
+    private void getLearningAlgorithmFromFile() {
         if (laFromModelFile != null) {
             //Make sure it's the type we need
             //TODO: DO this check before prompting for feature matching
@@ -458,6 +431,40 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
                 Logger.getLogger(LearningAlgorithmConfigurationPanel.class.getName()).log(Level.SEVERE, "The file does not contain a valid learning algorithm");
             }
         }
+        
+    }
+    private void finishLoadingModel(LearningSystem ls) {
+       // SimpleDataset dataset = WekinatorInstance.getWekinatorInstance().getLearningSystem().getDataset();
+        SimpleDataset dataset = ls.getDataset();
+        //TODO: Call this AFTER simpleDataset is loaded -- i.e., after OK button is hit.
+        dataset.startNewTrainingRound();
+
+        //Remove all previous examples for this parameter
+        //TODO: Should we prompt the user for this?
+        for (int i = 0; i < dataset.getNumDatapoints(); i++) {
+            dataset.setParameterMissing(i, paramNum);
+        }
+
+        //Now add the new data
+        //TODO: Adjust new feature parameter mask based on loaded file!
+        for (int i = 0; i < dataFromModelFile.numInstances(); i++) {
+            double[] features = new double[dataset.numFeatures];
+            for (int j = 0; j < dataFromModelFile.numAttributes() - 1; j++) {
+                //features[j] = newData.instance(i).value(j);
+                features[featureIndices[j]] = dataFromModelFile.instance(i).value(j);
+            }
+            double[] params = new double[dataset.numParams];
+            params[paramNum] = dataFromModelFile.instance(i).value(dataFromModelFile.numAttributes() - 1);
+            boolean[] paramMask = new boolean[dataset.numParams];
+            paramMask[paramNum] = true;
+            dataset.addInstance(features, params, paramMask, new Date());
+        }
+        
+        //Set feature mapping
+        loadedFeatureMapping = new int[featureIndices.length];
+        System.arraycopy(featureIndices, 0, loadedFeatureMapping, 0, featureIndices.length); //TODO: CHECK
+
+        
     }
     
     private void loadLearnerFromFile(File f) {
@@ -716,11 +723,10 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
         labelFile = new javax.swing.JLabel();
         labelFeatures = new javax.swing.JLabel();
         buttonFeatures = new javax.swing.JButton();
-        checkDisabled = new javax.swing.JCheckBox();
         buttonLoadedFeatures = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
 
-        featureMapFrame.setTitle("Select features to use for this parameter");
+        featureMapFrame.setTitle("Features for this parameter");
 
         scrollPaneFeatures.setMinimumSize(new java.awt.Dimension(100, 100));
 
@@ -1146,7 +1152,6 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
 
         buttonGroup1.add(radioUseFile);
         radioUseFile.setText("Load model from file:");
-        radioUseFile.setEnabled(false);
         radioUseFile.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         radioUseFile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1164,22 +1169,14 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
 
         labelFeatures.setText("Using all features");
 
-        buttonFeatures.setText("Choose features...");
+        buttonFeatures.setText("Choose features");
         buttonFeatures.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonFeaturesActionPerformed(evt);
             }
         });
 
-        checkDisabled.setText("Disable re-training (use current version only)");
-        checkDisabled.setEnabled(false);
-        checkDisabled.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                checkDisabledActionPerformed(evt);
-            }
-        });
-
-        buttonLoadedFeatures.setText("View & choose features...");
+        buttonLoadedFeatures.setText("View features");
         buttonLoadedFeatures.setEnabled(false);
         buttonLoadedFeatures.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1201,7 +1198,6 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(labelParamName)
-                    .add(checkDisabled)
                     .add(layout.createSequentialGroup()
                         .add(radioUseCurrent)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -1227,20 +1223,18 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
                                 .add(labelFeatures)
                                 .add(18, 18, 18)
                                 .add(buttonFeatures)))))
-                .addContainerGap(53, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(labelParamName)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(checkDisabled)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(radioUseCurrent)
                     .add(labelLearnerStatus, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(jButton1))
-                .add(2, 2, 2)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(radioUseFile)
                     .add(labelFile, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -1277,7 +1271,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
                 }
             }      
         }
-         buttonOK.setEnabled(true);
+         buttonOK.setVisible(true);
 
         featureMapFrame.setVisible(true);
         featureMapFrame.toFront();
@@ -1287,7 +1281,23 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_buttonFeaturesActionPerformed
 
     private void buttonLoadedFeaturesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonLoadedFeaturesActionPerformed
-        // TODO add your handling code here:
+       
+                for (int i = 0; i < featureBoxes.length; i++) {
+                    featureBoxes[i].setSelected(false);
+                }
+            
+               for (int i = 0; i < featureIndices.length; i++) {
+                   featureBoxes[featureIndices[i]].setSelected(true);
+               }
+        
+       // buttonOK.setEnabled(false);
+        buttonOK.setVisible(false);
+        featureMapFrame.setVisible(true);
+        featureMapFrame.toFront();
+        if (WekinatorRunner.isLogging()) {
+            Plog.log(Msg.FEATURE_CHOOSER_OPENED);
+        }
+
 }//GEN-LAST:event_buttonLoadedFeaturesActionPerformed
 
     private void buttonCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCancelActionPerformed
@@ -1438,28 +1448,24 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
 
     private void radioSelectionChanged() {
         //    checkDisabled.setEnabled(!radioUseNew.isSelected());
-        checkDisabled.setEnabled(false);
+       // checkDisabled.setEnabled(false);
 
-        if (radioUseNew.isSelected()) {
+       /* if (radioUseNew.isSelected()) {
             checkDisabled.setSelected(false);
-        }
+        } */
 
         labelFeatures.setEnabled(radioUseNew.isSelected());
         buttonFeatures.setEnabled(radioUseNew.isSelected());
 
-        buttonLoadedFeatures.setEnabled(radioUseFile.isSelected());
+       // buttonLoadedFeatures.setEnabled(radioUseFile.isSelected());
     }
-
-    private void checkDisabledActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkDisabledActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_checkDisabledActionPerformed
 
     private void comboSelectClassifierActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboSelectClassifierActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_comboSelectClassifierActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
- if (WekinatorInstance.getWekinatorInstance().getLearningSystem() != null) {
+    if (WekinatorInstance.getWekinatorInstance().getLearningSystem() != null) {
             if (WekinatorInstance.getWekinatorInstance().getLearningSystem().getDataset() != null) {
                 SimpleDataset d = WekinatorInstance.getWekinatorInstance().getLearningSystem().getDataset();
                 //d.getFeatureLearnerConfiguration().getFeatureMappingForLearner(paramNum);
@@ -1470,7 +1476,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
                 }
             }      
         }
-        buttonOK.setEnabled(false);
+        buttonOK.setVisible(false);
         featureMapFrame.setVisible(true);
         featureMapFrame.toFront();
         if (WekinatorRunner.isLogging()) {
@@ -1486,7 +1492,6 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
     private javax.swing.JButton buttonLoadFile;
     private javax.swing.JButton buttonLoadedFeatures;
     private javax.swing.JButton buttonOK;
-    private javax.swing.JCheckBox checkDisabled;
     private javax.swing.JComboBox comboSelectClassifier;
     private javax.swing.JFrame featureMapFrame;
     private javax.swing.JButton jButton1;
@@ -1570,11 +1575,11 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
         if (hasUsableLoadedFile == false) {
             labelFile.setText("No file chosen");
             labelFile.setEnabled(false);
-            radioUseFile.setEnabled(false);
-            buttonLoadedFeatures.setEnabled(true);
+          //  radioUseFile.setEnabled(false);
+            buttonLoadedFeatures.setEnabled(false);
         } else {
             labelFile.setEnabled(true);
-            radioUseFile.setEnabled(true);
+          //  radioUseFile.setEnabled(true);
             radioUseFile.setSelected(true);
             buttonLoadedFeatures.setEnabled(true);
             labelFile.setText("Using file " + fileToLoadFrom.getName());
@@ -1592,22 +1597,23 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
 
         s = name + (discrete ? " - Discrete classifier" : " - Neural network outputting real values");
         labelParamName.setText(s);
-        featureMapFrame.setTitle("Select features to use for " + name);
+        featureMapFrame.setTitle("Features for " + name);
     }
 
-    public LearningAlgorithm commitAndGetSelectedAlgorithm() throws Exception {
-        commitCurrentConfiguration();
+    public LearningAlgorithm commitAndGetSelectedAlgorithm(LearningSystem ls) throws Exception {
+        commitCurrentConfiguration(ls);
         return currentLearningAlgorithm;
     }
 
-    public LearningAlgorithm getProposedLearningAlgorithmNoncommittal() throws Exception {
+    public LearningAlgorithm getProposedLearningAlgorithmNoncommittal(LearningSystem ls) throws Exception {
         LearningAlgorithm selected = null;
 
         if (radioUseCurrent.isSelected()) {
             selected = currentLearningAlgorithm;
         } else if (radioUseFile.isSelected()) {
             if (hasUsableLoadedFile) {
-                finishLoadingModel();
+                finishLoadingModel(ls);
+                getLearningAlgorithmFromFile();
                 
                 if (loadedLearningAlgorithm != null) {
                     selected = loadedLearningAlgorithm;
@@ -1646,8 +1652,8 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
 
     }
 
-    public void commitCurrentConfiguration() throws Exception {
-        LearningAlgorithm selected = getProposedLearningAlgorithmNoncommittal();
+    public void commitCurrentConfiguration(LearningSystem ls) throws Exception {
+        LearningAlgorithm selected = getProposedLearningAlgorithmNoncommittal(ls);
         setMyMapping();
         setCurrentLearningAlgorithm(selected);
         setLoadedLearningAlgorithm(null);
@@ -1678,7 +1684,7 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
     }
 
     public void setDisabled(boolean b) {
-        checkDisabled.setSelected(b); //TODO: error check?
+       // checkDisabled.setSelected(b); //TODO: error check?
     }
 
     public static void main(String[] args) {
@@ -1734,5 +1740,9 @@ public class LearningAlgorithmConfigurationPanel extends javax.swing.JPanel {
         featureMapFrame.setSize(500, 300);
         featureMapFrame.repaint();
         //}
+    }
+
+    boolean isFileSelected() {
+            return (radioUseFile.isSelected());
     }
 }

@@ -8,6 +8,8 @@ package wekinator.util;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
 import wekinator.WekinatorInstance;
 
 /**
@@ -70,6 +72,54 @@ public class Util {
         }
         return file;
     }
+    
+    public static File findSaveDirectory(String ext, String defDir, String defSubfolder, Component c) {
+        String lastLoc = WekinatorInstance.getWekinatorInstance().getSettings().getLastKeyValue(ext);
+        File defaultFile = null;
+        if (lastLoc != null) {
+            defaultFile = new File(lastLoc);
+            if (!defaultFile.isDirectory()) {
+                defaultFile = defaultFile.getParentFile();
+            }
+            defaultFile = new File(defaultFile.getAbsolutePath());
+            System.out.println("Using lastloc and default is " + defaultFile);
+        } else { 
+            defaultFile = new File(WekinatorInstance.getWekinatorInstance().getSettings().getDefaultSettingsDirectory() + File.separator + defDir + File.separator + defSubfolder);
+            System.out.println("Using sys and default is " + defaultFile);
+        }
+        
+        JFileChooser fc = new JFileChooser();
+
+        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fc.setFileFilter(new FileFilter() {
+
+            @Override
+            public boolean accept(File f) {
+                return f.isDirectory();
+            }
+
+            @Override
+            public String getDescription() {
+                return "Any folder";
+            }
+
+        });
+
+        fc.setDialogType(JFileChooser.SAVE_DIALOG);
+        fc.setApproveButtonText("Select");
+        System.out.println("Default is " + defaultFile);
+        //Util.find
+        fc.setSelectedFile(defaultFile);
+
+        File file = null;
+        int returnVal = fc.showSaveDialog(c);
+        if (returnVal == FileChooserWithExtension.APPROVE_OPTION) {
+            file = fc.getSelectedFile();
+           // fc.getCu
+        }
+        return file;
+
+     }
 
      public static File findSaveFile(String ext, String description, String defDir, Component c) {
         String lastLoc = WekinatorInstance.getWekinatorInstance().getSettings().getLastKeyValue(ext);
