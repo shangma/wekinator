@@ -7,9 +7,12 @@ package wekinator;
 import com.illposed.osc.OSCListener;
 import com.illposed.osc.OSCMessage;
 import com.illposed.osc.OSCPortIn;
+import java.awt.Frame;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -22,6 +25,7 @@ public class OscController {
     private static final String OSCplayscoreMessage = "/control/OSCplayscore";
     private static final String OSCtrainMessage = "/control/OSCtrain";
     private static final String OSCrunMessage = "/control/OSCstartrun";
+    private static final String OSCloadLearningSystemMessage = "/control/OSCLoadLearningSystem";
     protected boolean oscControllable = true;
     public static final String PROP_OSCCONTROLLABLE = "oscControllable";
 
@@ -34,6 +38,7 @@ public class OscController {
         addPlayscoreListener(receiver);
         addTrainListener(receiver);
         addRunListener(receiver);
+        addLoadLearningSystemListener(receiver);
     }
 
     private static void addRecordListener(OSCPortIn receiver) {
@@ -84,6 +89,18 @@ public class OscController {
             }
         };
         receiver.addListener(OSCrunMessage, l);
+    }
+    
+    private static void addLoadLearningSystemListener(OSCPortIn receiver) {
+        OSCListener l = new OSCListener() {
+            public void acceptMessage(Date arg0, OSCMessage message) {
+                Object[] o = message.getArguments();
+                if (o.length > 1 && (o[0] instanceof java.lang.String) && (o[1] instanceof java.lang.Integer)) {
+                    loadLearningSystemMessageReceived((String) o[0], (Integer) o[1]);
+                }
+            }
+        };
+        receiver.addListener(OSCloadLearningSystemMessage, l);
     }
 
     /**
@@ -151,6 +168,19 @@ public class OscController {
                 OscHandler.getOscHandler().stopPlayback();
                 OscHandler.getOscHandler().stopGettingParams();
             }
+        }
+    }
+    
+     private static void loadLearningSystemMessageReceived(String location, Integer run) {
+         boolean willRun = (run == 1);
+        //Hack: move to  playalong proxy or something
+        if (isOscControllable()) {
+            //System.out.println("Received learning control message");
+            WekinatorInstance.getWekinatorInstance().getMainGUI().launchLearningSystem(location, willRun);
+        } else {
+            System.out.println("Error: Received control message but OSC control not enabled.");
+            Logger.getLogger(OscController.class.getName()).log(Level.WARNING, null, "Received control message but OSC control not enabled.");
+
         }
     }
 

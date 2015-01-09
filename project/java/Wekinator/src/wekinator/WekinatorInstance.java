@@ -57,6 +57,17 @@ public class WekinatorInstance {
     public static int recvPort = 6448;
     public static int sendPort = 6453;
 
+    protected static MainGUI mainGUI = null;
+    
+    public void setMainGUI(MainGUI g) {
+        mainGUI = g;
+    }
+    
+    
+    public static MainGUI getMainGUI() {
+        return mainGUI;
+    }
+    
     public boolean hasCustomOscFeatureNames() {
         return hasCustomOscFeatureNames;
     }

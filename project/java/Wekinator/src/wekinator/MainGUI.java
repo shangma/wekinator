@@ -78,6 +78,7 @@ public class MainGUI extends javax.swing.JFrame {
         }
 
         learningSystemConfigurationPanel.setMainGUI(this);
+        WekinatorInstance.getWekinatorInstance().setMainGUI(this);
         //Anywhere we add a listener, also update to current property.
 
         // FeatureManager fm = wek.getFeatureManager();
@@ -586,6 +587,7 @@ public class MainGUI extends javax.swing.JFrame {
         });
         actionMenu.add(menuPerformanceMode);
 
+        menuEnableOscControl.setSelected(true);
         menuEnableOscControl.setText("Enable OSC control of GUI");
         menuEnableOscControl.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1248,4 +1250,46 @@ private void menuEnableOscControlActionPerformed(java.awt.event.ActionEvent evt)
             }
         });
     }
+     void launchLearningSystem(String location, boolean run) {
+        File f = new File(location);
+        
+        if (f.exists()) {
+            try {
+                LearningSystem ls = LearningSystem.readFromFile(f);
+                if (WekinatorInstance.getWekinatorInstance().canUse(ls)) {
+                    WekinatorInstance.getWekinatorInstance().setLearningSystem(ls);
+
+                    learningSystemConfigurationPanel.setLearningSystem(ls);
+                    panelMainTabs.setSelectedComponent(trainRunPanel1);
+                   // if (WekinatorRunner.runAutomatically) {
+                                    //trainRunPanel1.
+                        //if can run:
+                        //TODO
+                        if (run == true && trainRunPanel1.canRun()) {
+                            trainRunPanel1.startAutoRun(); //put elsewhere
+                            //if (WekinatorRunner.isMinimizeOnRun()) {
+                            //    this.setState(Frame.ICONIFIED);
+                           // }
+                        }
+                     //   } else {
+                      //      System.out.println("Cannot run automatically: learning system not ready");
+                      //  }
+
+                    } else {
+                    //TODO: more info
+                    System.out.println("This learning system is not configured correctly");
+                }
+                
+            } catch (Exception ex) {
+                Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, "Could not load learning system from file");
+                Logger.getLogger(MainGUI.class.getName()).log(Level.WARNING, null, ex);
+            }
+        } else {
+            //TODO LOG
+            System.out.println("Learning system file " + f.getAbsolutePath() + " not found");
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, "Could not load learning system from file" + f);
+
+        }
+    }
+
 }
