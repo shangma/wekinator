@@ -188,6 +188,24 @@ public class WekinatorInstance {
         return featureConfiguration;
     }
 
+    protected ChangeListener featureNamesListener = new ChangeListener() {
+        public void stateChanged(ChangeEvent e) {
+            featureNamesChanged();
+        }
+    };
+    
+    protected void featureNamesChanged() {
+        if (learningSystem != null && learningSystem.getDataset() != null) {
+            SimpleDataset d = learningSystem.getDataset();
+            String[] featureNames = featureConfiguration.getAllEnabledFeatureNames();
+            if (featureNames.length != d.numFeatures) {
+                return;
+            }
+            for (int i = 0; i < featureNames.length; i++) {
+                d.setFeatureName(i, featureNames[i]);
+            }
+        }
+    }
     /**
      * Set the value of featureConfiguration
      *
@@ -214,6 +232,7 @@ public class WekinatorInstance {
             if (state == State.OSC_CONNECTION_MADE) {
                 setState(State.FEATURE_SETUP_DONE);
             }
+            featureConfiguration.addFeatureNamesChangeListener(featureNamesListener);
         }
 
         //New: invalidate learning configuration
