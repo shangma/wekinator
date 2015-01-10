@@ -733,6 +733,24 @@ public class SimpleDataset {
             return false;
         }
     }
+    
+    public boolean deleteLastRound() {
+        if (allInstances.numInstances() > 0) {
+            int r = currentTrainingRound;
+            for (int i = allInstances.numInstances()-1; i >=0 ; i--) {
+                if (allInstances.instance(i).value(trainingIndex) == r) {
+                    allInstances.delete(i);
+                }
+            }
+            if (allInstances.numInstances() == 0) {
+                setHasInstances(false);
+            }
+            fireStateChanged();
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
      * Delete all instances (doesn't reset data like #feats, #params, etc.)
